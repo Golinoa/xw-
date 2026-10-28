@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>有单 OMS · UI 色彩规范预览</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --blue-50:#eaf6ff; --blue-100:#cceaff; --blue-200:#99d5ff; --blue-300:#66c0ff;
+      --blue-400:#33aaff; --blue-500:#0093ff; --blue-600:#0077d6; --blue-700:#005eaa;
+      --blue-800:#00477f; --blue-900:#003154;
+      --cyan-50:#e6fbf9; --cyan-100:#c2f5ef; --cyan-200:#8cebe1; --cyan-300:#55e1d3;
+      --cyan-400:#22d8c8; --cyan-500:#00d1c3; --cyan-600:#00a99d; --cyan-700:#00877e;
+      --cyan-800:#00655e; --cyan-900:#00433f;
+      --green:#16a34a; --green-text:#166534; --green-bg:#f0fdf4; --green-border:#bbf7d0; --green-hover:#15803d; --green-active:#166534;
+      --orange:#f08a00; --orange-text:#9a4d00; --orange-bg:#fff7e8; --orange-border:#fed7aa; --orange-hover:#9a4d00; --orange-active:#7c3d00;
+      --red:#ef4444; --red-text:#b42318; --red-bg:#fef2f2; --red-border:#fecaca; --red-hover:#dc2626; --red-active:#991b1b;
+      --info:#0093ff; --info-text:#005eaa; --info-bg:#eaf6ff; --info-border:#99d5ff; --info-hover:#0077d6;
+      --neutral:#687887; --neutral-text:#4b5b68; --neutral-bg:#f5f9fc; --neutral-border:#d7e0e8; --neutral-hover:#4b5b68;
+      --gray-0:#fff; --gray-50:#f5f9fc; --gray-100:#eaf0f5; --gray-200:#d7e0e8;
+      --gray-300:#bdc9d4; --gray-400:#91a0ad; --gray-500:#687887; --gray-600:#4b5b68;
+      --gray-700:#34424d; --gray-800:#202d37; --gray-900:#101820;
+      --text-muted:#536370; --focus-ring:#0077d6; --disabled-bg:#eaf0f5; --disabled-text:#4b5b68;
+      --canvas:#f0f8fd; --surface:#fff; --border:#e3edf4; --ink:#18232d;
+      font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif; color:var(--ink); background:var(--canvas);
+      font-synthesis:none;
+    }
+    *{box-sizing:border-box} body{margin:0} button{font:inherit}
+    .page{max-width:1180px;margin:auto;padding:36px 24px 64px}
+    .eyebrow{font-size:11px;font-weight:800;letter-spacing:.16em;color:var(--blue-700);text-transform:uppercase}
+    h1{margin:10px 0 8px;font-size:clamp(28px,4vw,42px);letter-spacing:-.04em}
+    .intro{max-width:780px;margin:0;color:var(--text-muted);font-size:14px;line-height:1.8}
+    .source{margin-top:18px;padding:12px 15px;border:1px solid var(--border);border-radius:4px;background:white;color:var(--text-muted);font-size:12px;line-height:1.7}
+    .source a{color:var(--blue-600)}
+    .section{margin-top:34px}.section-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:13px}
+    h2{margin:0;font-size:19px}.hint{margin:5px 0 0;color:var(--text-muted);font-size:12px}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,.92fr);gap:16px;align-items:start}
+    .panel{padding:18px;border:1px solid var(--border);border-radius:4px;background:#fff}
+    .panel h3{margin:0;font-size:14px}.panel-hint{margin:5px 0 16px;color:var(--text-muted);font-size:11px}
+    .group{margin-top:20px}.group:first-of-type{margin-top:0}.group-title{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;font-size:12px;font-weight:750}
+    .group-title small{font-size:10px;font-weight:500;color:var(--text-muted)}
+    .ramp{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));overflow:hidden;border:1px solid rgb(16 24 32 / 5%);border-radius:4px}
+    .swatch{min-width:0;padding:0;border:0;border-right:1px solid rgb(16 24 32 / 6%);background:transparent;text-align:left;cursor:pointer}
+    .swatch:last-child{border-right:0}.chip{display:block;height:48px;background:var(--c)}.swatch-meta{display:grid;gap:3px;padding:6px 4px;background:#fff}
+    .swatch-meta b{font-size:9px;color:var(--gray-600)}.swatch-meta code{font-size:8px;color:var(--text-muted)}
+    .semantic{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.semantic-card{overflow:hidden;border:1px solid var(--border);border-radius:4px;background:#fff}
+    .semantic-color{height:42px;background:var(--c)}.semantic-copy{padding:8px}.semantic-copy b{display:block;font-size:11px}.semantic-copy code{color:var(--text-muted);font-size:9px}
+    .token-table-wrap{overflow-x:auto;margin-top:12px}.token-table{width:100%;border-collapse:collapse;font-size:10px}.token-table th,.token-table td{padding:8px 7px;border-bottom:1px solid #edf2f6;text-align:left;white-space:nowrap}.token-table th{color:var(--text-muted);font-size:9px;font-weight:650}.token-table code{font-family:ui-monospace,Consolas,monospace;font-size:9px;color:var(--gray-600)}
+    .sample{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid var(--bd);border-radius:4px;color:var(--fg);background:var(--bg);font-weight:700}.sample i{width:7px;height:7px;border-radius:50%;background:var(--dot)}
+    .usage-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}.usage{padding:10px;border:1px solid var(--border);border-radius:4px;background:#fff}.usage b{display:block;margin-bottom:4px;font-size:10px}.usage p{margin:0;color:var(--text-muted);font-size:9px;line-height:1.55}
+    .surface-list{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.surface{height:72px;padding:9px;border:1px solid var(--border);border-radius:4px;font-size:10px;color:var(--gray-600)}
+    .surface:nth-child(1){background:#fff}.surface:nth-child(2){background:var(--gray-50)}.surface:nth-child(3){background:var(--canvas)}
+    .preview{padding:0;overflow:hidden}.preview-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border)}
+    .preview-head small{font-size:10px;color:var(--text-muted)}.dashboard{padding:15px;background:var(--canvas)}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--border);border-radius:4px;background:white;font-size:10px}
+    .brand{display:flex;align-items:center;gap:8px;font-weight:800}.mark{display:grid;width:23px;height:23px;place-items:center;border-radius:4px;color:white;background:var(--blue-600);font-size:12px}
+    .nav-links{display:flex;gap:13px;color:var(--text-muted)}.nav-links .active{color:var(--blue-600);font-weight:700}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:9px}.stat,.card{border:1px solid var(--border);border-radius:4px;background:white}
+    .stat{padding:10px}.stat span{display:block;color:var(--text-muted);font-size:9px}.stat b{display:block;margin-top:5px;font-size:19px}.trend{float:right;color:var(--green-text);font-size:9px}
+    .dash-row{display:grid;grid-template-columns:1.35fr 1fr;gap:9px;margin-top:9px}.card{padding:12px}.card h4{margin:0 0 12px;font-size:10px}
+    .chart{height:110px;display:flex;align-items:end;justify-content:space-around;gap:8px;padding:0 6px;border-bottom:1px solid var(--border);background:repeating-linear-gradient(to bottom,transparent 0 26px,#edf3f7 27px 28px)}
+    .bar{width:22px;height:var(--h);border-radius:4px 4px 0 0;background:var(--blue-600)}.bar:nth-child(even){background:var(--cyan-700)}
+    .labels{display:flex;justify-content:space-around;margin-top:6px;color:var(--text-muted);font-size:8px}
+    .tasks{display:grid;gap:10px}.task{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;font-size:9px;color:var(--gray-600)}
+    .task small{grid-column:1 / -1;margin-top:-6px;color:var(--text-muted);font-size:8px}.badge{padding:4px 7px;border:1px solid transparent;border-radius:4px;font-size:8px;font-weight:700}
+    .ok{color:var(--green-text);border-color:var(--green-border);background:var(--green-bg)}.wait{color:var(--orange-text);border-color:var(--orange-border);background:var(--orange-bg)}.late{color:var(--red-text);border-color:var(--red-border);background:var(--red-bg)}
+    .action-button{padding:7px 10px;border:0;border-radius:4px;color:#fff;font-size:10px;font-weight:700;cursor:pointer}.action-button.primary{background:var(--blue-600)}.action-button.primary:hover{background:var(--blue-700)}.action-button.primary:active{background:var(--blue-800)}.action-button.danger{background:var(--red-text)}.action-button.danger:hover{background:var(--red-hover)}.action-button.danger:active{background:var(--red-active)}.action-button.warning{background:var(--orange-hover)}.action-button.warning:hover{background:var(--orange-hover)}.action-button.warning:active{background:var(--orange-active)}.action-button:focus-visible,.swatch:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}.action-button:disabled{color:var(--disabled-text);background:var(--disabled-bg);cursor:not-allowed}
+    .table{margin-top:9px;padding:12px;border:1px solid var(--border);border-radius:4px;background:#fff}.table h4{margin:0 0 9px;font-size:10px}
+    .row{display:grid;grid-template-columns:1.2fr 1fr .8fr .6fr;gap:6px;padding:8px 4px;border-top:1px solid #edf2f6;font-size:8px;color:var(--gray-600)}.row.header{color:var(--text-muted)}
+    .rules{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.rule{padding:12px;border:1px solid var(--border);border-radius:4px;background:#fff}.rule b{display:block;margin-bottom:5px;font-size:11px}.rule p{margin:0;color:var(--gray-500);font-size:10px;line-height:1.6}
+    #toast{position:fixed;right:20px;bottom:20px;padding:10px 14px;border-radius:4px;color:#fff;background:var(--gray-800);font-size:12px;opacity:0;transform:translateY(10px);transition:.2s;pointer-events:none}#toast.show{opacity:1;transform:none}
+    footer{margin-top:25px;color:var(--text-muted);font-size:10px}
+    @media(max-width:850px){.layout{grid-template-columns:1fr}.preview{order:-1}}
+    @media(max-width:560px){.page{padding:25px 13px 42px}.panel{padding:14px}.ramp{grid-template-columns:repeat(5,1fr)}.semantic{grid-template-columns:repeat(2,1fr)}.usage-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.nav-links{display:none}.dash-row{grid-template-columns:1fr}.rules{grid-template-columns:1fr}.swatch:nth-child(5){border-right:0}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="eyebrow">Design system · 2026-10-05</div>
+    <h1>后台 UI 色彩规范预览</h1>
+    <p class="intro">本预览对应已确认的蓝青色设计规范：高亮蓝负责品牌识别和主要操作，青色用于辅助强调，冷白与浅蓝灰承托信息层级，语意色负责状态反馈。</p>
+    <div class="source">规范正文与 token 以同目录 <b>color-system.md</b> 为准。主色 <b>#0093FF</b>、辅色 <b>#00D1C3</b> 来自参考图明确标注；语意色依照画面观感建立并已在本项目中确认。 <a href="https://www.zcool.com.cn/work/ZNjgyMDk4MDQ=.html" target="_blank" rel="noreferrer">查看参考作品</a></div>
+
+    <section class="section" aria-labelledby="palette-title">
+      <div class="section-head"><div><h2 id="palette-title">单一色板</h2><p class="hint">点按色块复制 HEX；各阶用于悬停、背景、边框和文字层级。</p></div></div>
+      <div class="layout">
+        <div class="panel">
+          <h3>品牌色阶</h3><p class="panel-hint">核心识别色 · 蓝色为主，青色为辅</p>
+          <div class="group"><div class="group-title">主色 · 项目蓝 <small>Primary / 500 = #0093FF</small></div><div class="ramp" id="blue-ramp"></div></div>
+          <div class="group"><div class="group-title">辅色 · 协同青 <small>Secondary / 500 = #00D1C3</small></div><div class="ramp" id="cyan-ramp"></div></div>
+          <div class="group"><div class="group-title">中性色 · 冷灰 <small>文字、背景、边框与禁用状态</small></div><div class="ramp" id="gray-ramp"></div></div>
+          <div class="group"><div class="group-title">语意色 <small>只表达状态，不替代品牌主色</small></div>
+            <div class="semantic">
+              <div class="semantic-card"><div class="semantic-color" style="--c:#16a34a"></div><div class="semantic-copy"><b>成功</b><code>#16A34A</code></div></div>
+              <div class="semantic-card"><div class="semantic-color" style="--c:#f08a00"></div><div class="semantic-copy"><b>提示 / 等待</b><code>#F08A00</code></div></div>
+              <div class="semantic-card"><div class="semantic-color" style="--c:#ef4444"></div><div class="semantic-copy"><b>错误 / 危险</b><code>#EF4444</code></div></div>
+              <div class="semantic-card"><div class="semantic-color" style="--c:#0093ff"></div><div class="semantic-copy"><b>信息</b><code>#0093FF</code></div></div>
+              <div class="semantic-card"><div class="semantic-color" style="--c:#687887"></div><div class="semantic-copy"><b>中性</b><code>#687887</code></div></div>
+              <div class="semantic-card"><div class="semantic-color" style="--c:#0077d6"></div><div class="semantic-copy"><b>处理中</b><code>#0077D6</code></div></div>
+            </div>
+            <div class="token-table-wrap"><table class="token-table"><thead><tr><th>语意</th><th>标准色</th><th>文字色</th><th>浅背景</th><th>边框</th><th>悬停色</th><th>按下色</th><th>实心操作背景（白字）</th></tr></thead><tbody>
+              <tr><td><span class="sample" style="--fg:var(--green-text);--bg:var(--green-bg);--bd:var(--green-border);--dot:var(--green)"><i></i>成功</span></td><td><code>#16A34A</code></td><td><code>#166534</code></td><td><code>#F0FDF4</code></td><td><code>#BBF7D0</code></td><td><code>#15803D</code></td><td><code>#166534</code></td><td><code>#15803D</code></td></tr>
+              <tr><td><span class="sample" style="--fg:var(--orange-text);--bg:var(--orange-bg);--bd:var(--orange-border);--dot:var(--orange)"><i></i>警告</span></td><td><code>#F08A00</code></td><td><code>#9A4D00</code></td><td><code>#FFF7E8</code></td><td><code>#FED7AA</code></td><td><code>#9A4D00</code></td><td><code>#7C3D00</code></td><td><code>#9A4D00</code></td></tr>
+              <tr><td><span class="sample" style="--fg:var(--red-text);--bg:var(--red-bg);--bd:var(--red-border);--dot:var(--red)"><i></i>错误</span></td><td><code>#EF4444</code></td><td><code>#B42318</code></td><td><code>#FEF2F2</code></td><td><code>#FECACA</code></td><td><code>#DC2626</code></td><td><code>#991B1B</code></td><td><code>#B42318</code></td></tr>
+              <tr><td><span class="sample" style="--fg:var(--info-text);--bg:var(--info-bg);--bd:var(--info-border);--dot:var(--info)"><i></i>信息</span></td><td><code>#0093FF</code></td><td><code>#005EAA</code></td><td><code>#EAF6FF</code></td><td><code>#99D5FF</code></td><td><code>#0077D6</code></td><td><code>#00477F</code></td><td><code>#0077D6</code></td></tr>
+              <tr><td><span class="sample" style="--fg:var(--neutral-text);--bg:var(--neutral-bg);--bd:var(--neutral-border);--dot:var(--neutral)"><i></i>中性</span></td><td><code>#687887</code></td><td><code>#4B5B68</code></td><td><code>#F5F9FC</code></td><td><code>#D7E0E8</code></td><td><code>#4B5B68</code></td><td><code>#34424D</code></td><td><code>#4B5B68</code></td></tr>
+              <tr><td><span class="sample" style="--fg:var(--info-text);--bg:var(--info-bg);--bd:var(--info-border);--dot:var(--info-hover)"><i></i>处理中</span></td><td><code>#0077D6</code></td><td><code>#005EAA</code></td><td><code>#EAF6FF</code></td><td><code>#99D5FF</code></td><td><code>#005EAA</code></td><td><code>#00477F</code></td><td><code>#005EAA</code></td></tr>
+            </tbody></table></div>
+            <div class="usage-grid">
+              <div class="usage"><b>项目 / 任务状态映射</b><p>草稿、未开始、已取消 → 中性；待确认、临期、等待外部 → 警告；进行中、同步中 → 处理中；已完成、已通过 → 成功；失败、已拒绝、逾期 → 错误。</p></div>
+              <div class="usage"><b>反馈组件映射与实心按钮</b><p>成功、警告、错误、信息提示分别使用对应语意。品牌蓝/青标准色用于色块或浅色强调；搭配白字的普通字号实心按钮使用表中深色操作背景，悬停和按下继续加深。</p><p style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="action-button primary" type="button">主操作</button><button class="action-button danger" type="button">危险操作</button><button class="action-button warning" type="button">警告操作</button><button class="action-button" type="button" disabled>不可用</button></p></div>
+            </div>
+          </div>
+          <div class="group"><div class="group-title">基础表面 <small>页面保持明亮、清透</small></div><div class="surface-list"><div class="surface">内容卡片<br>#FFFFFF</div><div class="surface">浅灰底<br>#F5F9FC</div><div class="surface">页面画布<br>#F0F8FD</div></div></div>
+        </div>
+        <div class="panel preview">
+          <div class="preview-head"><h3>项目管理后台预览</h3><small>同一套 token 的界面应用</small></div>
+          <div class="dashboard">
+            <div class="nav"><div class="brand"><span class="mark">有</span>有单 · 项目管理</div><div class="nav-links"><span class="active">工作台</span><span>项目管理</span><span>组员日历</span><span>统计数据</span></div><span>林经理⌄</span></div>
+            <div class="stats">
+              <div class="stat"><span>进行中项目</span><b>12 <i class="trend">↗ 8%</i></b></div>
+              <div class="stat"><span>待处理任务</span><b>32 <i class="trend" style="color:var(--orange-text)">本周</i></b></div>
+              <div class="stat"><span>已完成任务</span><b>148</b></div>
+              <div class="stat"><span>逾期任务</span><b style="color:var(--red-text)">03</b></div>
+            </div>
+            <div class="dash-row">
+              <div class="card"><h4>近期待办趋势</h4><div class="chart"><i class="bar" style="--h:45%"></i><i class="bar" style="--h:68%"></i><i class="bar" style="--h:56%"></i><i class="bar" style="--h:82%"></i><i class="bar" style="--h:72%"></i><i class="bar" style="--h:94%"></i></div><div class="labels"><span>周一</span><span>周二</span><span>周三</span><span>周四</span><span>周五</span><span>周六</span></div></div>
+              <div class="card"><h4>任务状态</h4><div class="tasks"><div class="task">需求评审 <span class="badge ok">已完成</span><small>项目 A · 负责人 王敏</small></div><div class="task">接口联调 <span class="badge wait">进行中</span><small>项目 B · 负责人 陈宇</small></div><div class="task">测试验收 <span class="badge late">已逾期</span><small>项目 C · 负责人 李宁</small></div></div></div>
+            </div>
+            <div class="table"><h4>项目任务列表</h4><div class="row header"><span>任务名称</span><span>所属项目</span><span>截止日期</span><span>状态</span></div><div class="row"><span>完成需求梳理</span><span>客户门户升级</span><span>10-08</span><span style="color:var(--green-text)">已完成</span></div><div class="row"><span>接口联调验证</span><span>订单中心改造</span><span>10-10</span><span style="color:var(--info-text)">进行中</span></div><div class="row"><span>提交测试报告</span><span>移动端体验优化</span><span>10-12</span><span style="color:var(--orange-text)">待处理</span></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="rules" aria-label="使用规则">
+      <div class="rule"><b>主色用于操作与数据</b><p>主按钮、选中态、链接和主要图表使用项目蓝。不要用蓝色表达成功或错误。</p></div>
+      <div class="rule"><b>辅色用于轻量强调</b><p>青色用于图表第二序列、辅助指标和少量装饰，不与主色争夺操作焦点。</p></div>
+      <div class="rule"><b>保持轻盈与清晰</b><p>卡片以白色为主，页面使用浅冷色画布；圆角按参考规范采用 4px，避免大面积渐变和厚重阴影。</p></div>
+    </section>
+    <section class="section" aria-labelledby="a11y-title">
+      <div class="section-head"><div><h2 id="a11y-title">语意色使用约束</h2><p class="hint">这些约束定义颜色如何表达状态，以及怎样保持信息可读。</p></div></div>
+      <div class="rules">
+        <div class="rule"><b>状态必须有文字</b><p>不能只靠颜色传递状态；标签、图标、文案至少提供一种明确含义。状态色在同一产品内保持一义一色。</p></div>
+        <div class="rule"><b>文字与背景对比</b><p>按 WCAG AA：普通文本至少 4.5:1，大号文本至少 3:1；图标、控件边界等关键非文本信息至少 3:1。本文语意文字 token 与浅底已逐项计算；组件组合仍需复核。</p></div>
+        <div class="rule"><b>交互态和键盘焦点</b><p>悬停、按下使用表中更深色阶；白字实心按钮使用“操作背景”深色 token。键盘焦点用主色外框；禁用态使用中性前景与背景，避免保留成功/错误颜色。</p></div>
+        <div class="rule"><b>图表与主题边界</b><p>状态图表沿用语意色；普通分类图表使用独立序列色，辅色图表使用深青阶以确保区分。当前只定义浅色主题，深色主题需另行校验。</p></div>
+      </div>
+    </section>
+    <footer>配套视觉预览 · 规范正文及 token 以同目录 color-system.md 为准。</footer>
+  </main>
+  <div id="toast" role="status" aria-live="polite">已复制颜色值</div>
+  <script>
+    const ramps = {
+      'blue-ramp': [['50','#EAF6FF'],['100','#CCEAFF'],['200','#99D5FF'],['300','#66C0FF'],['400','#33AAFF'],['500','#0093FF'],['600','#0077D6'],['700','#005EAA'],['800','#00477F'],['900','#003154']],
+      'cyan-ramp': [['50','#E6FBF9'],['100','#C2F5EF'],['200','#8CEBE1'],['300','#55E1D3'],['400','#22D8C8'],['500','#00D1C3'],['600','#00A99D'],['700','#00877E'],['800','#00655E'],['900','#00433F']],
+      'gray-ramp': [['0','#FFFFFF'],['50','#F5F9FC'],['100','#EAF0F5'],['200','#D7E0E8'],['300','#BDC9D4'],['400','#91A0AD'],['500','#687887'],['600','#4B5B68'],['700','#34424D'],['900','#101820']]
+    };
+    for (const [id, colors] of Object.entries(ramps)) {
+      const root = document.getElementById(id);
+      root.innerHTML = colors.map(([step, hex]) => `<button class="swatch" type="button" aria-label="复制 ${hex}" data-color="${hex}"><span class="chip" style="--c:${hex}"></span><span class="swatch-meta"><b>${step}</b><code>${hex}</code></span></button>`).join('');
+    }
+    let toastTimer;
+    document.addEventListener('click', async (event) => {
+      const swatch = event.target.closest('[data-color]');
+      if (!swatch) return;
+      const color = swatch.dataset.color;
+      try { await navigator.clipboard.writeText(color); } catch { const input = document.createElement('textarea'); input.value = color; document.body.append(input); input.select(); document.execCommand('copy'); input.remove(); }
+      const toast = document.getElementById('toast'); toast.textContent = `已复制 ${color}`; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1300);
+    });
+  </script>
+</body>
+</html>

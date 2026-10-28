@@ -1,0 +1,94 @@
+{
+  "session_id": "2026-10-01-travel-oms-takeover",
+  "timezone": "Asia/Shanghai",
+  "recorded_at": "2026-10-01T21:57:06+08:00",
+  "status": "blocked_before_login",
+  "browser_selection": {
+    "browser_id": "1",
+    "family": "edge",
+    "required_extension_instance_matched_in_prior_turn": true,
+    "current_connection_verified": false
+  },
+  "selected_page": "https://microsoftedge.microsoft.com/addons/detail/chatgpt/odlomjlbamekndcpllcnffbgeohgkmjh",
+  "observations": [
+    {
+      "id": "TOOL-01",
+      "operation": "chrome_extension.getTabContext",
+      "tab_id": 272419158,
+      "result": "The extensions gallery cannot be scripted.",
+      "elapsed_seconds": null,
+      "meaning": "扩展商店页面读取被限制；不等于目标业务站被限制"
+    },
+    {
+      "id": "TOOL-02",
+      "operation": "browser.nameSession",
+      "result": "nodeRepl.fetch request failed",
+      "elapsed_seconds": 1.1156,
+      "meaning": "控制请求失败；未登录"
+    },
+    {
+      "id": "TOOL-03",
+      "operation": "cua.listTabs",
+      "browser_id": "1",
+      "result": "nodeRepl.fetch request failed",
+      "elapsed_seconds": 21.0567,
+      "meaning": "无法取得当前普通页面清单"
+    },
+    {
+      "id": "TOOL-04",
+      "operation": "cua.getTab",
+      "tab_id": "272419158",
+      "browser_id": "1",
+      "result": "nodeRepl.fetch request failed",
+      "elapsed_seconds": 0.1149,
+      "meaning": "标签页绑定失败；未导航"
+    },
+    {
+      "id": "TOOL-05",
+      "operation": "browser.capabilities.list",
+      "result": [
+        {
+          "id": "viewport"
+        }
+      ],
+      "elapsed_seconds": 0.0063,
+      "meaning": "浏览器级能力发现可调用；tab级cdp不由该列表证明"
+    },
+    {
+      "id": "TOOL-06",
+      "operation": "browser.user.openTabs",
+      "result": "nodeRepl.fetch request failed",
+      "elapsed_seconds": 0.0912,
+      "meaning": "文档提供的另一标签页发现接口也失败"
+    },
+    {
+      "id": "TOOL-07",
+      "operation": "typeof selectedTravelResearchTab",
+      "result": "undefined",
+      "elapsed_seconds": 0.009,
+      "meaning": "失败绑定未留下可用于发现cdp能力的tab"
+    }
+  ],
+  "counters": {
+    "tool_observations": 7,
+    "target_page_reads": 0,
+    "login_submissions": 0,
+    "business_writes": 0,
+    "business_readbacks": 0,
+    "http_exchanges": 0,
+    "har_files": 0,
+    "screenshots": 0
+  },
+  "limitations": [
+    "无法定位连接失败是在本地桥接、扩展会话或后端服务哪一层；没有足够证据归因",
+    "未调用Network.enable或捕获请求事件，未检验getResponseBody",
+    "当前会话限定指定扩展实例及cua_repl，不能更换浏览器或自动化运行时"
+  ],
+  "redaction": {
+    "credentials_stored": false,
+    "cookies_stored": false,
+    "authorization_stored": false,
+    "csrf_values_stored": false,
+    "personal_business_data_stored": false
+  }
+}

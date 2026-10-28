@@ -1,0 +1,29 @@
+{
+  "url": "https://trip.lipseo.com/leads",
+  "title": "系统繁忙 · 飞途OMS",
+  "heading": "",
+  "meta": {
+    "csrf": false
+  },
+  "text": "系统繁忙\n\n服务器暂时开小差了，请稍后重试。给您带来不便，敬请谅解。\n\n返回首页",
+  "forms": [],
+  "tables": [],
+  "buttons": [
+    {
+      "tag": "A",
+      "t": "返回首页",
+      "cls": "btn btn-outline-secondary btn-sm",
+      "href": "https://trip.lipseo.com",
+      "toggle": "",
+      "target": ""
+    }
+  ],
+  "modals": [],
+  "nav": [
+    {
+      "t": "返回首页",
+      "href": "https://trip.lipseo.com"
+    }
+  ],
+  "pills": []
+}

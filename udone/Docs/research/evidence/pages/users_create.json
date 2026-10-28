@@ -1,0 +1,512 @@
+{
+  "url": "https://trip.lipseo.com/users/create",
+  "title": "飞途旅游订单系统",
+  "heading": "",
+  "meta": {
+    "csrf": true
+  },
+  "text": "飞途旅游订单系统\n导航菜单\n仪表盘\n新建订单\n订单管理\n收款管理\n付款管理\n批量结算\n账户余额\n审核工作台\n经营分析\n业绩统计\nCRM管理\n基础数据\n地区管理\n供应商管理\n线路管理\n客户管理\n操作日志\n系统设置\n系统设置\n用户管理\n角色权限\n飞途OMS v3.7 © 2026\n今天的努力，是明天成功的基石。\n有效期至 2026-10-05\n标签\n马总\n管理员\n 添加用户\n姓名 *\n用户名 *\n邮箱\n密码 *\n手机号\n角色 *\n管理员\n计调员\n财务\n启用账号\n保存 取消",
+  "forms": [
+    {
+      "action": "https://trip.lipseo.com/logout",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "退出登录",
+          "type": "submit",
+          "cls": "dropdown-item"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/users",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "name",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "username",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "email",
+          "type": "email",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "phone",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "role",
+          "type": "select-one",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "company_admin",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "company_admin",
+              "t": "管理员"
+            },
+            {
+              "v": "operator",
+              "t": "计调员"
+            },
+            {
+              "v": "finance",
+              "t": "财务"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "is_active",
+          "type": "checkbox",
+          "id": "isActive",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": true,
+          "label": "启用账号"
+        }
+      ],
+      "buttons": [
+        {
+          "t": "保存",
+          "type": "submit",
+          "cls": "btn btn-primary"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/password/update",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "current_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password_confirmation",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "修改密码",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    }
+  ],
+  "tables": [],
+  "buttons": [
+    {
+      "tag": "BUTTON",
+      "t": "0",
+      "cls": "btn btn-sm position-relative d-flex align-items-center",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "标签",
+      "cls": "btn btn-sm d-flex align-items-center oms-tab-toggle",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "马总 管理员",
+      "cls": "btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-1",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "修改密码",
+      "cls": "dropdown-item",
+      "href": "#",
+      "toggle": "modal",
+      "target": "#changePasswordModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "退出登录",
+      "cls": "dropdown-item",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "保存",
+      "cls": "btn btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "取消",
+      "cls": "btn btn-outline-secondary",
+      "href": "https://trip.lipseo.com/users",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "×",
+      "cls": "lightbox-close",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认删除",
+      "cls": "btn btn-sm btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn px-4 py-2 confirm-btn-cancel",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认",
+      "cls": "btn px-4 py-2 confirm-btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "修改密码",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    }
+  ],
+  "modals": [
+    {
+      "id": "lightboxModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "opPasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "",
+          "type": "password",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "confirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "changePasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "current_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password_confirmation",
+          "type": "password",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "nav": [
+    {
+      "t": "仪表盘",
+      "href": "https://trip.lipseo.com"
+    },
+    {
+      "t": "新建订单",
+      "href": "https://trip.lipseo.com/orders/create"
+    },
+    {
+      "t": "订单管理",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "收款管理",
+      "href": "https://trip.lipseo.com/customer-payments"
+    },
+    {
+      "t": "付款管理",
+      "href": "https://trip.lipseo.com/supplier-payments"
+    },
+    {
+      "t": "批量结算",
+      "href": "https://trip.lipseo.com/supplier-payments/batch-settle"
+    },
+    {
+      "t": "账户余额",
+      "href": "https://trip.lipseo.com/account-balances"
+    },
+    {
+      "t": "审核工作台",
+      "href": "https://trip.lipseo.com/review"
+    },
+    {
+      "t": "经营分析",
+      "href": "https://trip.lipseo.com/reports"
+    },
+    {
+      "t": "业绩统计",
+      "href": "https://trip.lipseo.com/statistics"
+    },
+    {
+      "t": "CRM管理",
+      "href": "https://trip.lipseo.com/leads"
+    },
+    {
+      "t": "地区管理",
+      "href": "https://trip.lipseo.com/regions"
+    },
+    {
+      "t": "供应商管理",
+      "href": "https://trip.lipseo.com/suppliers"
+    },
+    {
+      "t": "线路管理",
+      "href": "https://trip.lipseo.com/routes"
+    },
+    {
+      "t": "客户管理",
+      "href": "https://trip.lipseo.com/customers"
+    },
+    {
+      "t": "操作日志",
+      "href": "https://trip.lipseo.com/audit-logs"
+    },
+    {
+      "t": "系统设置",
+      "href": "https://trip.lipseo.com/settings/company"
+    },
+    {
+      "t": "用户管理",
+      "href": "https://trip.lipseo.com/users"
+    },
+    {
+      "t": "角色权限",
+      "href": "https://trip.lipseo.com/roles"
+    },
+    {
+      "t": "帮助文档",
+      "href": "/docs"
+    },
+    {
+      "t": "更新记录",
+      "href": "/docs/changelog"
+    },
+    {
+      "t": "取消",
+      "href": "https://trip.lipseo.com/users"
+    }
+  ],
+  "pills": [
+    "仪表盘",
+    "新建订单",
+    "订单管理",
+    "收款管理",
+    "付款管理",
+    "批量结算",
+    "账户余额",
+    "审核工作台",
+    "经营分析",
+    "业绩统计",
+    "CRM管理",
+    "地区管理",
+    "供应商管理",
+    "线路管理",
+    "客户管理",
+    "操作日志",
+    "系统设置",
+    "用户管理",
+    "角色权限"
+  ]
+}

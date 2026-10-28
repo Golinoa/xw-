@@ -1,0 +1,68 @@
+{
+  "success": true,
+  "data": {
+    "requests": [
+      {
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Referer": "https://trip.lipseo.com/orders/create",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "X-CSRF-TOKEN": "[REDACTED]",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "POST",
+        "mimeType": "application/json",
+        "postData": "{\"raw_text\": \"客户张伟想带家人12月20日从成都出发去日本东京玩6天，2个大人1个小孩，预算3万左右，联系电话139****1111，希望包含机票和酒店，微信同号。\"}",
+        "requestId": "41592.1365",
+        "resourceType": "Fetch",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "no-cache, private",
+          "content-encoding": "gzip",
+          "content-type": "application/json",
+          "date": "Thu, 01 Oct 2026 16:11:04 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding",
+          "x-ratelimit-limit": "10",
+          "x-ratelimit-remaining": "9"
+        },
+        "status": 200,
+        "timestamp": 1790871073424,
+        "url": "https://trip.lipseo.com/orders/ai-parse"
+      },
+      {
+        "headers": {
+          "Accept": "application/json",
+          "Referer": "https://trip.lipseo.com/orders/create",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "X-Requested-With": "XMLHttpRequest",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "GET",
+        "mimeType": "application/json",
+        "requestId": "41592.1366",
+        "resourceType": "Fetch",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "no-cache, private",
+          "content-encoding": "gzip",
+          "content-type": "application/json",
+          "date": "Thu, 01 Oct 2026 16:11:45 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790871117685,
+        "url": "https://trip.lipseo.com/notifications"
+      }
+    ]
+  },
+  "error": null
+}

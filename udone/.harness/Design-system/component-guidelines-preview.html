@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="有单 OMS Ant Design Vue 组件规范预览。">
+  <title>有单 OMS · 组件规范</title>
+  <style>
+    :root{font-family:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;color:#202d37;background:#f0f8fd;--blue:#0077d6;--blue-hover:#005eaa;--line:#d7e0e8;--muted:#536370;--surface:#fff;--soft:#eaf6ff;--green:#166534;--green-bg:#f0fdf4;--green-line:#bbf7d0;--red:#b42318;--red-bg:#fef2f2;--red-line:#fecaca;--shadow:0 10px 32px rgb(32 65 91 / 7%);font-synthesis:none}
+    *{box-sizing:border-box}body{margin:0}.page{max-width:1120px;margin:auto;padding:38px 24px 64px}.eyebrow{font-size:11px;font-weight:600;letter-spacing:.12em;color:var(--blue);text-transform:uppercase}h1{margin:10px 0 8px;font-size:32px;line-height:40px;font-weight:600}.lead{margin:0;color:var(--muted);font-size:14px;line-height:22px}.notice{margin:20px 0 28px;padding:14px 16px;border:1px solid #99d5ff;border-left:4px solid var(--blue);border-radius:4px;background:#fff;font-size:13px;line-height:21px}.head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:28px 0 12px}h2{margin:0;font-size:20px;line-height:28px;font-weight:600}.sub{margin:4px 0 0;color:var(--muted);font-size:12px;line-height:20px}.tag{padding:5px 9px;border-radius:4px;background:var(--soft);color:#005eaa;font-size:11px;font-weight:500;white-space:nowrap}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{padding:18px;border:1px solid var(--line);border-radius:4px;background:var(--surface);box-shadow:var(--shadow)}.card h3{margin:0 0 14px;font-size:16px;line-height:24px;font-weight:600}.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.button{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:0 13px;border:1px solid #d7e0e8;border-radius:4px;background:#fff;color:#34424d;font-family:inherit;font-size:14px;line-height:20px;font-weight:500;cursor:default}.button.primary{border-color:var(--blue);background:var(--blue);color:#fff}.button.link{border-color:transparent;color:var(--blue)}.button.danger{border-color:#fecaca;color:var(--red);background:#fff}.button:disabled{border-color:#eaf0f5;background:#eaf0f5;color:#91a0ad}.hint{margin:12px 0 0;color:var(--muted);font-size:12px;line-height:20px}.field{display:grid;gap:6px;margin-bottom:12px}.field label{font-size:14px;line-height:22px;font-weight:500}.input{min-height:36px;padding:7px 10px;border:1px solid #d7e0e8;border-radius:4px;color:#202d37;background:#fff;font-family:inherit;font-size:14px;line-height:20px;font-weight:400}.input::placeholder{color:#91a0ad}.error{font-size:12px;line-height:20px;color:var(--red)}.alert{margin-top:8px;padding:10px 12px;border:1px solid var(--green-line);border-radius:4px;background:var(--green-bg);color:var(--green);font-size:13px;line-height:20px}.alert.error{border-color:var(--red-line);background:var(--red-bg);color:var(--red)}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;font-size:13px}.table th,.table td{padding:10px 9px;border-bottom:1px solid #eaf0f5;text-align:left;white-space:nowrap}.table th{color:#34424d;background:#f5f9fc;font-weight:500}.table td.numeric{text-align:right;font-variant-numeric:tabular-nums}.status{display:inline-flex;align-items:center;gap:6px;color:var(--green);font-size:12px}.status i{width:7px;height:7px;border-radius:50%;background:#16a34a}.overlay-demo{padding:14px;border:1px solid var(--line);border-radius:4px;background:#f5f9fc}.drawer{margin-left:auto;max-width:280px;padding:14px;border:1px solid var(--line);border-radius:4px;background:#fff;box-shadow:0 6px 20px rgb(32 65 91 / 10%)}.drawer h4{margin:0 0 7px;font-size:16px;line-height:24px;font-weight:600}.drawer p{margin:0;color:var(--muted);font-size:13px;line-height:21px}.rule-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.rule{padding:14px;border:1px solid var(--line);border-radius:4px;background:#fff}.rule b{display:block;margin-bottom:5px;font-size:13px;line-height:20px}.rule p{margin:0;color:var(--muted);font-size:12px;line-height:20px}.out{margin-top:16px;padding:12px 14px;border-radius:4px;background:#eaf6ff;color:#005eaa;font-size:12px;line-height:20px}footer{margin-top:26px;color:var(--muted);font-size:11px;line-height:18px}
+    @media(max-width:720px){.grid,.rule-list{grid-template-columns:1fr}.page{padding:28px 16px 48px}}@media(max-width:480px){.page{padding:22px 12px 40px}.head{align-items:start;flex-direction:column}.card{padding:13px}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="eyebrow">YOUNCE · DESIGN SYSTEM</div>
+    <h1>Ant Design Vue 组件规范</h1>
+    <p class="lead">沿用现有基础组件，以统一的主题和状态构建 OMS 页面。</p>
+    <div class="notice"><strong>原则：</strong>先用 Ant Design Vue；统一主题覆盖；业务页面不直接堆叠局部样式。</div>
+
+    <section>
+      <div class="head"><div><h2>操作层级</h2><p class="sub">每个操作区域只保留一个主操作。</p></div><span class="tag">Button</span></div>
+      <div class="grid">
+        <article class="card"><h3>项目操作</h3><div class="toolbar"><button class="button primary">创建项目</button><button class="button">取消</button><button class="button link">查看详情</button><button class="button danger">删除</button></div><p class="hint">Primary 主操作 · Default 次操作 · Link 局部跳转 · Danger 破坏性操作</p></article>
+        <article class="card"><h3>请求状态</h3><div class="toolbar"><button class="button primary">保存更改</button><button class="button" disabled>暂不可用</button></div><div class="alert">保存成功，修改已生效。</div><div class="alert error">保存失败，请检查表单内容后重试。</div></article>
+      </div>
+    </section>
+
+    <section>
+      <div class="head"><div><h2>表单与反馈</h2><p class="sub">标签、输入和校验信息放在同一字段组。</p></div><span class="tag">Form · Input · Alert</span></div>
+      <div class="grid">
+        <article class="card"><h3>创建项目</h3><div class="field"><label for="name">项目名称 <span style="color:#b42318">*</span></label><input id="name" class="input" placeholder="请输入项目名称"><span class="error">项目名称不能为空</span></div><div class="field"><label for="owner">负责人</label><select id="owner" class="input"><option>请选择成员</option></select></div><div class="toolbar"><button class="button primary">提交</button><button class="button">取消</button></div></article>
+        <article class="card"><h3>反馈方式</h3><div class="alert">页面级问题使用持续可见提示。</div><div class="alert error">失败状态配合文字说明，不单靠颜色识别。</div><p class="hint">短暂操作结果使用轻提示；需用户决策时才打开确认框。</p></article>
+      </div>
+    </section>
+
+    <section>
+      <div class="head"><div><h2>数据与上下文操作</h2><p class="sub">数据状态清晰，侧向操作尽量保留当前页面。</p></div><span class="tag">Table · Drawer</span></div>
+      <div class="grid">
+        <article class="card"><h3>项目成员</h3><div class="table-wrap"><table class="table"><thead><tr><th>成员</th><th>任务数</th><th>状态</th></tr></thead><tbody><tr><td>林一</td><td class="numeric">12</td><td><span class="status"><i></i>进行中</span></td></tr><tr><td>陈可</td><td class="numeric">8</td><td><span class="status"><i></i>进行中</span></td></tr></tbody></table></div><p class="hint">表格还需定义加载、空结果、失败和分页状态。</p></article>
+        <article class="card"><h3>侧向编辑</h3><div class="overlay-demo"><div class="drawer"><h4>任务详情</h4><p>查看当前任务信息并保留项目列表上下文。</p><div class="toolbar" style="margin-top:12px"><button class="button primary">保存</button><button class="button">关闭</button></div></div></div></article>
+      </div>
+    </section>
+
+    <section>
+      <div class="head"><div><h2>组件使用边界</h2><p class="sub">新页面按这些规则组合，具体主题值引用正式设计 token。</p></div></div>
+      <div class="rule-list">
+        <article class="rule"><b>复用优先</b><p>先查现有库组件和共享封装；只在有跨页面复用或业务行为时新增包装组件。</p></article>
+        <article class="rule"><b>主题统一</b><p>颜色、字体、间距与圆角从全局主题映射；避免局部覆写或依赖内部 DOM。</p></article>
+        <article class="rule"><b>状态完整</b><p>表单、表格和异步操作明确显示加载、成功、空结果和失败状态。</p></article>
+        <article class="rule"><b>AI 对话独立评估</b><p>当前不引入对话组件；智能体功能获批后评估 ant-design-x-vue。</p></article>
+      </div>
+      <div class="out">示意采用 HTML/CSS 呈现规范，不加载组件库。正式页面使用项目已有 Ant Design Vue 组件。</div>
+    </section>
+    <footer>有单 OMS Design-system · 组件规范</footer>
+  </main>
+</body>
+</html>

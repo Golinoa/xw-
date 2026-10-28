@@ -1,0 +1,206 @@
+{
+  "session": "oms-recheck",
+  "requests": {
+    "success": true,
+    "data": {
+      "requests": [
+        {
+          "headers": {
+            "Accept": "application/json",
+            "Referer": "https://trip.lipseo.com/orders/create",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+            "X-Requested-With": "XMLHttpRequest",
+            "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\""
+          },
+          "method": "GET",
+          "mimeType": "application/json",
+          "requestId": "14440.144",
+          "resourceType": "Fetch",
+          "responseHeaders": {
+            "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+            "cache-control": "no-cache, private",
+            "content-encoding": "gzip",
+            "content-type": "application/json",
+            "date": "Fri, 02 Oct 2026 08:19:29 GMT",
+            "server": "nginx",
+            "strict-transport-security": "max-age=31536000",
+            "vary": "Accept-Encoding"
+          },
+          "status": 200,
+          "timestamp": 1790929180923,
+          "url": "https://trip.lipseo.com/notifications"
+        },
+        {
+          "headers": {
+            "Referer": "https://trip.lipseo.com/orders/create",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+            "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\""
+          },
+          "method": "GET",
+          "mimeType": "application/json",
+          "requestId": "14440.145",
+          "resourceType": "Fetch",
+          "responseHeaders": {
+            "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+            "cache-control": "no-cache, private",
+            "content-encoding": "gzip",
+            "content-type": "application/json",
+            "date": "Fri, 02 Oct 2026 08:19:48 GMT",
+            "server": "nginx",
+            "strict-transport-security": "max-age=31536000",
+            "vary": "Accept-Encoding",
+            "x-ratelimit-limit": "60",
+            "x-ratelimit-remaining": "59"
+          },
+          "status": 200,
+          "timestamp": 1790929188373,
+          "url": "https://trip.lipseo.com/check-unique?table=suppliers&field=name&value=复刻补测_20261002_供应商"
+        },
+        {
+          "headers": {
+            "Accept": "application/json",
+            "Content-Type": "multipart/form-data; boundary=----[REDACTED_TOKEN]",
+            "Referer": "https://trip.lipseo.com/orders/create",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+            "X-CSRF-TOKEN": "[REDACTED]",
+            "X-Requested-With": "XMLHttpRequest",
+            "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\""
+          },
+          "method": "POST",
+          "mimeType": "application/json",
+          "postData": "------[REDACTED_TOKEN]\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\n复刻补测_20261002_供应商\r\n------[REDACTED_TOKEN]\r\nContent-Disposition: form-data; name=\"type\"\r\n\r\nlocal_agent\r\n------[REDACTED_TOKEN]\r\nContent-Disposition: form-data; name=\"contact_person\"\r\n\r\n测试联系人\r\n------[REDACTED_TOKEN]\r\nContent-Disposition: form-data; name=\"contact_phone\"\r\n\r\n[MASKED]\r\n------[REDACTED_TOKEN]\r\nContent-Disposition: form-data; name=\"remark\"\r\n\r\n\r\n------[REDACTED_TOKEN]--\r\n",
+          "requestId": "14440.146",
+          "resourceType": "Fetch",
+          "responseHeaders": {
+            "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+            "cache-control": "no-cache, private",
+            "content-encoding": "gzip",
+            "content-type": "application/json",
+            "date": "Fri, 02 Oct 2026 08:19:48 GMT",
+            "server": "nginx",
+            "strict-transport-security": "max-age=31536000",
+            "vary": "Accept-Encoding",
+            "x-ratelimit-limit": "30",
+            "x-ratelimit-remaining": "28"
+          },
+          "status": 200,
+          "timestamp": 1790929188971,
+          "url": "https://trip.lipseo.com/quick-create/supplier"
+        }
+      ]
+    },
+    "error": null
+  },
+  "details": [
+    {
+      "success": true,
+      "data": {
+        "headers": {
+          "Accept": "application/json",
+          "Referer": "https://trip.lipseo.com/orders/create",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "X-Requested-With": "XMLHttpRequest",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "GET",
+        "mimeType": "application/json",
+        "requestId": "14440.144",
+        "resourceType": "Fetch",
+        "responseBody": "{\"approval\": 0, \"confirm\": 0, \"complete\": 0, \"today_follow\": 0, \"overdue_lead\": 0, \"birthday\": 0, \"msg_count\": 3, \"msg_items\": [{\"id\": 2346, \"title\": \"付款审核通过 · 复刻调研_财务\", \"message\": \"¥4800.00 · ORD2026100100005\", \"link\": \"/orders/1069#payment-PMT2026100200001\", \"time\": \"16小时前\"}, {\"id\": 2345, \"title\": \"收款审核通过 · 马总\", \"message\": \"¥3000.00 · ORD2026100100005\", \"link\": \"/orders/1069#payment-RCP2026100100005\", \"time\": \"16小时前\"}, {\"id\": 2344, \"title\": \"收款审核通过 · 复刻调研_财务\", \"message\": \"¥3000.00 · ORD2026100100005\", \"link\": \"/orders/1069#payment-RCP2026100100005\", \"time\": \"16小时前\"}], \"total\": 3}",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "no-cache, private",
+          "content-encoding": "gzip",
+          "content-type": "application/json",
+          "date": "Fri, 02 Oct 2026 08:19:29 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790929180923,
+        "url": "https://trip.lipseo.com/notifications"
+      },
+      "error": null
+    },
+    {
+      "success": true,
+      "data": {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/orders/create",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "GET",
+        "mimeType": "application/json",
+        "requestId": "14440.145",
+        "resourceType": "Fetch",
+        "responseBody": "{\"exists\": false}",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "no-cache, private",
+          "content-encoding": "gzip",
+          "content-type": "application/json",
+          "date": "Fri, 02 Oct 2026 08:19:48 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding",
+          "x-ratelimit-limit": "60",
+          "x-ratelimit-remaining": "59"
+        },
+        "status": 200,
+        "timestamp": 1790929188373,
+        "url": "https://trip.lipseo.com/check-unique?table=suppliers&field=name&value=复刻补测_20261002_供应商"
+      },
+      "error": null
+    },
+    {
+      "success": true,
+      "data": {
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "multipart/form-data; boundary=----[REDACTED_TOKEN]",
+          "Referer": "https://trip.lipseo.com/orders/create",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "X-CSRF-TOKEN": "[REDACTED]",
+          "X-Requested-With": "XMLHttpRequest",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "POST",
+        "mimeType": "application/json",
+        "postData": "------[REDACTED_TOKEN]\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\n复刻补测_20261002_供应商\r\n------[REDACTED_TOKEN]\r\nContent-Disposition: form-data; name=\"type\"\r\n\r\nlocal_agent\r\n------[REDACTED_TOKEN]\r\nContent-Disposition: form-data; name=\"contact_person\"\r\n\r\n测试联系人\r\n------[REDACTED_TOKEN]\r\nContent-Disposition: form-data; name=\"contact_phone\"\r\n\r\n[MASKED]\r\n------[REDACTED_TOKEN]\r\nContent-Disposition: form-data; name=\"remark\"\r\n\r\n\r\n------[REDACTED_TOKEN]--\r\n",
+        "requestId": "14440.146",
+        "resourceType": "Fetch",
+        "responseBody": "{\"success\": true, \"data\": {\"id\": 388, \"name\": \"复刻补测_20261002_供应商\", \"type\": \"local_agent\", \"contact_person\": \"测试联系人\", \"contact_phone\": \"[MASKED]\"}}",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "no-cache, private",
+          "content-encoding": "gzip",
+          "content-type": "application/json",
+          "date": "Fri, 02 Oct 2026 08:19:48 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding",
+          "x-ratelimit-limit": "30",
+          "x-ratelimit-remaining": "28"
+        },
+        "status": 200,
+        "timestamp": 1790929188971,
+        "url": "https://trip.lipseo.com/quick-create/supplier"
+      },
+      "error": null
+    }
+  ]
+}

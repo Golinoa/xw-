@@ -1,0 +1,832 @@
+{
+  "url": "https://trip.lipseo.com/settings/approval",
+  "title": "飞途旅游订单系统",
+  "heading": "",
+  "meta": {
+    "csrf": true
+  },
+  "text": "飞途旅游订单系统\n导航菜单\n仪表盘\n新建订单\n订单管理\n收款管理\n付款管理\n批量结算\n账户余额\n审核工作台\n经营分析\n业绩统计\nCRM管理\n基础数据\n地区管理\n供应商管理\n线路管理\n客户管理\n操作日志\n系统设置\n系统设置\n用户管理\n角色权限\n飞途OMS v3.7 © 2026\n今天的努力，是明天成功的基石。\n有效期至 2026-10-05\n标签\n马总\n管理员\n公司设置\n操作安全\n付款方式\n线路类型\n供应商类型\n审批流程\n出发城市\n客户来源渠道\n订单管理\n收款审批流程\n设置收款需要经过的审批层级\n申请收款\n→\n1\n管理员\n计调员\n财务\n财务审核\n任何人\n马总\n→\n2\n管理员\n计调员\n财务\n管理员审核\n任何人\n马总\n→\n审核通过\n增加审批级\n审批通过后，确认收款\n付款审批流程\n设置付款需要经过的审批层级\n申请付款\n→\n1\n管理员\n计调员\n财务\n财务审批\n任何人\n马总\n→\n2\n管理员\n计调员\n财务\n管理员审批\n任何人\n马总\n→\n审批通过\n增加审批级\n审批通过后，确认付款\n撤回权限\n关闭执行人时 允许撤回已确认的收付款\n关闭后，管理员审核即自动确认，不可再撤回\n保存审批配置",
+  "forms": [
+    {
+      "action": "https://trip.lipseo.com/logout",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "退出登录",
+          "type": "submit",
+          "cls": "dropdown-item"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/settings/approval",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "receipt_role_0",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "finance",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "company_admin",
+              "t": "管理员"
+            },
+            {
+              "v": "operator",
+              "t": "计调员"
+            },
+            {
+              "v": "finance",
+              "t": "财务"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "receipt_user_0",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "任何人"
+            },
+            {
+              "v": "87",
+              "t": "马总"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "receipt_role_1",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "company_admin",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "company_admin",
+              "t": "管理员"
+            },
+            {
+              "v": "operator",
+              "t": "计调员"
+            },
+            {
+              "v": "finance",
+              "t": "财务"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "receipt_user_1",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "任何人"
+            },
+            {
+              "v": "87",
+              "t": "马总"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "receipt_executor_enabled",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "receipt_executor_enabled",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": false,
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "receipt_executor_role",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "finance",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "company_admin",
+              "t": "管理员"
+            },
+            {
+              "v": "operator",
+              "t": "计调员"
+            },
+            {
+              "v": "finance",
+              "t": "财务"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "payment_role_0",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "finance",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "company_admin",
+              "t": "管理员"
+            },
+            {
+              "v": "operator",
+              "t": "计调员"
+            },
+            {
+              "v": "finance",
+              "t": "财务"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "payment_user_0",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "任何人"
+            },
+            {
+              "v": "87",
+              "t": "马总"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "payment_role_1",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "company_admin",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "company_admin",
+              "t": "管理员"
+            },
+            {
+              "v": "operator",
+              "t": "计调员"
+            },
+            {
+              "v": "finance",
+              "t": "财务"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "payment_user_1",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "任何人"
+            },
+            {
+              "v": "87",
+              "t": "马总"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "payment_executor_enabled",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "payment_executor_enabled",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": false,
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "payment_executor_role",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "finance",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "company_admin",
+              "t": "管理员"
+            },
+            {
+              "v": "operator",
+              "t": "计调员"
+            },
+            {
+              "v": "finance",
+              "t": "财务"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "undo_when_exec_disabled",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "undo_when_exec_disabled",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": true,
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn btn-sm text-danger ap-delete"
+        },
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn btn-sm text-danger ap-delete"
+        },
+        {
+          "t": "增加审批级",
+          "type": "button",
+          "cls": "ap-add-btn ap-add-btn-green"
+        },
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn btn-sm text-danger ap-delete"
+        },
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn btn-sm text-danger ap-delete"
+        },
+        {
+          "t": "增加审批级",
+          "type": "button",
+          "cls": "ap-add-btn ap-add-btn-red"
+        },
+        {
+          "t": "保存审批配置",
+          "type": "submit",
+          "cls": "btn btn-primary px-5 py-2 ap-save-btn"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/password/update",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "current_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password_confirmation",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "修改密码",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    }
+  ],
+  "tables": [],
+  "buttons": [
+    {
+      "tag": "BUTTON",
+      "t": "确定关闭",
+      "cls": "btn btn-danger btn-sm px-4",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-outline-secondary btn-sm px-4",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "0",
+      "cls": "btn btn-sm position-relative d-flex align-items-center",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "标签",
+      "cls": "btn btn-sm d-flex align-items-center oms-tab-toggle",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "马总 管理员",
+      "cls": "btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-1",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "修改密码",
+      "cls": "dropdown-item",
+      "href": "#",
+      "toggle": "modal",
+      "target": "#changePasswordModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "退出登录",
+      "cls": "dropdown-item",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "增加审批级",
+      "cls": "ap-add-btn ap-add-btn-green",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "增加审批级",
+      "cls": "ap-add-btn ap-add-btn-red",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "保存审批配置",
+      "cls": "btn btn-primary px-5 py-2 ap-save-btn",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "×",
+      "cls": "lightbox-close",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认删除",
+      "cls": "btn btn-sm btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn px-4 py-2 confirm-btn-cancel",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认",
+      "cls": "btn px-4 py-2 confirm-btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "修改密码",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    }
+  ],
+  "modals": [
+    {
+      "id": "execConfirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "lightboxModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "opPasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "",
+          "type": "password",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "confirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "changePasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "current_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password_confirmation",
+          "type": "password",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "nav": [
+    {
+      "t": "仪表盘",
+      "href": "https://trip.lipseo.com"
+    },
+    {
+      "t": "新建订单",
+      "href": "https://trip.lipseo.com/orders/create"
+    },
+    {
+      "t": "订单管理",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "收款管理",
+      "href": "https://trip.lipseo.com/customer-payments"
+    },
+    {
+      "t": "付款管理",
+      "href": "https://trip.lipseo.com/supplier-payments"
+    },
+    {
+      "t": "批量结算",
+      "href": "https://trip.lipseo.com/supplier-payments/batch-settle"
+    },
+    {
+      "t": "账户余额",
+      "href": "https://trip.lipseo.com/account-balances"
+    },
+    {
+      "t": "审核工作台",
+      "href": "https://trip.lipseo.com/review"
+    },
+    {
+      "t": "经营分析",
+      "href": "https://trip.lipseo.com/reports"
+    },
+    {
+      "t": "业绩统计",
+      "href": "https://trip.lipseo.com/statistics"
+    },
+    {
+      "t": "CRM管理",
+      "href": "https://trip.lipseo.com/leads"
+    },
+    {
+      "t": "地区管理",
+      "href": "https://trip.lipseo.com/regions"
+    },
+    {
+      "t": "供应商管理",
+      "href": "https://trip.lipseo.com/suppliers"
+    },
+    {
+      "t": "线路管理",
+      "href": "https://trip.lipseo.com/routes"
+    },
+    {
+      "t": "客户管理",
+      "href": "https://trip.lipseo.com/customers"
+    },
+    {
+      "t": "操作日志",
+      "href": "https://trip.lipseo.com/audit-logs"
+    },
+    {
+      "t": "系统设置",
+      "href": "https://trip.lipseo.com/settings/company"
+    },
+    {
+      "t": "用户管理",
+      "href": "https://trip.lipseo.com/users"
+    },
+    {
+      "t": "角色权限",
+      "href": "https://trip.lipseo.com/roles"
+    },
+    {
+      "t": "帮助文档",
+      "href": "/docs"
+    },
+    {
+      "t": "更新记录",
+      "href": "/docs/changelog"
+    },
+    {
+      "t": "公司设置",
+      "href": "https://trip.lipseo.com/settings/company"
+    },
+    {
+      "t": "操作安全",
+      "href": "https://trip.lipseo.com/settings/operation"
+    },
+    {
+      "t": "付款方式",
+      "href": "https://trip.lipseo.com/settings/payment-methods"
+    },
+    {
+      "t": "线路类型",
+      "href": "https://trip.lipseo.com/settings/route-types"
+    },
+    {
+      "t": "供应商类型",
+      "href": "https://trip.lipseo.com/settings/supplier-types"
+    },
+    {
+      "t": "审批流程",
+      "href": "https://trip.lipseo.com/settings/approval"
+    },
+    {
+      "t": "出发城市",
+      "href": "https://trip.lipseo.com/settings/departure-cities"
+    },
+    {
+      "t": "客户来源渠道",
+      "href": "https://trip.lipseo.com/settings/customer-sources"
+    },
+    {
+      "t": "订单管理",
+      "href": "https://trip.lipseo.com/settings/order"
+    }
+  ],
+  "pills": [
+    "仪表盘",
+    "新建订单",
+    "订单管理",
+    "收款管理",
+    "付款管理",
+    "批量结算",
+    "账户余额",
+    "审核工作台",
+    "经营分析",
+    "业绩统计",
+    "CRM管理",
+    "地区管理",
+    "供应商管理",
+    "线路管理",
+    "客户管理",
+    "操作日志",
+    "系统设置",
+    "用户管理",
+    "角色权限",
+    "公司设置",
+    "操作安全",
+    "付款方式",
+    "线路类型",
+    "供应商类型",
+    "审批流程",
+    "出发城市",
+    "客户来源渠道",
+    "订单管理"
+  ]
+}

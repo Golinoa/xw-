@@ -1,0 +1,822 @@
+{
+  "url": "https://trip.lipseo.com/audit-logs",
+  "title": "飞途旅游订单系统",
+  "heading": "",
+  "meta": {
+    "csrf": true
+  },
+  "text": "飞途旅游订单系统\n导航菜单\n仪表盘\n新建订单\n订单管理\n收款管理\n付款管理\n批量结算\n账户余额\n审核工作台\n经营分析\n业绩统计\nCRM管理\n基础数据\n地区管理\n供应商管理\n线路管理\n客户管理\n操作日志\n系统设置\n系统设置\n用户管理\n角色权限\n飞途OMS v3.7 © 2026\n今天的努力，是明天成功的基石。\n有效期至 2026-10-05\n标签\n马总\n管理员\n操作日志\n\n记录系统中所有用户的操作行为，便于审计和追溯\n\n清空全部日志\n操作类型\n全部操作\n登录\n更新\n操作对象\n全部对象\n用户\n付款方式\n开始日期\n结束日期\n查询\n重置\n时间\t操作人\tIP\t操作\t操作详情\t\n2026-10-01 23:29\t马总\t125.46.***.**\t登录\t用户 #87\n登录用户\n\t\n\n2026-10-01 17:51\t马总\t125.46.***.**\t登录\t用户 #87\n登录用户\n\t\n\n2026-09-28 10:15\t马总\t125.46.***.**\t更新\t付款方式 #527\n更新付款方式\n\t\n\n2026-09-27 21:54\t马总\t125.46.***.**\t登录\t用户 #87\n登录用户\n\t",
+  "forms": [
+    {
+      "action": "https://trip.lipseo.com/logout",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "退出登录",
+          "type": "submit",
+          "cls": "dropdown-item"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/audit-logs/clear",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "_method",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "清空全部日志",
+          "type": "submit",
+          "cls": "btn btn-sm btn-delete"
+        }
+      ]
+    },
+    {
+      "action": "",
+      "method": "GET",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "SELECT",
+          "name": "action",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "全部操作"
+            },
+            {
+              "v": "login",
+              "t": "登录"
+            },
+            {
+              "v": "update",
+              "t": "更新"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "target_type",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "全部对象"
+            },
+            {
+              "v": "user",
+              "t": "用户"
+            },
+            {
+              "v": "payment_method",
+              "t": "付款方式"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "date_from",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "开始日期",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "date_to",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "结束日期",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "查询",
+          "type": "submit",
+          "cls": "btn btn-primary btn-sm oms-filter-btn"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/audit-logs/12928",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "_method",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "submit",
+          "cls": "btn btn-sm btn-delete py-0 px-1 tx-xxs"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/audit-logs/12917",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "_method",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "submit",
+          "cls": "btn btn-sm btn-delete py-0 px-1 tx-xxs"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/audit-logs/12589",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "_method",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "submit",
+          "cls": "btn btn-sm btn-delete py-0 px-1 tx-xxs"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/audit-logs/12566",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "_method",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "submit",
+          "cls": "btn btn-sm btn-delete py-0 px-1 tx-xxs"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/password/update",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "current_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password_confirmation",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "修改密码",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "headers": [
+        "时间",
+        "操作人",
+        "IP",
+        "操作",
+        "操作详情",
+        ""
+      ],
+      "rows": 4,
+      "sample": [
+        [
+          "2026-10-01 23:29",
+          "马总",
+          "125.46.***.**",
+          "登录",
+          "用户 #87 登录用户",
+          ""
+        ],
+        [
+          "2026-10-01 17:51",
+          "马总",
+          "125.46.***.**",
+          "登录",
+          "用户 #87 登录用户",
+          ""
+        ],
+        [
+          "2026-09-28 10:15",
+          "马总",
+          "125.46.***.**",
+          "更新",
+          "付款方式 #527 更新付款方式",
+          ""
+        ],
+        [
+          "2026-09-27 21:54",
+          "马总",
+          "125.46.***.**",
+          "登录",
+          "用户 #87 登录用户",
+          ""
+        ]
+      ]
+    }
+  ],
+  "buttons": [
+    {
+      "tag": "BUTTON",
+      "t": "0",
+      "cls": "btn btn-sm position-relative d-flex align-items-center",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "标签",
+      "cls": "btn btn-sm d-flex align-items-center oms-tab-toggle",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "马总 管理员",
+      "cls": "btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-1",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "修改密码",
+      "cls": "dropdown-item",
+      "href": "#",
+      "toggle": "modal",
+      "target": "#changePasswordModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "退出登录",
+      "cls": "dropdown-item",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "清空全部日志",
+      "cls": "btn btn-sm btn-delete",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "查询",
+      "cls": "btn btn-primary btn-sm oms-filter-btn",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "重置",
+      "cls": "btn btn-sm btn-muted oms-filter-btn",
+      "href": "https://trip.lipseo.com/audit-logs",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "×",
+      "cls": "lightbox-close",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认删除",
+      "cls": "btn btn-sm btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn px-4 py-2 confirm-btn-cancel",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认",
+      "cls": "btn px-4 py-2 confirm-btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "修改密码",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "«",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "‹",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "›",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "»",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "清除",
+      "cls": "",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "今天",
+      "cls": "dtp-today",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "«",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "‹",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "›",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "»",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "清除",
+      "cls": "",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "今天",
+      "cls": "dtp-today",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    }
+  ],
+  "modals": [
+    {
+      "id": "lightboxModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "opPasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "",
+          "type": "password",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "confirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "changePasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "current_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password_confirmation",
+          "type": "password",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "nav": [
+    {
+      "t": "仪表盘",
+      "href": "https://trip.lipseo.com"
+    },
+    {
+      "t": "新建订单",
+      "href": "https://trip.lipseo.com/orders/create"
+    },
+    {
+      "t": "订单管理",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "收款管理",
+      "href": "https://trip.lipseo.com/customer-payments"
+    },
+    {
+      "t": "付款管理",
+      "href": "https://trip.lipseo.com/supplier-payments"
+    },
+    {
+      "t": "批量结算",
+      "href": "https://trip.lipseo.com/supplier-payments/batch-settle"
+    },
+    {
+      "t": "账户余额",
+      "href": "https://trip.lipseo.com/account-balances"
+    },
+    {
+      "t": "审核工作台",
+      "href": "https://trip.lipseo.com/review"
+    },
+    {
+      "t": "经营分析",
+      "href": "https://trip.lipseo.com/reports"
+    },
+    {
+      "t": "业绩统计",
+      "href": "https://trip.lipseo.com/statistics"
+    },
+    {
+      "t": "CRM管理",
+      "href": "https://trip.lipseo.com/leads"
+    },
+    {
+      "t": "地区管理",
+      "href": "https://trip.lipseo.com/regions"
+    },
+    {
+      "t": "供应商管理",
+      "href": "https://trip.lipseo.com/suppliers"
+    },
+    {
+      "t": "线路管理",
+      "href": "https://trip.lipseo.com/routes"
+    },
+    {
+      "t": "客户管理",
+      "href": "https://trip.lipseo.com/customers"
+    },
+    {
+      "t": "操作日志",
+      "href": "https://trip.lipseo.com/audit-logs"
+    },
+    {
+      "t": "系统设置",
+      "href": "https://trip.lipseo.com/settings/company"
+    },
+    {
+      "t": "用户管理",
+      "href": "https://trip.lipseo.com/users"
+    },
+    {
+      "t": "角色权限",
+      "href": "https://trip.lipseo.com/roles"
+    },
+    {
+      "t": "帮助文档",
+      "href": "/docs"
+    },
+    {
+      "t": "更新记录",
+      "href": "/docs/changelog"
+    },
+    {
+      "t": "重置",
+      "href": "https://trip.lipseo.com/audit-logs"
+    }
+  ],
+  "pills": [
+    "仪表盘",
+    "新建订单",
+    "订单管理",
+    "收款管理",
+    "付款管理",
+    "批量结算",
+    "账户余额",
+    "审核工作台",
+    "经营分析",
+    "业绩统计",
+    "CRM管理",
+    "地区管理",
+    "供应商管理",
+    "线路管理",
+    "客户管理",
+    "操作日志",
+    "系统设置",
+    "用户管理",
+    "角色权限"
+  ]
+}

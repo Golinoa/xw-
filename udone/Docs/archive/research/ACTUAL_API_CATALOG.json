@@ -1,0 +1,779 @@
+{
+  "_readme": "{'purpose': '浏览器真实发出的请求与实际响应目录（脱敏）。只记录本次实测捕获到的请求；未捕获的一律不写。', 'captured_at': '2026-10-01/02 Asia/Shanghai（含第二、三、四轮补充）', 'target': 'https://trip.lipseo.com', 'tool': 'agent-browser CLI 0.27.0 (network requests / network request / network har)', 'sanitizer': 'scripts/sanitize_evidence.py', 'redaction': '已去除/替换 Cookie、Authorization、CSRF token 值、密码、口令；手机号与邮箱按规则掩码。证据中不含任何凭证值。', 'total_requests_captured': 2902 条请求条目（885 个唯一 requestId、77 个(method,url) 组合；含 /notifications 轮询等重复快照，非独立业务请求）, 'evidence_files': {'network_01_login.json': '登录页与登录提交', 'network_02_nav_sweep.json': '全站导航遍历（12+ 页面）', 'network_03_supplier_create.json': '供应商创建提交', 'network_04_master_data.json': '线路/客户/线索创建与校验', 'network_05_order_create.json': '订单创建提交（multipart）', 'network_06_receipt_user.json': '收款申请与用户创建', 'network_07_ai_parse.json': 'AI 解析请求与响应', 'network_08_cleanup.json': '锁团/解锁/删除等收尾动作与清理', 'network_09_supplement.json': '第二轮补充：日历/对账/取消/恢复/导出'}, 'levels': {'confirmed': '已捕获请求，且（多数）取得响应体或页面回读结果', 'confirmed_partial': '已捕获请求，但响应状态码未被工具可靠回填（redirect 场景），以页面回读为准', 'frontend_declared': '仅来自 DOM/form 属性，未捕获到实际请求'}}\n第四轮（2026-10-02 续做）证据口径更正：40 条里只有 `POST /orders/{id}/confirm-booking` 被线上抓包落到 evidence/network_12_dict_preorder.json；其余本轮实测端点（tourists / settings-company / reject / permissions / follow-ups / batch-settle）都是真实 UI 提交并回读验证过的，但**当时未做网络抓包采集**，条目新增字段 `capture=ui-submitted-not-captured` 表示「实测过、无抓包证据」。测试数据已按 TEST_CHAIN 第 7 节清理，故无留存报文。\n证据口径二次复核（最终）：全部条目均已带 capture 字段；wire-captured 仅 1 条（POST /orders/{id}/confirm-booking，证据 network_12_dict_preorder.json，目标订单 1071），其余条目无论 evidence 字段里是否出现 network_1x 文件名，都不构成该端点的线上报文证据。 补充精确口径：第四轮唯一被抓包的写请求是 POST /orders/1071/confirm-booking，requestId 在 network_12–19 中重复出现（同一请求 8 次快照）；只入证请求侧，未入证响应侧。第四轮 UI 层实际操作的订单是 1072，那条 confirm-booking 未被抓包。 capture 字段取值：wire-captured（前几轮完整请求+响应报文）/ wire-captured-request-only（本轮只入证请求侧）/ ui-submitted-not-captured（本轮真实 UI 提交过但没抓包）/ ui-confirmed-no-wire（界面与回读确认过、但从未抓到报文）。读表时先按这个字段分档，别只看 evidence 里的文件名。",
+  "server_profile": {
+    "observed": {
+      "server_header": "nginx",
+      "cache_control": "no-cache, private",
+      "rate_limit_headers": "x-ratelimit-limit=10, x-ratelimit-remaining=9（登录页响应）",
+      "csrf": "表单隐藏字段 _token；AJAX 使用 X-CSRF-TOKEN 请求头；页面 <meta name=csrf-token>",
+      "method_override": "编辑/删除使用 POST + 隐藏字段 _method=PUT/DELETE",
+      "content_types_seen": [
+        "application/x-www-form-urlencoded",
+        "multipart/form-data",
+        "application/json"
+      ],
+      "auth": "会话 Cookie + CSRF（名称记录，值不记录）"
+    },
+    "level": "confirmed"
+  },
+  "entries": [
+    {
+      "page": "登录页 /login",
+      "trigger": "打开登录页",
+      "method": "GET",
+      "path": "/login",
+      "response": {
+        "status": 200,
+        "content_type": "text/html; charset=utf-8"
+      },
+      "level": "confirmed",
+      "evidence": "network_01_login.json",
+      "capture": "wire-captured"
+    },
+    {
+      "page": "登录页 /login",
+      "trigger": "提交用户名密码",
+      "method": "POST",
+      "path": "/login",
+      "content_type": "application/x-www-form-urlencoded",
+      "body_fields": [
+        "_token",
+        "username",
+        "password",
+        "remember(checkbox, 未勾选时不存在)"
+      ],
+      "response": {
+        "status": "302(重定向至 /)",
+        "note": "工具对重定向场景未稳定回填状态码，以跳转结果为准"
+      },
+      "level": "confirmed_partial",
+      "evidence": "network_01_login.json",
+      "notes": "密码与 _token 值在证据中已替换为 [REDACTED]",
+      "capture": "wire-captured"
+    },
+    {
+      "page": "全局",
+      "trigger": "退出登录",
+      "method": "POST",
+      "path": "/logout",
+      "body_fields": [
+        "_token"
+      ],
+      "level": "frontend_declared",
+      "evidence": "evidence/pages/dashboard.json",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "全局",
+      "trigger": "修改密码弹窗",
+      "method": "POST",
+      "path": "/password/update",
+      "body_fields": [
+        "_token",
+        "current_password",
+        "new_password",
+        "new_password_confirmation"
+      ],
+      "level": "frontend_declared",
+      "evidence": "evidence/pages/dashboard.json",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "供应商管理",
+      "trigger": "添加供应商保存",
+      "method": "POST",
+      "path": "/suppliers",
+      "content_type": "application/x-www-form-urlencoded",
+      "body_fields": [
+        "_token",
+        "name",
+        "type",
+        "settlement_type",
+        "contact_person",
+        "contact_phone",
+        "remark",
+        "is_active"
+      ],
+      "response": {
+        "status": "重定向回 /suppliers，列表出现新记录"
+      },
+      "level": "confirmed",
+      "evidence": "network_03_supplier_create.json",
+      "capture": "wire-captured"
+    },
+    {
+      "page": "线路管理",
+      "trigger": "删除线路",
+      "method": "POST",
+      "path": "/routes/{id}",
+      "body_fields": [
+        "_token",
+        "_method=DELETE"
+      ],
+      "level": "confirmed",
+      "evidence": "network_08_cleanup.json",
+      "capture": "wire-captured"
+    },
+    {
+      "page": "客户管理",
+      "trigger": "删除客户",
+      "method": "POST",
+      "path": "/customers/{id}",
+      "body_fields": [
+        "_token",
+        "_method=DELETE"
+      ],
+      "level": "confirmed",
+      "evidence": "network_08_cleanup.json",
+      "capture": "wire-captured"
+    },
+    {
+      "page": "客户管理",
+      "trigger": "必填校验（绕过前端 required 后提交空表单）",
+      "method": "POST",
+      "path": "/customers",
+      "result": "页面返回校验提示「姓名 不能为空。」，未创建记录",
+      "level": "confirmed",
+      "evidence": "network_04_master_data.json",
+      "capture": "wire-captured"
+    },
+    {
+      "page": "新建订单 /orders/create",
+      "trigger": "创建订单提交",
+      "method": "POST",
+      "path": "/orders",
+      "content_type": "multipart/form-data",
+      "body_fields": [
+        "_token",
+        "from_ai",
+        "order_type",
+        "customer_id",
+        "customer_name",
+        "customer_phone",
+        "adult_count",
+        "child_count",
+        "number_of_people",
+        "region_id",
+        "route_id",
+        "product_name",
+        "tour_code",
+        "booking_date",
+        "departure_date",
+        "return_date",
+        "product_details",
+        "order_unit_price",
+        "order_child_unit_price",
+        "total_amount",
+        "order_total_remark",
+        "supplier_id",
+        "supplier_adult_unit_price",
+        "supplier_child_unit_price",
+        "supplier_cost",
+        "supplier_people",
+        "supplier_cost_remark",
+        "contract_files[]"
+      ],
+      "response": {
+        "status": "重定向至 /orders/1069",
+        "order_no": "ORD2026100100005"
+      },
+      "level": "confirmed",
+      "evidence": "UI 实测+回读、未抓包（network_05 为第三轮抓包，network_12/13 均非本端点的报文证据）",
+      "notes": "number_of_people 在表单中出现两次（客户区与供应商区各一个隐藏域）",
+      "capture": "ui-submitted-not-captured"
+    },
+    {
+      "page": "订单详情",
+      "trigger": "点击锁团并确认",
+      "method": "POST",
+      "path": "/orders/{id}/complete",
+      "content_type": "application/x-www-form-urlencoded",
+      "body_fields": [
+        "_token"
+      ],
+      "result": "订单状态 进行中 → 已锁团",
+      "level": "confirmed",
+      "evidence": "network_08_cleanup.json",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "订单详情",
+      "trigger": "点击解锁并填写原因",
+      "method": "POST",
+      "path": "/orders/{id}/unlock",
+      "content_type": "application/x-www-form-urlencoded",
+      "body_fields": [
+        "_token",
+        "reason"
+      ],
+      "result": "订单状态 已锁团 → 进行中",
+      "level": "confirmed",
+      "evidence": "network_08_cleanup.json",
+      "notes": "解锁原因为必填（textarea required）",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "订单列表",
+      "trigger": "勾选订单后点击批量删除",
+      "method": "POST",
+      "path": "/orders/batch",
+      "content_type": "application/x-www-form-urlencoded",
+      "body_fields": [
+        "_token",
+        "batch_action=delete",
+        "ids[]"
+      ],
+      "result": "提示「订单将移入回收站」；列表回到空态",
+      "level": "confirmed",
+      "evidence": "network_08_cleanup.json",
+      "notes": "批量条还提供 确认对账 / 取消对账 / 批量锁团",
+      "capture": "wire-captured"
+    },
+    {
+      "page": "收付款申请页",
+      "trigger": "选择订单后加载应收/应付项目",
+      "method": "GET",
+      "path": "/orders/order-items/options",
+      "query": [
+        "order_id",
+        "type=receivable|payable"
+      ],
+      "request_headers": [
+        "Accept: application/json"
+      ],
+      "response": {
+        "status": 200,
+        "content_type": "application/json",
+        "shape": "数组[{id, name, remark, amount, remaining, effective_remaining, supplier_id, supplier_name, supplier_contact, supplier_phone, label}]",
+        "sample_redacted": {
+          "id": 2911,
+          "name": "基础团款",
+          "remark": null,
+          "amount": 7500,
+          "remaining": 7500,
+          "effective_remaining": 7500,
+          "supplier_id": null,
+          "supplier_name": null,
+          "label": "基础团款 ¥7,500.00（剩 ¥7,500.00）"
+        }
+      },
+      "level": "confirmed",
+      "evidence": "network_06_receipt_user.json / network_08_cleanup.json",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "申请收款 /customer-payments/create",
+      "trigger": "提交审核",
+      "method": "POST",
+      "path": "/customer-payments",
+      "content_type": "multipart/form-data",
+      "body_fields": [
+        "_token",
+        "order_id",
+        "order_item_id",
+        "amount",
+        "payment_method",
+        "receipt_no",
+        "bank_transaction_no",
+        "receipt_files[]",
+        "remark"
+      ],
+      "result": "重定向至订单详情；收款记录状态 待审核",
+      "level": "confirmed",
+      "evidence": "network_06_receipt_user.json",
+      "notes": "payment_method 提交的是方式名称（如「微信」），不是字典 ID",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "申请付款 /supplier-payments/create",
+      "trigger": "提交审核",
+      "method": "POST",
+      "path": "/supplier-payments",
+      "content_type": "multipart/form-data",
+      "body_fields": [
+        "_token",
+        "order_id",
+        "order_item_id",
+        "supplier_name",
+        "supplier_contact",
+        "supplier_phone",
+        "amount",
+        "payment_method",
+        "invoice_no",
+        "bank_transaction_no",
+        "account_no",
+        "remark",
+        "invoice_files[]"
+      ],
+      "level": "confirmed",
+      "evidence": "network_08_cleanup.json",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "审核工作台 /review",
+      "trigger": "财务角色点击通过（第 1 级）",
+      "method": "POST",
+      "path": "/review/customer-payments/{id}/approve",
+      "content_type": "application/x-www-form-urlencoded",
+      "body_fields": [
+        "_token"
+      ],
+      "result": "进入第 2 级（管理员审核）",
+      "level": "confirmed",
+      "evidence": "审批阶段证据（admin/fin 会话）",
+      "notes": "按钮 data-action 暴露该 URL；通过后无独立「确认」步骤，最终审批后自动变为 已收款",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "审核工作台 /review",
+      "trigger": "管理员通过（第 2 级）",
+      "method": "POST",
+      "path": "/review/supplier-payments/{id}/approve",
+      "content_type": "application/x-www-form-urlencoded",
+      "body_fields": [
+        "_token"
+      ],
+      "result": "付款记录自动变为 已付款",
+      "level": "confirmed",
+      "evidence": "审批阶段证据",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "新建订单",
+      "trigger": "粘贴聊天记录后点击「分析并填入表单」",
+      "method": "POST",
+      "path": "/orders/ai-parse",
+      "content_type": "application/json",
+      "request_headers": [
+        "Content-Type: application/json",
+        "Accept: application/json",
+        "X-CSRF-TOKEN"
+      ],
+      "body_fields": [
+        "raw_text"
+      ],
+      "response": {
+        "status": 200,
+        "content_type": "application/json",
+        "shape": "{success, data{customer_name,customer_phone,product_name,route_name,region_name,region_chain[],departure_city,departure_date,return_date,adult_count,child_count,total_amount,product_details,_customer_id,_route_id,_route_days,_route_city,_route_region_id}, fields{<字段名>: ok|required|suggested}, enriched{customer,supplier,route}}",
+        "streaming": false,
+        "side_effect": "服务端已创建客户与线路（实测 _customer_id/_route_id 对应记录真实存在）"
+      },
+      "level": "confirmed",
+      "evidence": "network_07_ai_parse.json",
+      "capture": "wire-captured"
+    },
+    {
+      "page": "用户管理",
+      "trigger": "创建用户",
+      "method": "POST",
+      "path": "/users",
+      "content_type": "application/x-www-form-urlencoded",
+      "body_fields": [
+        "_token",
+        "name",
+        "username",
+        "email",
+        "password",
+        "phone",
+        "role",
+        "is_active"
+      ],
+      "level": "confirmed",
+      "evidence": "network_06_receipt_user.json",
+      "notes": "role 取值实测为 company_admin / operator / finance",
+      "capture": "wire-captured"
+    },
+    {
+      "page": "用户管理",
+      "trigger": "删除用户",
+      "method": "POST",
+      "path": "/users/{id}",
+      "body_fields": [
+        "_token",
+        "_method=DELETE"
+      ],
+      "result": "请求已发出两次，但用户仍存在；改为取消 is_active 后登录被拒绝",
+      "level": "confirmed_partial",
+      "evidence": "network_08_cleanup.json",
+      "notes": "删除未生效原因待确认（疑似存在关联业务记录）；已改停用处理",
+      "capture": "wire-captured"
+    },
+    {
+      "page": "角色权限",
+      "trigger": "打开角色权限配置",
+      "method": "GET",
+      "path": "/roles/{role_id}/permissions",
+      "level": "confirmed",
+      "evidence": "未抓包。第四轮 UI 提交成功并回读（32→33→32，已还原）；测试数据已清理",
+      "capture": "ui-submitted-not-captured"
+    },
+    {
+      "page": "公司设置",
+      "trigger": "保存公司信息",
+      "method": "POST",
+      "path": "/settings/company",
+      "content_type": "multipart/form-data",
+      "body_fields": [
+        "_token",
+        "delete_logo",
+        "company_name",
+        "company_short",
+        "company_phone",
+        "company_address",
+        "sidebar_theme",
+        "app_font_size",
+        "company_logo"
+      ],
+      "level": "confirmed",
+      "evidence": "未抓包。第四轮 UI 提交成功并回读（sidebar_theme 持久化、已还原 dark）；测试数据已清理",
+      "capture": "ui-submitted-not-captured"
+    },
+    {
+      "page": "审批设置",
+      "trigger": "保存审批配置",
+      "method": "POST",
+      "path": "/settings/approval",
+      "body_fields": [
+        "_token",
+        "receipt_role_0",
+        "receipt_user_0",
+        "receipt_role_1",
+        "receipt_user_1",
+        "receipt_executor_enabled",
+        "receipt_executor_role",
+        "payment_role_0",
+        "payment_user_0",
+        "payment_role_1",
+        "payment_user_1",
+        "payment_executor_enabled",
+        "payment_executor_role",
+        "undo_when_exec_disabled"
+      ],
+      "level": "frontend_declared",
+      "evidence": "evidence/pages/settings_approval.json",
+      "notes": "当前配置：收款/付款均为 2 级，第 1 级 finance、第 2 级 company_admin，指定人为「任何人」",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "订单设置",
+      "trigger": "保存列设置与业务设置",
+      "method": "POST",
+      "path": "/settings/order",
+      "body_fields": [
+        "_token",
+        "columns[]",
+        "column_order",
+        "order_auto_complete",
+        "commission_rate"
+      ],
+      "level": "frontend_declared",
+      "evidence": "evidence/pages/settings_order.json",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "全部页面",
+      "trigger": "页面导航",
+      "method": "GET",
+      "paths": [
+        "/",
+        "/orders",
+        "/orders/create",
+        "/customer-payments",
+        "/supplier-payments",
+        "/supplier-payments/batch-settle",
+        "/account-balances",
+        "/review",
+        "/reports",
+        "/statistics",
+        "/leads",
+        "/leads/list",
+        "/regions",
+        "/suppliers",
+        "/routes",
+        "/customers",
+        "/audit-logs",
+        "/settings/company",
+        "/settings/operation",
+        "/settings/payment-methods",
+        "/settings/route-types",
+        "/settings/supplier-types",
+        "/settings/approval",
+        "/settings/departure-cities",
+        "/settings/customer-sources",
+        "/settings/order",
+        "/users",
+        "/users/create",
+        "/roles"
+      ],
+      "response": {
+        "content_type": "text/html; charset=utf-8"
+      },
+      "level": "confirmed",
+      "evidence": "network_02_nav_sweep.json",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "订单列表",
+      "trigger": "切换到日历视图",
+      "method": "GET",
+      "path": "/orders/calendar-data",
+      "query": [
+        "year",
+        "month"
+      ],
+      "response": {
+        "status": 200,
+        "content_type": "application/json",
+        "shape": "{日期: {dep:[{id,order_no,name,product,amount,status}], ret:[...]}}  dep=出发、ret=回团",
+        "sample_redacted": {
+          "2026-10-20": {
+            "dep": [
+              {
+                "id": 1070,
+                "order_no": "ORD2026100200001",
+                "name": "客户名",
+                "product": "线路名",
+                "amount": 4000,
+                "status": "active"
+              }
+            ]
+          }
+        }
+      },
+      "level": "confirmed",
+      "evidence": "network_09_supplement.json",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "订单编辑",
+      "trigger": "保存编辑",
+      "method": "POST",
+      "path": "/orders/{id}",
+      "body_fields": [
+        "_token",
+        "_method=PUT",
+        "其余同创建字段",
+        "delete_contract_files",
+        "contract_files[]"
+      ],
+      "level": "confirmed",
+      "evidence": "UI 实测+回读、未抓包（network_15_attachment.json 仅该阶段页面环境，不是本端点报文）",
+      "notes": "回显金额为两位小数（2000.00）；customer_phone 回显为脱敏值 138****8004，直接保存会污染真实号码",
+      "capture": "ui-submitted-not-captured"
+    },
+    {
+      "page": "订单列表",
+      "trigger": "勾选后点击确认对账",
+      "method": "POST",
+      "path": "/orders/batch-reconcile",
+      "body_fields": [
+        "_token",
+        "ids[]"
+      ],
+      "result": "提示「仅做对账标记，不影响订单数据」；订单状态不变",
+      "level": "confirmed",
+      "evidence": "network_09_supplement.json",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "订单详情",
+      "trigger": "取消订单",
+      "method": "POST",
+      "path": "/orders/{id}/cancel",
+      "body_fields": [
+        "_token"
+      ],
+      "result": "进行中 → 已取消；快捷操作变「恢复订单」",
+      "level": "confirmed",
+      "evidence": "network_09_supplement.json",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "订单详情",
+      "trigger": "恢复订单",
+      "method": "POST",
+      "path": "/orders/{id}/recover",
+      "body_fields": [
+        "_token"
+      ],
+      "result": "已取消 → 进行中",
+      "level": "confirmed",
+      "evidence": "network_09_supplement.json",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "订单列表",
+      "trigger": "点击导出",
+      "method": "GET",
+      "path": "/orders/export",
+      "response": {
+        "status": 200,
+        "content_type": "text/csv; charset=UTF-8",
+        "content_disposition": "attachment; filename=\"orders_YYYYMMDD_HHMMSS.csv\""
+      },
+      "level": "confirmed",
+      "evidence": "network_09_supplement.json",
+      "notes": "响应体为下载流，未被抓包工具保留；仅取得响应头",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "订单回收站",
+      "trigger": "打开回收站",
+      "method": "GET",
+      "path": "/orders/trash",
+      "level": "confirmed",
+      "evidence": "evidence/pages/orders_trash.json",
+      "notes": "列：订单号/客户/产品/订单金额/原状态/创建人/删除时间；提示「恢复的订单将回到原来的状态，彻底删除后不可恢复」",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "CRM",
+      "trigger": "打开公海/回收站/设置",
+      "method": "GET",
+      "paths": [
+        "/leads/pool",
+        "/leads/trash",
+        "/leads/settings"
+      ],
+      "level": "confirmed",
+      "evidence": "evidence/pages/leads_pool.json 等",
+      "notes": "公海列含原负责人；CRM 设置含公海超时天数与阶段管理（可标成交/放弃终态，第一个为默认阶段）",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "客户标签",
+      "trigger": "打开标签管理",
+      "method": "GET",
+      "path": "/customers/tags",
+      "level": "confirmed",
+      "evidence": "evidence/pages/customer_tags.json",
+      "notes": "editTagForm：name(必填)+color(radio)；保存接口未执行",
+      "capture": "ui-confirmed-no-wire"
+    },
+    {
+      "page": "订单详情（预订单状态）/orders/{id}",
+      "trigger": "预订单状态下点「确认出团」→ 二级确认弹窗「确认该订单已确定出团，转为进行中？」→ 点「确认」",
+      "method": "POST",
+      "path": "/orders/{id}/confirm-booking",
+      "request": {
+        "content_type": "application/x-www-form-urlencoded（表单只需 _token）",
+        "note": "触发点是 <form id=showConfirmBooking action=/orders/{id}/confirm-booking method=POST>，按钮 onclick=showConfirmModal(...)，回调里 document.getElementById('showConfirmBooking').submit()"
+      },
+      "response": {
+        "status": "未抓到（快照时响应未返回）",
+        "effect": "订单状态 booking(预订单) → active(进行中)；详情页状态徽章同步变化",
+        "note": "原记 302，现已降级：证据文件里该请求无 status 字段，属页面观察/推演，未经报文证实。"
+      },
+      "level": "confirmed",
+      "evidence": "network_12_dict_preorder.json + network_13–19（同一 requestId 38272164AA09AA0DDD1FF47020585426 被 8 个阶段文件各快照一次，是 1 个请求不是 8 个）；注意抓到的是订单 1071，不是第四轮新造的 1072",
+      "note": "报文只抓到请求侧（headers/postData/method/url），没有 response.status —— 快照时该请求仍在进行中，响应未入证。响应侧结论（状态 booking→active、302）来自页面回读，不是此文件证据；catalog 里原写 status=302 应视为「未由报文证实」。另外本轮 UI 实际对订单 1072 点了「确认出团」，那条请求没被抓包。",
+      "capture": "wire-captured-request-only"
+    },
+    {
+      "page": "订单详情 → 快捷操作「游客名单」",
+      "trigger": "点「游客名单（0人）」openTouristModal() → 「添加游客」→ 逐行填 姓名/手机/证件类型/证件号/类型/年龄/性别/备注 → 点「保存」",
+      "method": "POST",
+      "path": "/orders/{id}/tourists",
+      "request": {
+        "note": "表格行内控件无 name，由 JS 收集成数组提交；必填校验：姓名*、证件号*；顶部有「人数不匹配」实时校验（成人差 N 人 / 儿童差 N 人）；证件类型枚举：身份证/护照/港澳通行证/台胞证"
+      },
+      "response": {
+        "status": 200,
+        "effect": "订单详情「游客名单」计数由 0人 → 3人"
+      },
+      "level": "confirmed",
+      "evidence": "未抓包。第四轮 UI 提交成功并回读（游客 0人→3人）；测试数据已清理，无留存证据文件",
+      "capture": "ui-submitted-not-captured"
+    },
+    {
+      "page": "审核工作台 → 驳回",
+      "trigger": "直接 POST /review/customer-payments/{id}/reject（form_data: _token + reject_reason）",
+      "method": "POST",
+      "path": "/review/customer-payments/{id}/reject",
+      "request": {
+        "fields": [
+          "_token",
+          "reject_reason"
+        ],
+        "note": "前端入口为 paymentRejectModal，按钮只在有审核权限的角色 / 他人提交的申请上可见"
+      },
+      "response": {
+        "status": 403,
+        "note": "当前账号（admin_32、管理员角色、且是这条收款申请的创建人）被权限层拒绝。对照实验：不存在的路径返回 404，说明该路由存在且被授权中间件拦截。撤回路径 /review/customer-payments/{id}/withdraw 与 /undo 均 404（不存在）。"
+      },
+      "level": "confirmed（路径存在，权限不足）",
+      "evidence": "未抓包。403 由注入 fetch 直接请求得到；对照实验（404/403/200）未单独落证据文件",
+      "note": "实测阻塞：只有一个可用账号（admin_32），无法构造「他人提交 + 本人有财务审核权限」的组合，UI 路径的驳回 / 通过未能完整跑通。",
+      "capture": "ui-submitted-not-captured"
+    },
+    {
+      "page": "角色权限配置 /roles/{role_id}/permissions",
+      "trigger": "点角色卡片「配置权限」→ 勾选/取消 60 个权限复选框 → 点「保存权限」",
+      "method": "POST",
+      "path": "/roles/{role_id}/permissions",
+      "request": {
+        "content_type": "application/x-www-form-urlencoded",
+        "fields": [
+          "permissions[] ×N（复选框 name 均为 permissions[]）",
+          "全选 / 清空"
+        ],
+        "note": "实测流程：勾选一个未选权限 → 保存 → 计数 32→33 → 再取消并保存 → 回到 32（数据已还原，未残留变更）"
+      },
+      "response": {
+        "status": "302",
+        "location": "/roles"
+      },
+      "level": "confirmed",
+      "evidence": "未抓包。第四轮 UI 提交成功并回读（32→33→32，已还原）；测试数据已清理",
+      "capture": "ui-submitted-not-captured"
+    },
+    {
+      "page": "线索详情 /leads/{id}",
+      "trigger": "选「阶段」下拉（阶段不变/新线索/需求沟通/报价中/方案确认/已成单/已放弃）+ 填跟进内容 → 点「保存」",
+      "method": "POST",
+      "path": "/leads/{id}/follow-ups",
+      "request": {
+        "fields": [
+          "stage",
+          "content",
+          "跟进类型（电话/微信/见面/邮件/其他，前端预置按钮）",
+          "报价操作（新建/发送/客户接受/修改/删除）"
+        ]
+      },
+      "response": {
+        "status": "302",
+        "effect": "线索列表阶段列 由「新线索」→「需求沟通」，跟进记录 +1"
+      },
+      "level": "confirmed",
+      "evidence": "未抓包。第四轮 UI 提交成功并回读（新线索→需求沟通）；测试数据已清理",
+      "capture": "ui-submitted-not-captured"
+    },
+    {
+      "page": "批量结算 /supplier-payments/batch-settle",
+      "trigger": "勾选未付清订单行 → 填 付款日期* / 付款方式* / 备注 → 点「确认结算」→ 二级确认弹窗列明明细 → 再点「确认结算」",
+      "method": "POST",
+      "path": "/supplier-payments/batch-settle",
+      "request": {
+        "fields": [
+          "orders[{id}][id]",
+          "orders[{id}][supplier_id]",
+          "orders[{id}][order_item_id]",
+          "orders[{id}][amount]",
+          "payment_date",
+          "payment_method",
+          "remark",
+          "invoice_files[]"
+        ],
+        "note": "路径不是 /batch-settle；/batch-settle 只是导航菜单项，真实结算页为 /supplier-payments/batch-settle"
+      },
+      "response": {
+        "status": "302",
+        "effect": "实测：勾选 1 单（应付 ¥2,300.00）→ 本次付 ¥2,300.00 → 订单详情 已付款 ¥2,300.00 / 未付款 ¥0.00（付款进度 100%）"
+      },
+      "level": "confirmed",
+      "evidence": "未抓包。第四轮 UI 提交成功并回读（应付 ¥2,300 → 已付/未付归零）；测试数据已清理",
+      "capture": "ui-submitted-not-captured"
+    }
+  ]
+}

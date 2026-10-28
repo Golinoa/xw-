@@ -1,0 +1,2073 @@
+{
+  "url": "https://trip.lipseo.com/orders/create",
+  "title": "飞途旅游订单系统",
+  "heading": "",
+  "meta": {
+    "csrf": true
+  },
+  "text": "飞途旅游订单系统\n导航菜单\n仪表盘\n新建订单\n订单管理\n收款管理\n付款管理\n批量结算\n账户余额\n审核工作台\n经营分析\n业绩统计\nCRM管理\n基础数据\n地区管理\n供应商管理\n线路管理\n客户管理\n操作日志\n系统设置\n系统设置\n用户管理\n角色权限\n飞途OMS v3.7 © 2026\n每一个订单，都是一份信任。\n有效期至 2026-10-05\n3\n标签\n马总\n管理员\n新建订单\n\n填写客户信息、线路和价格后提交\n\n取消\n创建订单\n下单类型\n正式订单\n客户已确认出团，正常走流程\n预订单\n已下单 / 交了定金，尚未确定出团\n客户与联系人\n选择已有客户\n复刻补测_20261002_客户 · 138****9901\n客户名称 *\n联系电话 *\n成人/儿童 *\n大\n小\n线路与团期\n目的地\n不限\n广东省内\n　└ 广州\n　└ 深圳\n　└ 湛江\n中东\n　└ 迪拜\n　└ 阿联酋\n　└ 埃及\n非洲\n　└ 肯尼亚\n亚洲\n　└ 泰国\n　└ 新加坡\n　└ 韩国\n　└ 日本\n欧洲\n　└ 德国\n　└ 英国\n国内\n　└ 海南\n　└ 四川\n　└ 西藏\n　└ 新疆\n　└ 湖南\n　└ 云南\n　└ 甘肃\n　└ 内蒙古\n　└ 广西\n　└ 北京\n线路 / 产品名称 *\n×\n选线路\n📅 3天\n📍 广州\n团号\n预定日期 *\n出团日期 *\n回团日期 *\n产品详情及备注\n基础应收费用\n成人单价 *\n¥\n× 成人 1人 = ¥0.00\n订单金额 *\n¥\n--\n订单金额备注\n其他应收费用 （如代客户垫付款）\n添加\n点击右上角「添加」录入其他应收费用\n基础应付成本\n*必填\n供应商 *\n请选择供应商\n成人单价 *\n¥\n× 成人 1人 = ¥0.00\n成本总额 *\n¥\n¥0.00\n成本金额备注\n其他应付成本 （如保险费、签证费等）\n添加\n点击右上角「添加」录入其他应付成本\n合同附件 （可选，支持图片/PDF/Word，单文件最大 20MB）\n上传合同文件（图片/PDF/Word）\nAI 智能填写\n分析并填入表单\n 订单摘要\n团款应收\n基础团款\n¥0.00\n其他应收\n¥0.00\n应收合计\n¥0.00\n成本应付\n基础成本\n¥0.00\n其他应付\n¥0.00\n应付合计\n¥0.00\n预计利润\n¥0.00\n利润率\n—\n保存后可申请收付款\n创建订单",
+  "forms": [
+    {
+      "action": "https://trip.lipseo.com/logout",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "退出登录",
+          "type": "submit",
+          "cls": "dropdown-item"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/orders",
+      "method": "POST",
+      "enctype": "multipart/form-data",
+      "id": "orderForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "from_ai",
+          "type": "hidden",
+          "id": "fromAi",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "order_type",
+          "type": "hidden",
+          "id": "orderTypeInput",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "customer_id",
+          "type": "hidden",
+          "id": "customerId",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "搜索客户...",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "customer_name",
+          "type": "text",
+          "id": "customerName",
+          "required": true,
+          "disabled": false,
+          "readonly": true,
+          "value": "复刻补测_20261002_客户",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "customer_phone",
+          "type": "text",
+          "id": "customerPhone",
+          "required": false,
+          "disabled": false,
+          "readonly": true,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "adult_count",
+          "type": "number",
+          "id": "adultCount",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "成人",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "child_count",
+          "type": "number",
+          "id": "childCount",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "0",
+          "placeholder": "儿童",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "number_of_people",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "region_id",
+          "type": "select-one",
+          "id": "regionSelect",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "910",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "不限"
+            },
+            {
+              "v": "907",
+              "t": "广东省内"
+            },
+            {
+              "v": "910",
+              "t": "└ 广州"
+            },
+            {
+              "v": "909",
+              "t": "└ 深圳"
+            },
+            {
+              "v": "908",
+              "t": "└ 湛江"
+            },
+            {
+              "v": "913",
+              "t": "中东"
+            },
+            {
+              "v": "916",
+              "t": "└ 迪拜"
+            },
+            {
+              "v": "915",
+              "t": "└ 阿联酋"
+            },
+            {
+              "v": "914",
+              "t": "└ 埃及"
+            },
+            {
+              "v": "911",
+              "t": "非洲"
+            },
+            {
+              "v": "912",
+              "t": "└ 肯尼亚"
+            },
+            {
+              "v": "917",
+              "t": "亚洲"
+            },
+            {
+              "v": "921",
+              "t": "└ 泰国"
+            },
+            {
+              "v": "920",
+              "t": "└ 新加坡"
+            },
+            {
+              "v": "919",
+              "t": "└ 韩国"
+            },
+            {
+              "v": "918",
+              "t": "└ 日本"
+            },
+            {
+              "v": "922",
+              "t": "欧洲"
+            },
+            {
+              "v": "924",
+              "t": "└ 德国"
+            },
+            {
+              "v": "923",
+              "t": "└ 英国"
+            },
+            {
+              "v": "925",
+              "t": "国内"
+            },
+            {
+              "v": "935",
+              "t": "└ 海南"
+            },
+            {
+              "v": "934",
+              "t": "└ 四川"
+            },
+            {
+              "v": "933",
+              "t": "└ 西藏"
+            },
+            {
+              "v": "932",
+              "t": "└ 新疆"
+            },
+            {
+              "v": "931",
+              "t": "└ 湖南"
+            },
+            {
+              "v": "930",
+              "t": "└ 云南"
+            },
+            {
+              "v": "929",
+              "t": "└ 甘肃"
+            },
+            {
+              "v": "928",
+              "t": "└ 内蒙古"
+            },
+            {
+              "v": "927",
+              "t": "└ 广西"
+            },
+            {
+              "v": "926",
+              "t": "└ 北京"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "route_id",
+          "type": "hidden",
+          "id": "routeSelect",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "product_name",
+          "type": "text",
+          "id": "productName",
+          "required": true,
+          "disabled": false,
+          "readonly": true,
+          "value": "复刻补测_20261002_线路",
+          "placeholder": "请选择线路",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "搜索线路...",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "tour_code",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "YN-0501",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "booking_date",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "2026-10-02",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "departure_date",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "选择出团日期",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "return_date",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "选择回团日期",
+          "label": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "product_details",
+          "type": "textarea",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "行程亮点、酒店安排、交通方式...",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "order_unit_price",
+          "type": "number",
+          "id": "orderUnitPrice",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "0",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "order_child_unit_price",
+          "type": "number",
+          "id": "orderChildUnitPrice",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "0",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "total_amount",
+          "type": "number",
+          "id": "totalAmountInput",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "0",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "order_total_remark",
+          "type": "text",
+          "id": "orderTotalRemark",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "如优惠/折扣等",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "number_of_people",
+          "type": "hidden",
+          "id": "peopleCountDisplay",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "supplier_id",
+          "type": "hidden",
+          "id": "supplierId",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "搜索...",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "supplier_adult_unit_price",
+          "type": "number",
+          "id": "supplierUnitPrice",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "0",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "supplier_child_unit_price",
+          "type": "number",
+          "id": "supplierChildUnitPrice",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "supplier_cost",
+          "type": "number",
+          "id": "supplierCost",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "0.00",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "supplier_people",
+          "type": "hidden",
+          "id": "supplierPeople",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "supplier_cost_remark",
+          "type": "text",
+          "id": "supplierCostRemark",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "如优惠/协议价",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "contract_files[]",
+          "type": "file",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": "上传合同文件（图片/PDF/Word）"
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "",
+          "type": "textarea",
+          "id": "aiRawText",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "在此粘贴客户聊天记录，AI 将自动识别并填入表单...",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "正式订单 客户已确认出团，正常走流程",
+          "type": "button",
+          "cls": "ot-card ot-formal active"
+        },
+        {
+          "t": "预订单 已下单 / 交了定金，尚未确定出团",
+          "type": "button",
+          "cls": "ot-card ot-booking "
+        },
+        {
+          "t": "",
+          "type": "button",
+          "cls": "oms-joined-btn"
+        },
+        {
+          "t": "选线路",
+          "type": "button",
+          "cls": "btn btn-sm flex-shrink-0 d-flex align-items-center gap-1"
+        },
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn btn-sm flex-shrink-0 d-flex align-items-center justify-content-center"
+        },
+        {
+          "t": "添加",
+          "type": "button",
+          "cls": "btn btn-sm oms-add-cost-btn oms-add-btn-income"
+        },
+        {
+          "t": "",
+          "type": "button",
+          "cls": "oms-joined-btn"
+        },
+        {
+          "t": "添加",
+          "type": "button",
+          "cls": "btn btn-sm oms-add-cost-btn oms-add-btn-expense"
+        },
+        {
+          "t": "分析并填入表单",
+          "type": "button",
+          "cls": "btn mt-2"
+        },
+        {
+          "t": "创建订单",
+          "type": "submit",
+          "cls": "btn btn-primary py-2 fw-semibold oms-submit-btn"
+        }
+      ]
+    },
+    {
+      "action": "",
+      "method": "GET",
+      "enctype": "",
+      "id": "quickAddCustomerForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "name",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "输入客户姓名",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "phone",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "手机号",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "email",
+          "type": "email",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "e***@example.com",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "id_number",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "身份证/护照号",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "customer_source_id",
+          "type": "select-one",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "请选择"
+            },
+            {
+              "v": "1580",
+              "t": "老客户转介绍"
+            },
+            {
+              "v": "1581",
+              "t": "└ 老客户推荐"
+            },
+            {
+              "v": "1582",
+              "t": "└ VIP/高净值客户推荐"
+            },
+            {
+              "v": "1567",
+              "t": "实体门店与地推"
+            },
+            {
+              "v": "1568",
+              "t": "└ 线下门店自然到访"
+            },
+            {
+              "v": "1569",
+              "t": "└ 社区推广活动"
+            },
+            {
+              "v": "1542",
+              "t": "旅游平台 (OTA)"
+            },
+            {
+              "v": "1543",
+              "t": "└ 携程"
+            },
+            {
+              "v": "1544",
+              "t": "└ 去哪儿"
+            },
+            {
+              "v": "1545",
+              "t": "└ 飞猪"
+            },
+            {
+              "v": "1546",
+              "t": "└ 同程旅行"
+            },
+            {
+              "v": "1547",
+              "t": "└ 美团酒旅"
+            },
+            {
+              "v": "1548",
+              "t": "└ Booking/Agoda（境外）"
+            },
+            {
+              "v": "1583",
+              "t": "达人与KOL/KOC"
+            },
+            {
+              "v": "1584",
+              "t": "└ 旅游博主"
+            },
+            {
+              "v": "1585",
+              "t": "└ 媒体/记者采风"
+            },
+            {
+              "v": "1570",
+              "t": "异业联盟合作"
+            },
+            {
+              "v": "1571",
+              "t": "└ 银行/金融机构"
+            },
+            {
+              "v": "1572",
+              "t": "└ 航空公司/航司会员"
+            },
+            {
+              "v": "1573",
+              "t": "└ 高端车友会"
+            },
+            {
+              "v": "1574",
+              "t": "└ 婚纱摄影机构"
+            },
+            {
+              "v": "1575",
+              "t": "└ 教育/研学机构"
+            },
+            {
+              "v": "1549",
+              "t": "新媒体与短视频"
+            },
+            {
+              "v": "1550",
+              "t": "└ 抖音"
+            },
+            {
+              "v": "1551",
+              "t": "└ 快手"
+            },
+            {
+              "v": "1552",
+              "t": "└ 视频号"
+            },
+            {
+              "v": "1553",
+              "t": "内容种草社区"
+            },
+            {
+              "v": "1554",
+              "t": "└ 小红书"
+            },
+            {
+              "v": "1555",
+              "t": "└ 马蜂窝"
+            },
+            {
+              "v": "1556",
+              "t": "└ 大众点评"
+            },
+            {
+              "v": "1576",
+              "t": "企业与团队业务 (B2B)"
+            },
+            {
+              "v": "1577",
+              "t": "└ 企业团建/拓展"
+            },
+            {
+              "v": "1578",
+              "t": "└ 政府/事业单位采购"
+            },
+            {
+              "v": "1579",
+              "t": "└ 旅行社同业切位/包房"
+            },
+            {
+              "v": "1557",
+              "t": "搜索引擎营销"
+            },
+            {
+              "v": "1558",
+              "t": "└ 百度搜索（竞价/SEO）"
+            },
+            {
+              "v": "1559",
+              "t": "└ 搜狗搜索"
+            },
+            {
+              "v": "1560",
+              "t": "社交与信息流广告"
+            },
+            {
+              "v": "1561",
+              "t": "└ 微信朋友圈广告"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "remark",
+          "type": "textarea",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "备注",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "保存并选择",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    },
+    {
+      "action": "",
+      "method": "GET",
+      "enctype": "",
+      "id": "quickAddRouteForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "name",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "如：普吉岛6日游",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "route_type_id",
+          "type": "select-one",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "请选择"
+            },
+            {
+              "v": "384",
+              "t": "出境包团"
+            },
+            {
+              "v": "385",
+              "t": "出境散拼"
+            },
+            {
+              "v": "393",
+              "t": "省内包团"
+            },
+            {
+              "v": "394",
+              "t": "省内散拼"
+            },
+            {
+              "v": "389",
+              "t": "国内包团"
+            },
+            {
+              "v": "390",
+              "t": "国内散拼"
+            },
+            {
+              "v": "391",
+              "t": "定制游"
+            },
+            {
+              "v": "392",
+              "t": "游轮"
+            },
+            {
+              "v": "386",
+              "t": "单订机票"
+            },
+            {
+              "v": "387",
+              "t": "单订车"
+            },
+            {
+              "v": "388",
+              "t": "单订酒店"
+            },
+            {
+              "v": "395",
+              "t": "其他"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "departure_city",
+          "type": "select-one",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "请选择"
+            },
+            {
+              "v": "北京",
+              "t": "北京"
+            },
+            {
+              "v": "上海",
+              "t": "上海"
+            },
+            {
+              "v": "广州",
+              "t": "广州"
+            },
+            {
+              "v": "深圳",
+              "t": "深圳"
+            },
+            {
+              "v": "成都",
+              "t": "成都"
+            },
+            {
+              "v": "重庆",
+              "t": "重庆"
+            },
+            {
+              "v": "杭州",
+              "t": "杭州"
+            },
+            {
+              "v": "南京",
+              "t": "南京"
+            },
+            {
+              "v": "武汉",
+              "t": "武汉"
+            },
+            {
+              "v": "西安",
+              "t": "西安"
+            },
+            {
+              "v": "昆明",
+              "t": "昆明"
+            },
+            {
+              "v": "三亚",
+              "t": "三亚"
+            },
+            {
+              "v": "厦门",
+              "t": "厦门"
+            },
+            {
+              "v": "青岛",
+              "t": "青岛"
+            },
+            {
+              "v": "大连",
+              "t": "大连"
+            },
+            {
+              "v": "沈阳",
+              "t": "沈阳"
+            },
+            {
+              "v": "哈尔滨",
+              "t": "哈尔滨"
+            },
+            {
+              "v": "长沙",
+              "t": "长沙"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "days",
+          "type": "number",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "6",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "region_id",
+          "type": "select-one",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "请选择"
+            },
+            {
+              "v": "907",
+              "t": "广东省内"
+            },
+            {
+              "v": "910",
+              "t": "└ 广州"
+            },
+            {
+              "v": "909",
+              "t": "└ 深圳"
+            },
+            {
+              "v": "908",
+              "t": "└ 湛江"
+            },
+            {
+              "v": "913",
+              "t": "中东"
+            },
+            {
+              "v": "916",
+              "t": "└ 迪拜"
+            },
+            {
+              "v": "915",
+              "t": "└ 阿联酋"
+            },
+            {
+              "v": "914",
+              "t": "└ 埃及"
+            },
+            {
+              "v": "911",
+              "t": "非洲"
+            },
+            {
+              "v": "912",
+              "t": "└ 肯尼亚"
+            },
+            {
+              "v": "917",
+              "t": "亚洲"
+            },
+            {
+              "v": "921",
+              "t": "└ 泰国"
+            },
+            {
+              "v": "920",
+              "t": "└ 新加坡"
+            },
+            {
+              "v": "919",
+              "t": "└ 韩国"
+            },
+            {
+              "v": "918",
+              "t": "└ 日本"
+            },
+            {
+              "v": "922",
+              "t": "欧洲"
+            },
+            {
+              "v": "924",
+              "t": "└ 德国"
+            },
+            {
+              "v": "923",
+              "t": "└ 英国"
+            },
+            {
+              "v": "925",
+              "t": "国内"
+            },
+            {
+              "v": "935",
+              "t": "└ 海南"
+            },
+            {
+              "v": "934",
+              "t": "└ 四川"
+            },
+            {
+              "v": "933",
+              "t": "└ 西藏"
+            },
+            {
+              "v": "932",
+              "t": "└ 新疆"
+            },
+            {
+              "v": "931",
+              "t": "└ 湖南"
+            },
+            {
+              "v": "930",
+              "t": "└ 云南"
+            },
+            {
+              "v": "929",
+              "t": "└ 甘肃"
+            },
+            {
+              "v": "928",
+              "t": "└ 内蒙古"
+            },
+            {
+              "v": "927",
+              "t": "└ 广西"
+            },
+            {
+              "v": "926",
+              "t": "└ 北京"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "description",
+          "type": "textarea",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "线路描述",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "保存并选择",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    },
+    {
+      "action": "",
+      "method": "GET",
+      "enctype": "",
+      "id": "quickAddSupplierForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "name",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "输入供应商名称",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "type",
+          "type": "select-one",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "local_agent",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "local_agent",
+              "t": "地接公司"
+            },
+            {
+              "v": "other",
+              "t": "其它成本"
+            },
+            {
+              "v": "type_1783701990",
+              "t": "门票"
+            },
+            {
+              "v": "type_1783701996",
+              "t": "酒店"
+            },
+            {
+              "v": "type_1783702000",
+              "t": "机票"
+            },
+            {
+              "v": "type_1783702006",
+              "t": "保险"
+            },
+            {
+              "v": "type_1783702045",
+              "t": "车队"
+            },
+            {
+              "v": "type_1783762121",
+              "t": "签证"
+            },
+            {
+              "v": "type_1783762130",
+              "t": "导游"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "contact_person",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "联系人姓名",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "contact_phone",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "联系电话",
+          "label": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "remark",
+          "type": "textarea",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "备注信息",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "保存并选择",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/password/update",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "current_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password_confirmation",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "修改密码",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    }
+  ],
+  "tables": [],
+  "buttons": [
+    {
+      "tag": "BUTTON",
+      "t": "3",
+      "cls": "btn btn-sm position-relative d-flex align-items-center",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "标签",
+      "cls": "btn btn-sm d-flex align-items-center oms-tab-toggle",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "马总 管理员",
+      "cls": "btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-1",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "修改密码",
+      "cls": "dropdown-item",
+      "href": "#",
+      "toggle": "modal",
+      "target": "#changePasswordModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "退出登录",
+      "cls": "dropdown-item",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "https://trip.lipseo.com/orders",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "创建订单",
+      "cls": "btn btn-sm btn-primary px-4",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "正式订单 客户已确认出团，正常走流程",
+      "cls": "ot-card ot-formal active",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "预订单 已下单 / 交了定金，尚未确定出团",
+      "cls": "ot-card ot-booking ",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "选线路",
+      "cls": "btn btn-sm flex-shrink-0 d-flex align-items-center gap-1",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "添加",
+      "cls": "btn btn-sm oms-add-cost-btn oms-add-btn-income",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "添加",
+      "cls": "btn btn-sm oms-add-cost-btn oms-add-btn-expense",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "分析并填入表单",
+      "cls": "btn mt-2",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "创建订单",
+      "cls": "btn btn-primary py-2 fw-semibold oms-submit-btn",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "保存并选择",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "保存并选择",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "保存并选择",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "知道了",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "×",
+      "cls": "lightbox-close",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认删除",
+      "cls": "btn btn-sm btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn px-4 py-2 confirm-btn-cancel",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认",
+      "cls": "btn px-4 py-2 confirm-btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "修改密码",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "«",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "‹",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "›",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "»",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "清除",
+      "cls": "",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "今天",
+      "cls": "dtp-today",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "«",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "‹",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "›",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "»",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "清除",
+      "cls": "",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "今天",
+      "cls": "dtp-today",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "«",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "‹",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "›",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "»",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "清除",
+      "cls": "",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "今天",
+      "cls": "dtp-today",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    }
+  ],
+  "modals": [
+    {
+      "id": "quickAddCustomerModal",
+      "title": "快捷添加客户",
+      "fields": [
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "phone",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "email",
+          "type": "email",
+          "required": false
+        },
+        {
+          "name": "id_number",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "customer_source_id",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "remark",
+          "type": "textarea",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "quickAddRouteModal",
+      "title": "快捷添加线路",
+      "fields": [
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "route_type_id",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "departure_city",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "days",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "region_id",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "textarea",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "quickAddSupplierModal",
+      "title": "快捷添加供应商",
+      "fields": [
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "contact_person",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "contact_phone",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "remark",
+          "type": "textarea",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "valModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "lightboxModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "opPasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "",
+          "type": "password",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "confirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "changePasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "current_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password_confirmation",
+          "type": "password",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "nav": [
+    {
+      "t": "仪表盘",
+      "href": "https://trip.lipseo.com"
+    },
+    {
+      "t": "新建订单",
+      "href": "https://trip.lipseo.com/orders/create"
+    },
+    {
+      "t": "订单管理",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "收款管理",
+      "href": "https://trip.lipseo.com/customer-payments"
+    },
+    {
+      "t": "付款管理",
+      "href": "https://trip.lipseo.com/supplier-payments"
+    },
+    {
+      "t": "批量结算",
+      "href": "https://trip.lipseo.com/supplier-payments/batch-settle"
+    },
+    {
+      "t": "账户余额",
+      "href": "https://trip.lipseo.com/account-balances"
+    },
+    {
+      "t": "审核工作台",
+      "href": "https://trip.lipseo.com/review"
+    },
+    {
+      "t": "经营分析",
+      "href": "https://trip.lipseo.com/reports"
+    },
+    {
+      "t": "业绩统计",
+      "href": "https://trip.lipseo.com/statistics"
+    },
+    {
+      "t": "CRM管理",
+      "href": "https://trip.lipseo.com/leads"
+    },
+    {
+      "t": "地区管理",
+      "href": "https://trip.lipseo.com/regions"
+    },
+    {
+      "t": "供应商管理",
+      "href": "https://trip.lipseo.com/suppliers"
+    },
+    {
+      "t": "线路管理",
+      "href": "https://trip.lipseo.com/routes"
+    },
+    {
+      "t": "客户管理",
+      "href": "https://trip.lipseo.com/customers"
+    },
+    {
+      "t": "操作日志",
+      "href": "https://trip.lipseo.com/audit-logs"
+    },
+    {
+      "t": "系统设置",
+      "href": "https://trip.lipseo.com/settings/company"
+    },
+    {
+      "t": "用户管理",
+      "href": "https://trip.lipseo.com/users"
+    },
+    {
+      "t": "角色权限",
+      "href": "https://trip.lipseo.com/roles"
+    },
+    {
+      "t": "付款审核通过 · 复刻调研_财务16小时前¥4800.00 · ORD20261",
+      "href": "/orders/1069#payment-PMT2026100200001"
+    },
+    {
+      "t": "收款审核通过 · 马总16小时前¥3000.00 · ORD2026100100",
+      "href": "/orders/1069#payment-RCP2026100100005"
+    },
+    {
+      "t": "收款审核通过 · 复刻调研_财务16小时前¥3000.00 · ORD20261",
+      "href": "/orders/1069#payment-RCP2026100100005"
+    },
+    {
+      "t": "帮助文档",
+      "href": "/docs"
+    },
+    {
+      "t": "更新记录",
+      "href": "/docs/changelog"
+    },
+    {
+      "t": "取消",
+      "href": "https://trip.lipseo.com/orders"
+    }
+  ],
+  "pills": [
+    "仪表盘",
+    "新建订单",
+    "订单管理",
+    "收款管理",
+    "付款管理",
+    "批量结算",
+    "账户余额",
+    "审核工作台",
+    "经营分析",
+    "业绩统计",
+    "CRM管理",
+    "地区管理",
+    "供应商管理",
+    "线路管理",
+    "客户管理",
+    "操作日志",
+    "系统设置",
+    "用户管理",
+    "角色权限"
+  ]
+}

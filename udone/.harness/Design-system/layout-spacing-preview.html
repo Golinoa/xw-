@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="有单 OMS 布局与间距规范及预览。">
+  <title>有单 OMS · 布局与间距规范</title>
+  <style>
+    :root{color-scheme:light;--blue:#0093ff;--blue-dark:#005eaa;--cyan:#00d1c3;--cyan-dark:#00877e;--ink:#18232d;--muted:#536370;--line:#dce8f0;--paper:#fff;--canvas:#f0f8fd;--soft:#eaf6ff;--orange:#9a4d00;--orange-bg:#fff7e8;--shadow:0 10px 32px rgb(32 65 91 / 8%);font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--canvas);font-synthesis:none}
+    *{box-sizing:border-box}body{margin:0}button{font:inherit}.page{max-width:1180px;margin:auto;padding:34px 22px 60px}.eyebrow{color:var(--blue-dark);font-size:11px;font-weight:800;letter-spacing:.15em;text-transform:uppercase}h1{margin:10px 0;font-size:clamp(28px,4vw,42px);letter-spacing:-.04em}.lead{max-width:820px;color:var(--muted);font-size:14px;line-height:1.8}.notice{margin-top:16px;padding:13px 15px;border:1px solid #99d5ff;border-left:4px solid var(--blue);border-radius:4px;background:#fff;font-size:12px;line-height:1.7}.notice strong{color:var(--blue-dark)}
+    section{margin-top:34px}.head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:13px}h2{margin:0;font-size:20px}.sub{margin:5px 0 0;color:var(--muted);font-size:12px;line-height:1.6}.tag{display:inline-flex;align-items:center;padding:4px 8px;border-radius:4px;background:var(--soft);color:var(--blue-dark);font-size:10px;font-weight:700}.panel{padding:18px;border:1px solid var(--line);border-radius:4px;background:var(--paper);box-shadow:var(--shadow)}
+    .bands{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.band{padding:14px;border:1px solid var(--line);border-radius:4px;background:#fff}.band h3{margin:0;font-size:13px}.band p{margin:5px 0 12px;color:var(--muted);font-size:10px}.values{display:flex;align-items:end;gap:6px;min-height:83px;overflow-x:auto;padding:4px 2px 0}.value{display:grid;flex:1 0 42px;justify-items:center;gap:6px;min-width:38px;padding:4px 2px;border:0;border-radius:4px;background:transparent;color:var(--ink);cursor:pointer}.value:hover{background:var(--soft)}.bar{width:min(26px,70%);height:var(--h);min-height:5px;border-radius:3px 3px 0 0;background:linear-gradient(180deg,#66c0ff,#0077d6)}.value code{font-size:10px;font-weight:700}.value small{color:var(--muted);font-size:8px}.band.loose .bar{background:linear-gradient(180deg,#55e1d3,#00877e)}.value.flagged{background:var(--orange-bg);outline:1px dashed #9a4d00}.value.flagged .bar{background:var(--orange)}.group-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.grouptag{padding:5px 8px;border:1px solid var(--line);border-radius:4px;color:var(--muted);font-size:9px}.grouptag b{color:var(--ink)}
+    .vertical-demo{display:grid;grid-template-columns:repeat(8,1fr);align-items:end;gap:10px;min-height:145px;padding:12px;border:1px solid var(--line);border-radius:4px;background:linear-gradient(#fff,#f7fbfe)}.vitem{display:flex;flex-direction:column;align-items:center;justify-content:end;gap:5px;height:120px}.vline{width:2px;height:var(--v);background:var(--blue-dark)}.vitem:nth-child(even) .vline{background:#00877e}.vitem code{font-size:9px;color:var(--muted)}
+    .grid-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px}.layout-card{padding:14px;border:1px solid var(--line);border-radius:4px;background:#fff}.layout-card h3{margin:0 0 5px;font-size:13px}.layout-card>p{margin:0 0 11px;color:var(--muted);font-size:10px;line-height:1.6}.wire{overflow:hidden;border:1px solid #bcd7e9;border-radius:4px;background:#f5f9fc}.wire-top{display:flex;align-items:center;justify-content:space-between;height:32px;padding:0 10px;background:#fff;border-bottom:1px solid var(--line);font-size:8px;font-weight:700}.wire-top span:last-child{color:var(--blue-dark)}.wire-body{display:grid;grid-template-columns:74px 1fr;min-height:160px;gap:8px;padding:8px}.wire-side{display:grid;align-content:start;gap:5px;padding:7px;border:1px solid var(--line);border-radius:4px;background:#fff}.wire-side i{height:7px;border-radius:2px;background:#dce8f0}.wire-side i.active{height:10px;background:var(--blue)}.wire-main{display:grid;align-content:start;gap:8px}.wire-toolbar{height:20px;border:1px solid var(--line);border-radius:3px;background:white}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.kpi{height:34px;border:1px solid var(--line);border-radius:4px;background:#fff}.widgets{display:grid;grid-template-columns:1.2fr 1fr;gap:6px}.widget{height:62px;padding:6px;border:1px solid var(--line);border-radius:4px;background:#fff}.widget.chart{display:flex;align-items:end;justify-content:space-around;gap:4px}.widget.chart i{width:9px;height:var(--h);border-radius:2px 2px 0 0;background:var(--blue)}.widget.quick{display:grid;grid-template-columns:1fr 1fr;gap:4px}.widget.quick i{border-radius:3px;background:#eaf6ff}.lower-widgets{display:grid;grid-template-columns:.8fr .8fr 1.6fr;gap:5px}.mini-panel{min-width:0;min-height:45px;padding:4px;border:1px solid var(--line);border-radius:4px;background:#fff}.mini-panel b{display:block;margin-bottom:3px;font-size:6px;color:var(--muted)}.mini-panel.notice i{display:block;height:5px;margin:3px 0;border-radius:2px;background:#eaf6ff}.mini-bars{height:25px;display:flex;align-items:end;gap:3px}.mini-bars i{flex:1;height:var(--h,55%);background:var(--blue);border-radius:2px 2px 0 0}.wire-table{display:grid;gap:4px}.wire-table i{height:7px;border-radius:2px;background:#fff;border:1px solid var(--line)}.calendar{display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(4,20px);gap:3px}.calendar i{border:1px solid var(--line);border-radius:2px;background:#fff}.calendar i.marked{background:#cceaff}.flow-note{margin-top:9px;padding:8px 9px;border-radius:4px;background:var(--soft);color:#005eaa;font-size:9px;line-height:1.6}
+    .token-wrap{overflow-x:auto}.tokens{width:100%;border-collapse:collapse;background:#fff;font-size:10px}.tokens th,.tokens td{padding:9px 8px;border-bottom:1px solid #e8f0f5;text-align:left;white-space:nowrap}.tokens th{color:var(--muted);font-size:9px}.token{display:inline-block;padding:3px 6px;border-radius:3px;background:#eaf6ff;color:#005eaa;font-family:ui-monospace,Consolas,monospace;font-size:9px}.rule-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.rule{padding:13px;border:1px solid var(--line);border-radius:4px;background:#fff}.rule b{display:block;margin-bottom:5px;font-size:11px}.rule p{margin:0;color:var(--muted);font-size:10px;line-height:1.65}
+    #toast{position:fixed;right:18px;bottom:18px;padding:10px 13px;border-radius:4px;background:#202d37;color:#fff;font-size:12px;opacity:0;transform:translateY(8px);transition:.18s;pointer-events:none}#toast.show{opacity:1;transform:none}button:focus-visible{outline:2px solid #005eaa;outline-offset:2px}footer{margin-top:26px;color:var(--muted);font-size:10px}
+    @media(max-width:760px){.bands,.grid-layout{grid-template-columns:1fr}.rule-grid{grid-template-columns:1fr}.vertical-demo{grid-template-columns:repeat(4,1fr)}}@media(max-width:520px){.page{padding:24px 13px 40px}.panel{padding:13px}.head{align-items:start;flex-direction:column}.bands{gap:8px}.band{padding:11px}.wire-body{grid-template-columns:58px 1fr}.kpis{grid-template-columns:repeat(2,1fr)}.widgets{grid-template-columns:1fr}.wire-main{min-width:0}.lower-widgets{grid-template-columns:1fr 1fr}.mini-panel.table{grid-column:1/-1}.vertical-demo{gap:6px}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="eyebrow">YOUNCE · DESIGN SYSTEM</div>
+    <h1>布局与间距规范</h1>
+    <p class="lead">统一后台框架与首页仪表盘层级，并规范 OMS 后台间距刻度和常规圆角。</p>
+    <div class="notice"><strong>系统框架：</strong>全局顶栏 + 左侧菜单 + 右侧工作区。<strong>首页：</strong>摘要指标 → 分析图表与快捷操作 → 公告和任务明细。线框尺寸仅为示意。</div>
+
+    <section aria-labelledby="spacing-title">
+      <div class="head"><div><h2 id="spacing-title">间距刻度</h2><p class="sub">点击数值复制 token 值。</p></div><span class="tag">CSS px</span></div>
+      <div class="bands">
+        <article class="band"><h3>紧凑 · ≤ 10</h3><p>横向刻度</p><div class="values" data-values="2,4,6,8,10"></div><div class="group-badges"><span class="grouptag">≤ 10</span></div></article>
+        <article class="band"><h3>常规 · 10 ~ 32</h3><p>横向刻度</p><div class="values" data-values="12,16,20,24,28"></div><div class="group-badges"><span class="grouptag">10 ~ 32</span></div></article>
+        <article class="band"><h3>宽松 · 32 ~ 64</h3><p>横向刻度</p><div class="values" data-values="32,40,48,56,64"></div><div class="group-badges"><span class="grouptag">32 ~ 64</span></div></article>
+        <article class="band loose"><h3>疏朗 · ≥ 72</h3><p>横向刻度</p><div class="values" data-values="80,96,102,128"></div><div class="group-badges"><span class="grouptag">≥ 72</span></div></article>
+      </div>
+    </section>
+
+    <section aria-labelledby="vertical-title">
+      <div class="head"><div><h2 id="vertical-title">纵向间距示意</h2><p class="sub">纵向布局优先复用这些刻度。</p></div><span class="tag">8 个示例值</span></div>
+      <div class="panel"><div class="vertical-demo" id="vertical-demo" aria-label="纵向间距值示意"></div></div>
+    </section>
+
+    <section aria-labelledby="layout-title">
+      <div class="head"><div><h2 id="layout-title">参考界面中的布局模式</h2><p class="sub">结构取自缩小展示的产品截图，不按图片比例猜测像素尺寸。</p></div><span class="tag">界面观察</span></div>
+      <div class="grid-layout">
+        <article class="layout-card"><h3>系统框架与首页仪表盘</h3><p>全局顶栏显示一级模块和全局操作，左侧菜单显示当前模块导航；首页主区依次为指标、主要图表与快捷操作、公告与任务明细。</p><div class="wire" role="img" aria-label="顶部全局导航、左侧菜单，主工作区包含摘要指标、任务图表、快捷操作、公告、辅助统计和任务列表"><div class="wire-top"><span>有单 · 项目管理</span><span>工作台　项目管理　日历　通知　用户</span></div><div class="wire-body"><div class="wire-side"><i class="active"></i><i></i><i></i><i></i><i></i></div><div class="wire-main"><div class="wire-toolbar"></div><div class="kpis"><i class="kpi"></i><i class="kpi"></i><i class="kpi"></i><i class="kpi"></i></div><div class="widgets"><div class="widget chart"><i style="--h:35%"></i><i style="--h:72%"></i><i style="--h:52%"></i><i style="--h:90%"></i><i style="--h:63%"></i></div><div class="widget quick"><i></i><i></i><i></i><i></i></div></div><div class="lower-widgets"><div class="mini-panel notice"><b>公告通知</b><i></i><i></i><i></i></div><div class="mini-panel"><b>任务分类</b><div class="mini-bars"><i style="--h:38%"></i><i style="--h:76%"></i><i style="--h:54%"></i><i style="--h:91%"></i></div></div><div class="mini-panel table"><b>任务列表</b><div class="wire-table"><i></i><i></i><i></i></div></div></div></div></div></div></article>
+        <article class="layout-card"><h3>日历 · 统一框架中的业务页</h3><p>全局顶栏和左侧菜单保持不变；主区呈现日历。日期导航、月/周切换和新建操作放在日历上方。</p><div class="wire" role="img" aria-label="统一全局顶栏和左侧菜单，右侧工作区展示月历主视图"><div class="wire-top"><span>有单 · 项目管理</span><span>工作台　项目管理　日历　通知　用户</span></div><div class="wire-body"><div class="wire-side"><i class="active"></i><i></i><i></i><i></i><i></i></div><div class="wire-main"><div class="wire-toolbar"></div><div class="calendar"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="marked"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="marked"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div></div></article>
+        <div class="flow-note" style="grid-column:1/-1">任务/成员选择截图还展示了叠加面板的分步交互；它说明操作流程可分步呈现，不足以推导弹窗尺寸或具体间距。</div>
+      </div>
+    </section>
+
+    <section aria-labelledby="tokens-title">
+      <div class="head"><div><h2 id="tokens-title">Token 索引</h2><p class="sub">横向刻度为完整集合；纵向示例复用同一集合。</p></div><span class="tag">20 个 token</span></div>
+      <div class="panel token-wrap"><table class="tokens"><thead><tr><th>数值</th><th>Token</th><th>方向</th></tr></thead><tbody id="token-rows"></tbody></table></div>
+    </section>
+
+    <section aria-labelledby="boundary-title"><div class="head"><div><h2 id="boundary-title">布局使用规则</h2><p class="sub">页面与组件统一遵循。</p></div><span class="tag">生效规则</span></div><div class="rule-grid">
+      <article class="rule"><b>区分间距职责</b><p>内边距、元素间距、页面分区间距分别管理；不用于控件尺寸或字体规格。</p></article>
+      <article class="rule"><b>重复布局保持一致</b><p>同组列表、表格行和卡片使用统一间距；优先由父级布局控制，避免留白叠加。</p></article>
+      <article class="rule"><b>组件映射另行定义</b><p>刻度不自动对应表单、卡片、导航或弹窗；具体用途写入对应组件规范。</p></article>
+      <article class="rule"><b>尺寸按真实页面确定</b><p>顶栏、侧栏、内容宽度、页面边距和断点依据内容与目标屏幕定义。</p></article>
+      <article class="rule"><b>窄屏保证可用</b><p>优先调整导航、列数或表格呈现，保留内容可读和操作可达；不照抄预览断点。</p></article>
+      <article class="rule"><b>圆角统一管理</b><p>普通容器使用 4px；圆形、胶囊等形态在组件规范中定义。</p></article>
+    </div><div class="flow-note">偏离规则时，在对应页面或组件规范中记录原因与范围。</div></section>
+
+    <section aria-labelledby="radius-title"><div class="head"><div><h2 id="radius-title">圆角</h2><p class="sub">常规圆角 4px；特殊形态由组件规则定义。</p></div><span class="tag">4px</span></div>
+      <div class="panel" style="display:flex;align-items:center;gap:14px"><div style="width:112px;height:62px;border:1px solid #9bc6df;border-radius:4px;background:#fff;box-shadow:inset 0 0 0 1px #eaf6ff"></div><div><b>4px 常规圆角</b><p class="sub">普通容器统一使用；特殊形态由组件规范定义。</p></div></div>
+    </section>
+    <footer>有单 OMS Design-system · 布局与间距</footer>
+  </main>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script>
+    const tokenValues = [2,4,6,8,10,12,16,20,24,28,32,36,40,48,56,64,80,96,128];
+    const verticalValues = [4,8,12,16,20,36,40,56];
+    const tokenRows = document.getElementById('token-rows');
+    tokenValues.splice(tokenValues.indexOf(96)+1, 0, 102);
+    tokenRows.innerHTML = tokenValues.map(value => `<tr><td>${value}</td><td><span class="token">space-${value}</span></td><td>${verticalValues.includes(value)?'横向 / 纵向':'横向'}</td></tr>`).join('');
+    document.querySelectorAll('[data-values]').forEach(group => {
+      const values = group.dataset.values.split(',').map(Number);
+      const max = Math.max(...values);
+      group.innerHTML = values.map(value => `<button class="value ${value===102?'flagged':''}" type="button" data-copy="${value}px" aria-label="复制间距 ${value}px"><span class="bar" style="--h:${Math.max(5,Math.round(value/max*46))}px"></span><code>${value}</code><small>px*</small></button>`).join('');
+    });
+    document.getElementById('vertical-demo').innerHTML = verticalValues.map(value => `<div class="vitem"><span class="vline" style="--v:${value*1.4}px"></span><code>${value}</code></div>`).join('');
+    let toastTimer;
+    document.addEventListener('click', async event => {
+      const button = event.target.closest('[data-copy]'); if (!button) return;
+      const value = button.dataset.copy;
+      try { await navigator.clipboard.writeText(value); } catch { const field=document.createElement('textarea');field.value=value;document.body.append(field);field.select();document.execCommand('copy');field.remove(); }
+      const toast=document.getElementById('toast');toast.textContent=`已复制 ${value}`;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),1300);
+    });
+  </script>
+</body>
+</html>

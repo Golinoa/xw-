@@ -1,0 +1,515 @@
+{
+  "url": "https://trip.lipseo.com/roles",
+  "title": "飞途旅游订单系统",
+  "heading": "",
+  "meta": {
+    "csrf": true
+  },
+  "text": "飞途旅游订单系统\n导航菜单\n仪表盘\n新建订单\n订单管理\n收款管理\n付款管理\n批量结算\n账户余额\n审核工作台\n经营分析\n业绩统计\nCRM管理\n基础数据\n地区管理\n供应商管理\n线路管理\n客户管理\n操作日志\n系统设置\n系统设置\n用户管理\n角色权限\n飞途OMS v3.7 © 2026\n今天的努力，是明天成功的基石。\n有效期至 2026-10-05\n标签\n马总\n管理员\n角色权限\n\n管理系统角色及对应的操作权限，每个角色拥有不同的功能访问范围\n\n回收站\n新建角色\n管理员\ncompany_admin\n泫蜗旅行\n60\n项权限\n1\n个用户\n\n管理员，可管理本公司用户、角色及各项业务\n\n权限范围\n订单管理\n12\n收款管理\n5\n付款管理\n6\n经营分析\n3\n业绩统计\n2\n基础数据\n28\n系统管理\n4\n配置权限\n计调员\noperator\n泫蜗旅行\n32\n项权限\n0\n个用户\n\n负责日常业务操作，可创建管理订单、登记收付款\n\n权限范围\n订单管理\n5\n收款管理\n3\n付款管理\n3\n经营分析\n2\n业绩统计\n1\n基础数据\n18\n系统管理\n1\n配置权限\n财务\nfinance\n泫蜗旅行\n41\n项权限\n0\n个用户\n\n查看财务数据与经营报表，监控收支及操作日志\n\n权限范围\n订单管理\n8\n收款管理\n4\n付款管理\n5\n经营分析\n3\n业绩统计\n2\n基础数据\n21\n系统管理\n1\n配置权限\n标注「全局」的角色为超管平台独有；标注公司名称的角色为该公司独立所有，各公司之间互不影响。",
+  "forms": [
+    {
+      "action": "https://trip.lipseo.com/logout",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "退出登录",
+          "type": "submit",
+          "cls": "dropdown-item"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/roles",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "title",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "如：高级计调员",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "name",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "如：senior_operator",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-outline-secondary btn-sm"
+        },
+        {
+          "t": "创建并配置权限",
+          "type": "submit",
+          "cls": "btn btn-primary btn-sm"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/password/update",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "current_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password_confirmation",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "修改密码",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    }
+  ],
+  "tables": [],
+  "buttons": [
+    {
+      "tag": "BUTTON",
+      "t": "0",
+      "cls": "btn btn-sm position-relative d-flex align-items-center",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "标签",
+      "cls": "btn btn-sm d-flex align-items-center oms-tab-toggle",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "马总 管理员",
+      "cls": "btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-1",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "修改密码",
+      "cls": "dropdown-item",
+      "href": "#",
+      "toggle": "modal",
+      "target": "#changePasswordModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "退出登录",
+      "cls": "dropdown-item",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "回收站",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "https://trip.lipseo.com/roles?trash=1",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "新建角色",
+      "cls": "btn btn-primary btn-sm",
+      "href": "",
+      "toggle": "modal",
+      "target": "#createRoleModal"
+    },
+    {
+      "tag": "A",
+      "t": "配置权限",
+      "cls": "btn flex-fill",
+      "href": "https://trip.lipseo.com/roles/92/permissions",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "配置权限",
+      "cls": "btn flex-fill",
+      "href": "https://trip.lipseo.com/roles/93/permissions",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "配置权限",
+      "cls": "btn flex-fill",
+      "href": "https://trip.lipseo.com/roles/94/permissions",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-outline-secondary btn-sm",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "创建并配置权限",
+      "cls": "btn btn-primary btn-sm",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "×",
+      "cls": "lightbox-close",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认删除",
+      "cls": "btn btn-sm btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn px-4 py-2 confirm-btn-cancel",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认",
+      "cls": "btn px-4 py-2 confirm-btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "修改密码",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    }
+  ],
+  "modals": [
+    {
+      "id": "createRoleModal",
+      "title": "新建角色",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "lightboxModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "opPasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "",
+          "type": "password",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "confirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "changePasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "current_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password_confirmation",
+          "type": "password",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "nav": [
+    {
+      "t": "仪表盘",
+      "href": "https://trip.lipseo.com"
+    },
+    {
+      "t": "新建订单",
+      "href": "https://trip.lipseo.com/orders/create"
+    },
+    {
+      "t": "订单管理",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "收款管理",
+      "href": "https://trip.lipseo.com/customer-payments"
+    },
+    {
+      "t": "付款管理",
+      "href": "https://trip.lipseo.com/supplier-payments"
+    },
+    {
+      "t": "批量结算",
+      "href": "https://trip.lipseo.com/supplier-payments/batch-settle"
+    },
+    {
+      "t": "账户余额",
+      "href": "https://trip.lipseo.com/account-balances"
+    },
+    {
+      "t": "审核工作台",
+      "href": "https://trip.lipseo.com/review"
+    },
+    {
+      "t": "经营分析",
+      "href": "https://trip.lipseo.com/reports"
+    },
+    {
+      "t": "业绩统计",
+      "href": "https://trip.lipseo.com/statistics"
+    },
+    {
+      "t": "CRM管理",
+      "href": "https://trip.lipseo.com/leads"
+    },
+    {
+      "t": "地区管理",
+      "href": "https://trip.lipseo.com/regions"
+    },
+    {
+      "t": "供应商管理",
+      "href": "https://trip.lipseo.com/suppliers"
+    },
+    {
+      "t": "线路管理",
+      "href": "https://trip.lipseo.com/routes"
+    },
+    {
+      "t": "客户管理",
+      "href": "https://trip.lipseo.com/customers"
+    },
+    {
+      "t": "操作日志",
+      "href": "https://trip.lipseo.com/audit-logs"
+    },
+    {
+      "t": "系统设置",
+      "href": "https://trip.lipseo.com/settings/company"
+    },
+    {
+      "t": "用户管理",
+      "href": "https://trip.lipseo.com/users"
+    },
+    {
+      "t": "角色权限",
+      "href": "https://trip.lipseo.com/roles"
+    },
+    {
+      "t": "帮助文档",
+      "href": "/docs"
+    },
+    {
+      "t": "更新记录",
+      "href": "/docs/changelog"
+    },
+    {
+      "t": "回收站",
+      "href": "https://trip.lipseo.com/roles?trash=1"
+    },
+    {
+      "t": "配置权限",
+      "href": "https://trip.lipseo.com/roles/92/permissions"
+    },
+    {
+      "t": "配置权限",
+      "href": "https://trip.lipseo.com/roles/93/permissions"
+    },
+    {
+      "t": "配置权限",
+      "href": "https://trip.lipseo.com/roles/94/permissions"
+    }
+  ],
+  "pills": [
+    "仪表盘",
+    "新建订单",
+    "订单管理",
+    "收款管理",
+    "付款管理",
+    "批量结算",
+    "账户余额",
+    "审核工作台",
+    "经营分析",
+    "业绩统计",
+    "CRM管理",
+    "地区管理",
+    "供应商管理",
+    "线路管理",
+    "客户管理",
+    "操作日志",
+    "系统设置",
+    "用户管理",
+    "角色权限"
+  ]
+}

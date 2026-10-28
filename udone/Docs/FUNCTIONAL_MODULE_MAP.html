@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="有单旅游 OMS 复刻功能模块拆分、依赖关系、调研证据与当前实现边界">
+  <title>有单 OMS｜复刻功能模块地图</title>
+  <style>
+    :root { color-scheme: light; --blue:#0077d6; --blue-50:#eaf6ff; --cyan:#00a99d; --ink:#202d37; --muted:#536370; --line:#d7e0e8; --canvas:#f0f8fd; --surface:#fff; --ok:#166534; --ok-bg:#f0fdf4; --warn:#9a4d00; --warn-bg:#fff7e8; --bad:#b42318; --bad-bg:#fef2f2; --space:16px; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--canvas); color:var(--ink); font:14px/1.6 "PingFang SC","Microsoft YaHei",system-ui,sans-serif; }
+    a { color:var(--blue); text-decoration:none; } a:hover { text-decoration:underline; }
+    .topbar { height:60px; position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:28px; padding:0 28px; background:var(--surface); border-bottom:1px solid var(--line); }
+    .brand { color:var(--ink); font-weight:600; white-space:nowrap; }
+    .topnav { display:flex; gap:22px; overflow:auto; white-space:nowrap; }
+    .topnav a { color:var(--muted); } .topnav a.active { color:var(--blue); font-weight:600; }
+    .topmeta { margin-left:auto; color:var(--muted); font-size:12px; white-space:nowrap; }
+    .shell { display:grid; grid-template-columns:224px minmax(0,1fr); min-height:calc(100vh - 60px); }
+    aside { position:sticky; top:60px; height:calc(100vh - 60px); overflow:auto; padding:24px 14px; background:#f8fbfd; border-right:1px solid var(--line); }
+    .side-title { margin:0 10px 12px; color:#687887; font-size:12px; font-weight:600; }
+    .side-link { display:block; margin:3px 0; padding:8px 10px; color:#34424d; border-radius:4px; }
+    .side-link:hover,.side-link.active { background:var(--blue-50); color:#005eaa; text-decoration:none; }
+    .side-count { float:right; color:#687887; font-size:12px; }
+    main { min-width:0; max-width:1600px; width:100%; margin:0 auto; padding:28px clamp(18px,3vw,44px) 64px; }
+    .eyebrow { color:#0077d6; font-size:12px; font-weight:600; letter-spacing:.08em; }
+    h1 { margin:5px 0 8px; font-size:28px; line-height:1.3; }
+    h2 { margin:0 0 6px; font-size:20px; line-height:1.4; }
+    h3 { margin:0; font-size:16px; }
+    p { margin:7px 0; }
+    .lead { max-width:900px; color:var(--muted); font-size:15px; }
+    .hero { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:22px; }
+    .hero .stamp { color:#687887; font-size:12px; text-align:right; }
+    .metrics { display:grid; grid-template-columns:repeat(4,minmax(140px,1fr)); gap:12px; margin:20px 0 24px; }
+    .metric { padding:16px; background:var(--surface); border:1px solid var(--line); border-radius:4px; }
+    .metric b { display:block; font-size:24px; line-height:1.2; }
+    .metric span { display:block; margin-top:5px; color:var(--muted); font-size:12px; }
+    .section { margin:32px 0; scroll-margin-top:80px; }
+    .section-head { display:flex; align-items:end; justify-content:space-between; gap:18px; margin-bottom:14px; }
+    .section-head p { max-width:760px; color:var(--muted); }
+    .surface { background:var(--surface); border:1px solid var(--line); border-radius:4px; }
+    .callout { padding:16px 18px; border-left:4px solid var(--blue); background:var(--surface); }
+    .callout.warn { border-color:#f08a00; }
+    .callout strong { display:block; margin-bottom:5px; }
+    .legend { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    .tag { display:inline-flex; align-items:center; gap:5px; padding:2px 8px; border-radius:4px; background:#f5f9fc; color:#34424d; font-size:11px; white-space:nowrap; }
+    .tag.good { background:var(--ok-bg); color:var(--ok); } .tag.partial { background:var(--warn-bg); color:var(--warn); } .tag.unknown { background:#f5f9fc; color:#536370; } .tag.project { background:#eaf6ff; color:#005eaa; }
+    .domain { margin:24px 0 34px; scroll-margin-top:80px; }
+    .domain-title { display:flex; align-items:baseline; gap:10px; padding-bottom:9px; border-bottom:1px solid var(--line); }
+    .domain-title small { color:var(--muted); }
+    .module-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:12px; }
+    .module { padding:15px 16px; background:var(--surface); border:1px solid var(--line); border-radius:4px; }
+    .module-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+    .module-name { display:flex; flex-wrap:wrap; align-items:baseline; gap:8px; }
+    .module-id { color:#687887; font:12px/1.5 ui-monospace,Consolas,monospace; }
+    .module-desc { margin:8px 0; color:#34424d; }
+    .module-evidence { padding-top:8px; border-top:1px solid #eaf0f5; color:var(--muted); font-size:12px; }
+    .module-evidence div { margin:3px 0; }
+    .module-evidence strong { color:#34424d; font-weight:500; }
+    .evidence-links { display:flex; flex-wrap:wrap; gap:6px; margin-top:7px; }
+    .evidence-links a { padding:2px 6px; border:1px solid var(--line); border-radius:4px; font-size:11px; }
+    .flow { display:grid; grid-template-columns:repeat(5,minmax(120px,1fr)); align-items:stretch; gap:10px; margin-top:14px; }
+    .flow-step { position:relative; min-height:95px; padding:14px; background:var(--surface); border:1px solid var(--line); border-radius:4px; }
+    .flow-step:not(:last-child)::after { content:"→"; position:absolute; right:-13px; top:33px; z-index:1; color:var(--blue); font-weight:600; }
+    .flow-step b { display:block; margin-bottom:5px; color:#005eaa; }
+    .flow-step span { color:var(--muted); font-size:12px; }
+    .twocol { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+    .panel { padding:18px; background:var(--surface); border:1px solid var(--line); border-radius:4px; }
+    .panel ul { margin:9px 0 0; padding-left:19px; } .panel li { margin:6px 0; }
+    .table-wrap { overflow:auto; background:var(--surface); border:1px solid var(--line); border-radius:4px; }
+    table { width:100%; border-collapse:collapse; min-width:720px; }
+    th,td { padding:10px 12px; border-bottom:1px solid #eaf0f5; text-align:left; vertical-align:top; }
+    th { background:#f5f9fc; color:#34424d; font-size:12px; font-weight:600; }
+    td { font-size:13px; }
+    tr:last-child td { border-bottom:0; }
+    .footnote { color:#687887; font-size:12px; }
+    .small { font-size:12px; color:var(--muted); }
+    .highlight { color:#005eaa; font-weight:600; }
+    .search { width:min(300px,100%); padding:8px 10px; border:1px solid var(--line); border-radius:4px; font:inherit; }
+    .toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin:10px 0; }
+    .hidden { display:none!important; }
+    footer { margin-top:40px; padding-top:18px; border-top:1px solid var(--line); color:#687887; font-size:12px; }
+    @media(max-width:1000px) { .shell { grid-template-columns:190px minmax(0,1fr); } .metrics { grid-template-columns:repeat(2,1fr); } .flow { grid-template-columns:repeat(3,1fr); } .flow-step:nth-child(3)::after { display:none; } }
+    @media(max-width:720px) { .topbar { height:auto; min-height:56px; flex-wrap:wrap; gap:8px 18px; padding:10px 16px; } .topnav { order:3; width:100%; gap:16px; } .topmeta { display:none; } .shell { display:block; } aside { position:relative; top:auto; height:auto; padding:8px 12px; border-right:0; border-bottom:1px solid var(--line); white-space:nowrap; } .side-title { display:none; } .side-link { display:inline-block; margin:0 3px; } main { padding:20px 14px 44px; } .hero { display:block; } .hero .stamp { margin-top:10px; text-align:left; } .module-grid,.twocol { grid-template-columns:1fr; } .flow { grid-template-columns:1fr; } .flow-step { min-height:0; } .flow-step:not(:last-child)::after { content:"↓"; top:auto; right:14px; bottom:-16px; } .flow-step:nth-child(3)::after { display:block; } .section-head,.toolbar { align-items:flex-start; flex-direction:column; } h1 { font-size:24px; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#overview">有单 OMS · 功能复刻地图</a>
+    <nav class="topnav" aria-label="页面导航">
+      <a href="#overview">全貌</a><a href="#modules">模块地图</a><a href="#flows">业务链路</a><a href="#gaps">缺口与边界</a><a href="#evidence">证据口径</a>
+    </nav>
+    <div class="topmeta">研究基线：2026-10-02 · 目标：飞途 OMS v3.7</div>
+  </header>
+  <div class="shell">
+    <aside aria-label="模块分组">
+      <p class="side-title">功能域 · 46 项能力</p>
+      <a class="side-link" href="#foundation">身份与系统底座 <span class="side-count">8</span></a>
+      <a class="side-link" href="#master-data">客户与基础资料 <span class="side-count">7</span></a>
+      <a class="side-link" href="#crm">CRM <span class="side-count">6</span></a>
+      <a class="side-link" href="#orders">订单与履约 <span class="side-count">13</span></a>
+      <a class="side-link" href="#finance">财务与审批 <span class="side-count">7</span></a>
+      <a class="side-link" href="#analytics">工作台与分析 <span class="side-count">3</span></a>
+      <a class="side-link" href="#configuration">业务配置 <span class="side-count">2</span></a>
+      <p class="side-title" style="margin-top:22px">贯穿设计</p>
+      <a class="side-link" href="#flows">业务链路</a><a class="side-link" href="#gaps">待验证 / 排除</a><a class="side-link" href="#evidence">证据入口</a>
+    </aside>
+    <main>
+      <section id="overview" class="section" style="margin-top:0">
+        <div class="hero">
+          <div><div class="eyebrow">PRODUCT REPLICATION · FUNCTIONAL DECOMPOSITION</div><h1>从目标站调研到可开发的模块地图</h1><p class="lead">把已观察的目标站功能拆成业务模块，连接关键数据流与权限边界，并逐项标明调研证据和本项目代码现状。模块清单用于防漏和排期，不把推断冒充目标站事实。</p></div>
+          <div class="stamp">复刻唯一事实口径：<a href="REPLICATION_SPEC.md">REPLICATION_SPEC.md</a><br>开发验收契约：<a href="REQUIREMENTS.md">REQUIREMENTS.md</a><br>技术边界：<a href="TECH_SELECTION.md">TECH_SELECTION.md</a></div>
+        </div>
+        <div class="metrics">
+          <div class="metric"><b>46</b><span>能力项：41 项旧清单重新按职责拆分，并补出独立能力边界</span></div>
+          <div class="metric"><b>7</b><span>功能域：身份、资料、CRM、订单、财务、分析、配置</span></div>
+          <div class="metric"><b>3</b><span>核心业务主链：线索到订单、订单到履约、收付到结算</span></div>
+          <div class="metric"><b>底座</b><span>当前代码已起步；目标站业务模块尚未形成完整应用</span></div>
+        </div>
+        <div class="callout">
+          <strong>先把“目标功能”和“我们已经实现”分开看</strong>
+          目标是复刻旅行社内部 OMS：客户/线索 → 订单与团期 → 应收应付 → 收付款审批 → 结算、余额与经营分析。目标站核心链路有调研记录，但大量子功能仍待验证。本项目目前有登录、组织上下文和基础壳层；业务页面/API 尚未展开。目标站页面证据不等于本项目已实现。
+        <div class="legend"><span class="tag good">目标站：至少有场景执行/回读</span><span class="tag partial">目标站：页面观察或仍有验证缺口</span><span class="tag unknown">目标站：待验证或暂无证据</span><span class="tag project">本项目：实现状态单独标注</span></div>
+        </div>
+        <div class="callout" style="margin-top:14px"><strong>证据不足项的本项目方案</strong>功能地图记录“目标站观察到了什么”；未验证的 CRM 转换、财务并发、通知投递、统计查询等实现方式按模块化单体原则处理。<a href="../.harness/docs/design-docs/functional-modular-architecture.md">阅读模块化与高性能架构方案</a>。本方案不代表目标站内部实现，也不代表本项目代码已实现。</div>
+      </section>
+
+      <section class="section" id="modules">
+        <div class="section-head"><div><h2>完整模块地图</h2><p>旧复刻规格 §11 有 41 个标题。本地图按独立业务责任重新拆分，并为游客名单、站内通知单列能力，同时把 CRM 设置、应收应付项目、操作安全设置从复合模块中拆出，共 46 项。证据状态只描述已有材料覆盖到什么程度。</p></div></div>
+        <div class="toolbar"><span class="small">可按模块编号、名称或功能描述筛选。具体证据状态以卡片中的规格条目为准。</span><input id="search" class="search" type="search" placeholder="搜索模块，例如 ORDER_PRICE"></div>
+
+        <section class="domain" id="foundation"><div class="domain-title"><h3>01 · 身份与系统底座</h3><small>横切全部业务：会话、组织、权限、安全设置、审计、通知</small></div><div id="grid-foundation" class="module-grid"></div></section>
+        <section class="domain" id="master-data"><div class="domain-title"><h3>02 · 客户与基础资料</h3><small>CRM 和订单共用的客户、供应资源与字典</small></div><div id="grid-master" class="module-grid"></div></section>
+        <section class="domain" id="crm"><div class="domain-title"><h3>03 · CRM</h3><small>从线索跟进到客户/订单转化</small></div><div id="grid-crm" class="module-grid"></div></section>
+        <section class="domain" id="orders"><div class="domain-title"><h3>04 · 订单与履约</h3><small>订单生命周期、团期、游客、附件和记录输出</small></div><div id="grid-orders" class="module-grid"></div></section>
+        <section class="domain" id="finance"><div class="domain-title"><h3>05 · 财务与审批</h3><small>项目额度、申请、审批、内部记账与余额；不含真实银行支付</small></div><div id="grid-finance" class="module-grid"></div></section>
+        <section class="domain" id="analytics"><div class="domain-title"><h3>06 · 工作台与经营分析</h3><small>统一业务数据口径，按授权范围汇总和下钻</small></div><div id="grid-analytics" class="module-grid"></div></section>
+        <section class="domain" id="configuration"><div class="domain-title"><h3>07 · 业务配置</h3><small>配置审批策略与订单行为；基础字典归入基础资料</small></div><div id="grid-config" class="module-grid"></div></section>
+      </section>
+
+      <section class="section" id="flows">
+        <div class="section-head"><div><h2>模块依赖与业务链路</h2><p>以下是按复刻范围归纳的模块关系。箭头表示信息/状态依赖，不表示目标站内部微服务或数据库结构已被证实。</p></div></div>
+        <div class="panel"><h3>线索、客户与订单主链</h3><div class="flow"><div class="flow-step"><b>线索 / 公海</b><span>来源、负责人、跟进、阶段</span></div><div class="flow-step"><b>客户与基础资料</b><span>客户、标签、来源、线路、供应商、地区和字典</span></div><div class="flow-step"><b>订单创建</b><span>团期、人数、应收应付、利润；正式/预订单</span></div><div class="flow-step"><b>履约管理</b><span>游客、附件、日历、锁团、取消恢复、对账</span></div><div class="flow-step"><b>经营分析</b><span>仪表盘、经营报表、员工业绩、订单导出</span></div></div></div>
+        <div class="panel" style="margin-top:14px"><h3>财务主链</h3><div class="flow"><div class="flow-step"><b>订单财务项目</b><span>应收、应付和各项目剩余额度</span></div><div class="flow-step"><b>收款 / 付款申请</b><span>按订单及明细项目提交；额度在服务端校验</span></div><div class="flow-step"><b>逐级审批</b><span>审批快照、通过、驳回重提、撤回与审计</span></div><div class="flow-step"><b>内部确认与流水</b><span>终审自动确认（限实测配置）；不触发银行划款</span></div><div class="flow-step"><b>账户余额 / 结算</b><span>按已确认收付计算；供应商批量结算另有复核</span></div></div></div>
+        <div class="twocol" style="margin-top:14px">
+          <div class="panel"><h3>横切规则</h3><ul><li><b>租户与权限：</b>用户/组织上下文与权限检查覆盖每次读写、导出、附件访问；数据库 RLS 是第二道隔离。第二租户与 own/all 数据范围仍需验证。</li><li><b>审计：</b>审批、金额、状态、权限、配置和删除恢复等高影响行为要留操作者、对象、前后状态/摘要。</li><li><b>通知：</b>审批待办、驳回、临期、出团与跟进提醒；目标站完整投递链仍待补测。</li><li><b>设计框架：</b>全局顶栏 + 左侧菜单 + 右侧工作区，首页工作台使用仪表盘；这是本项目已定设计约束，不等同于调研证据。</li></ul></div>
+          <div class="panel"><h3>数据所有权边界</h3><ul><li>订单是业务聚合中心；游客、附件、应收应付项目和收付记录围绕订单关联。</li><li>收付款终审、余额和审计必须保持事务一致；重复提交与并发额度不可由页面状态代替校验。</li><li>客户/线路/供应商等快捷新增仍是订单创建过程中的关联主数据能力，不应变成彼此重复的第二套数据源。</li><li>报表、工作台、导出应复用相同筛选口径和数据范围；不要从目标截图臆造指标。</li></ul></div>
+        </div>
+      </section>
+
+      <section class="section" id="project-state">
+        <div class="section-head"><div><h2>本项目当前实现边界</h2><p>根据当前代码目录、路由和迁移文件观察；这里只列出实际存在的骨架，不推断尚未实现的业务能力。</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>区域</th><th>代码现状</th><th>证据</th><th>与目标功能地图的关系</th></tr></thead><tbody>
+          <tr><td>Web 页面</td><td>存在登录页、登录后布局和首页占位页；路由目前只有 `/login` 与首页。布局有顶栏和组织选择器，尚无左侧模块菜单；首页展示公司与角色，不是目标站经营仪表盘。</td><td><a href="../apps/web/src/router/index.ts">router/index.ts</a> · <a href="../apps/web/src/layouts/AppLayout.vue">AppLayout.vue</a> · <a href="../apps/web/src/views/HomeView.vue">HomeView.vue</a></td><td>认证与框架起步；既定顶栏+左菜单约束尚未完全落入代码。46 项业务能力不能标为已实现。</td></tr>
+          <tr><td>API</td><td>当前路由覆盖健康检查和组织上下文相关能力；未发现客户、订单、CRM 或财务业务路由。</td><td><a href="../apps/api/src/index.ts">apps/api/src/index.ts</a> · <a href="../apps/api/src/routes/organizations.ts">organizations.ts</a></td><td>组织/租户底座正在建立；业务服务、命令和查询仍是后续模块工作。</td></tr>
+          <tr><td>数据库</td><td>三份迁移建立身份/组织、RLS 辅助函数和组织上下文 API；没有目标站真实 schema，目标站概念模型不能直接当成本项目物理 schema。</td><td><a href="../supabase/migrations/20261003000000_identity.sql">identity migration</a> · <a href="../supabase/migrations/20261003000001_rls_helpers.sql">RLS helpers</a> · <a href="../supabase/migrations/20261003000002_organization_context_api.sql">organization context</a></td><td>只证明基础设施层已开始，不证明客户、订单、财务表或业务 RLS 已完成。</td></tr>
+          <tr><td>技术与页面设计</td><td>项目采用 Vue 3、TypeScript、Vite、Ant Design Vue、Hono、Cloudflare Workers、Supabase PostgreSQL/Auth/RLS。AI 对话不是当前功能；引入智能体时再单独评估 ant-design-x-vue。</td><td><a href="TECH_SELECTION.md">TECH_SELECTION.md</a> · <a href="../DESIGN.md">DESIGN.md</a></td><td>技术与布局约束已定；功能拆分不代表已经批准任何具体 AI Agent 或外部支付集成。</td></tr>
+        </tbody></table></div>
+      </section>
+
+      <section class="section" id="gaps">
+        <div class="section-head"><div><h2>范围缺口、未决事项与明确排除</h2><p>这些事项会影响模块设计或实现顺序，不能在拆分图中悄悄填成既定规则。</p></div></div>
+        <div class="twocol">
+          <div class="panel"><h3>需补测 / 需业务定规则</h3><ul><li>第二租户、同角色本人/全部数据范围，以及同租户对象、附件、导出授权。</li><li>CRM 的编辑、查重、公海认领/分配、转客户/订单、完整阶段漏斗；目标站创建线索出现 HTTP 500，不能复制该缺陷。</li><li>订单金额总价覆盖、动态应收应付异常组合、服务端重算；并发状态转换和锁团后服务端编辑保护。</li><li>收付款审批配置变更、关闭自动确认、自审策略、撤回/冲正、重复提交/并发审批；批量结算重复纳入和月结规则。</li><li>通知投递与已读链路、导入模板和逐行失败、导出内容及权限过滤、附件对象级权限。</li><li>订单与报表状态统计口径、CRM 有数据后的统计、筛选下钻、公司设置完整保存效果。</li><li>AI 解析对目标站会自动创建客户与线路；复刻建议改为“先生成建议、人工复核、显式关联/创建”。这是产品方案建议，需在需求定稿时明确。</li></ul></div>
+          <div class="panel"><h3>当前范围外 / 不可从证据推出</h3><ul><li>真实银行划款、第三方支付、外部短信/邮件/企业微信、OTA 下单、电子合同签署、多币种核算：现阶段需求明确排除。</li><li>七牛云是对象存储目标，但目前无确认的持久化前端上传/下载流程，集成暂缓；不作为阶段 0 或订单主链前置。</li><li>原目标站的真实数据库 schema、租户模型完整细节、套餐计费行为没有证据；本项目可自行设计，但须建立自己的迁移与验收。</li><li>AI 模型供应商、提示词、额度、流式对话、多智能体编排、工具执行均未证实；AI_PARSE 与 AI_CRM 不等于 Agent 对话模块。</li><li>参考图能支撑视觉方向与布局结构，不能证明目标站每个功能的像素尺寸、断点或未展示业务行为。</li></ul></div>
+        </div>
+        <div class="callout warn" style="margin-top:14px"><strong>复刻策略</strong>复刻调研得出的“目标站事实”和“为我们设计的实现方案”分开记录。遇到目标站缺陷、历史接口差异或证据不足时，以需求文档和模块化架构方案的明确边界为准；未经证据确认，不把预测写成兼容要求。</div>
+      </section>
+
+      <section class="section" id="evidence">
+        <div class="section-head"><div><h2>证据口径与可追溯入口</h2><p>此页只引用现有项目资料和已脱敏原始证据，不从截图外推未观察的行为。</p></div></div>
+        <div class="twocol">
+          <div class="panel"><h3>四级事实标记</h3><ul><li><b>报文可核验：</b>能在保存文件中查到请求 method、URL、字段或响应元数据；不自动证明完整流程成功。</li><li><b>页面可核验：</b>DOM 快照可以证明页面、按钮、字段或文案存在；HTML required 不自动等于服务端必填。</li><li><b>执行记录：</b>调研记录描述提交和回读结果，但若没有单独报文/页面文件，就标为执行记录，不伪称原始报文证据。</li><li><b>待验证 / 设计建议：</b>证据不足或新系统决策，使用“待验证”“建议”“待产品决策”等字样。</li></ul></div>
+          <div class="panel"><h3>事实主索引</h3><ul><li><a href="REPLICATION_SPEC.md">REPLICATION_SPEC.md</a>：唯一维护目标站事实、状态、缺口和证据链接；本文是便于阅读的功能地图，不取代它。</li><li><a href="REQUIREMENTS.md">REQUIREMENTS.md</a>：开发范围、权限、业务规则和验收契约；目标站未证实的产品规则在这里也标明边界。</li><li>脱敏页面与网络原始证据链接见各模块卡片，完整索引见复刻规格 §12。</li><li><a href="../.harness/docs/references/research-index-llms.txt">研究索引</a>：研究材料导航；归档 JSON 是历史机器可读材料，不作为最新状态来源。</li></ul></div>
+        </div>
+        <div class="callout" style="margin-top:14px"><strong>模块证据怎么读</strong>每张卡片给出复刻规格 §11 的能力编号、状态短述和可用页面/网络文件。详细证据边界、状态反例、接口细节及缺口请点开规格原文对应的 §11 条目；对没有独立页面文件的模块，卡片会明确写“执行文字”或“待验证”。页面中的“执行/回读有证据”仅表示至少有该场景，不代表功能清单所有子项都完成。</div>
+      </section>
+      <footer>此 HTML 是模块分析与追踪视图；不是已批准的开发排期、数据库 schema 或目标站完整验收报告。设计约束入口：<a href="../DESIGN.md">DESIGN.md</a>。模块需求有更新时，先更新 REPLICATION_SPEC.md / REQUIREMENTS.md，再同步本展示页。</footer>
+    </main>
+  </div>
+  <script>
+    const modules = [
+      {g:'foundation',id:'AUTH',name:'登录与会话',desc:'登录、退出、密码更新、账号停用、当前用户与公司上下文。',state:'登录成功、禁用拒绝有执行证据；过期、并发、退出/改密全流程待测。',spec:'11.1',ev:['network_01_login.json','pages/dashboard.json']},
+      {g:'foundation',id:'TENANT_SCOPE',name:'租户上下文与数据隔离',desc:'当前组织选择、成员校验、业务行/文件/导出均按租户隔离。',state:'仅一个目标租户；跨租户、同租户本人/全部范围未验证。',spec:'11.41',ev:['pages/roles.json','pages/users.json']},
+      {g:'foundation',id:'USER',name:'用户管理',desc:'用户列表、创建、编辑、启停、角色关联与成员身份。',state:'创建财务用户、停用后登录拒绝有记录；删除未生效。',spec:'11.32',ev:['pages/users.json','pages/users_create.json','network_06_receipt_user.json']},
+      {g:'foundation',id:'ROLE',name:'角色与权限',desc:'角色权限矩阵、功能动作权限、本人/全部数据范围。',state:'60 项权限页面及一次保存变化有记录；完整矩阵和服务端数据范围待测。',spec:'11.33',ev:['pages/roles.json','network_16_role_permission.json']},
+      {g:'foundation',id:'SECURITY_SETTING',name:'操作安全设置',desc:'公司级操作安全策略及其生效行为；高风险操作策略需要和服务端授权一致。',state:'操作安全设置页面已读取；保存效果和策略实际拦截行为待测，已从审计日志模块拆开。',spec:'2.1 / 8.2',ev:['pages/settings_operation.json']},
+      {g:'foundation',id:'COMPANY',name:'公司资料与品牌设置',desc:'公司信息、主题、字号、Logo 与配额设置。',state:'主题持久化并回读；Logo、字号和完整设置待测。',spec:'11.34',ev:['pages/settings_company.json','network_17_company_settings.json']},
+      {g:'foundation',id:'SECURITY_LOG',name:'操作日志与审计',desc:'按用户、时间、对象和动作追溯高影响状态变化。',state:'日志页读取到审批与锁团记录；覆盖完整性、敏感字段和查询权限需单独验收。',spec:'11.37',ev:['pages/audit_logs_with_data.json']},
+      {g:'foundation',id:'NOTIFY',name:'站内通知',desc:'未读计数、通知列表、已读状态和业务对象跳转；审批、驳回、临期等触发源。',state:'需求明确列出；目标站存在轮询/已读请求记录，但通知内容与完整投递链未验证。',spec:'需求 §10 / 复刻规格 §8.2',ev:['network_02_nav_sweep.json','recheck_20261002_02_notifications.json']},
+
+      {g:'master',id:'CUSTOMER',name:'客户档案',desc:'客户信息、筛选、详情、标签、订单关联和敏感字段掩码。',state:'页面、创建回读、服务端拒绝空姓名有记录；完整掩码/关联范围仍需验收。',spec:'11.3',ev:['pages/customers.json','network_04_master_data.json']},
+      {g:'master',id:'TAG',name:'客户标签',desc:'标签名称/颜色、增改删及客户关联。',state:'标签页与字段已读取；创建及关联操作未跑。',spec:'11.4',ev:['pages/customer_tags.json']},
+      {g:'master',id:'SOURCE',name:'客户来源',desc:'来源分类、树形层级与历史单据来源快照。',state:'来源树和订单表单枚举已读取；层级维护未执行。',spec:'11.5',ev:['pages/settings_customer_sources.json','pages/orders_create.json']},
+      {g:'master',id:'SUPPLIER',name:'供应商',desc:'供应商档案、联系人、结算方式、启停与被引用保护。',state:'创建回读和被引用删除受阻有记录；编辑、月结/非月结筛选等未逐项验证。',spec:'11.10',ev:['pages/suppliers.json','network_03_supplier_create.json']},
+      {g:'master',id:'ROUTE',name:'旅游线路',desc:'线路类型、地区、出发地、天数、自组团属性、启停和订单关联。',state:'创建及回读有记录；快捷新增与完整编辑/停用边界需继续验收。',spec:'11.11',ev:['pages/routes.json','network_04_master_data.json']},
+      {g:'master',id:'REGION',name:'地区层级',desc:'地区树、增改查重及线路/出发地选项联动。',state:'页面树和部分提交证据存在；完整 CRUD 与查重链未成套留证。',spec:'11.12',ev:['pages/regions.json','pages/orders_create.json']},
+      {g:'master',id:'DICT',name:'业务字典',desc:'付款方式、线路类型、供应商类型、出发城市等租户配置项。',state:'字典枚举已读取；各类别 CRUD 未形成完整证据链。',spec:'11.13',ev:['pages/settings_payment_methods.json','pages/settings_route_types.json','pages/settings_supplier_types.json','pages/settings_departure_cities.json']},
+
+      {g:'crm',id:'LEAD',name:'销售线索',desc:'线索基本信息、列表详情、创建编辑、筛选查重及生命周期。',state:'列表和字段页面可读、阶段跟进有记录；完整成功链不完整，另有完整提交 HTTP 500 记录；编辑/查重待测。',spec:'11.6',ev:['pages/leads_pool.json','network_18_lead_stage.json']},
+      {g:'crm',id:'FOLLOWUP',name:'跟进与线索转换',desc:'联系记录、下次跟进、阶段推进、负责人，以及转客户/订单。',state:'新线索推进到需求沟通有执行记录；其他阶段、转化流程未验证。',spec:'11.7',ev:['network_18_lead_stage.json']},
+      {g:'crm',id:'POOL',name:'线索公海',desc:'公海池、认领、分配、超时回收、权限和历史归属。',state:'公海页面可读；当时无数据，认领/分配没有执行。',spec:'11.8',ev:['pages/leads_pool.json']},
+      {g:'crm',id:'CRM_SETTING',name:'CRM 流程设置',desc:'线索阶段与公海超时等 CRM 规则配置；配置变更影响在途线索的行为需明确。',state:'阶段管理和超时天数设置页面已读；保存效果未执行，属于从 CRM 设置页面单独拆出的能力。',spec:'11.8',ev:['pages/leads_settings.json']},
+      {g:'crm',id:'CRM_REPORT',name:'CRM 统计',desc:'线索漏斗、阶段转化、负责人排行与来源分析。',state:'CRM 空态已读取；有数据的漏斗、排行和统计口径未回读。',spec:'11.9',ev:['pages/leads.json']},
+      {g:'crm',id:'AI_CRM',name:'AI 线索建议',desc:'面向非空线索给跟进建议；建议如何引用真实线索和授权范围。',state:'只有空态文案；非空线索建议和模型行为未验证，不等同智能体对话。',spec:'11.40',ev:['pages/leads.json']},
+
+      {g:'orders',id:'ORDER_CREATE',name:'订单创建',desc:'正式/预订单，客户/线路/供应商选择及表单内快捷新增。',state:'正式/预订单创建和确认出团有执行证据；快捷新增完整闭环仍需逐项验收。',spec:'11.14',ev:['pages/orders_create.json','network_05_order_create.json','network_12_dict_preorder.json']},
+      {g:'orders',id:'ORDER_READ',name:'订单列表与详情',desc:'列表/详情/编辑、筛选、排序、分页、状态页签及关联业务信息。',state:'列表、详情、编辑页面可读并有编辑记录；筛选组合/掩码边界未完全验证。',spec:'11.15',ev:['pages/orders.json','pages/order_detail_1069.json','pages/order_edit_1070.json']},
+      {g:'orders',id:'ORDER_PRICE',name:'订单金额计算',desc:'人数与单价、动态应收应付、总价覆盖、利润/毛利率/客单价。',state:'样例与计算口径已读；异常组合、金额篡改后的服务端重算仍待测。',spec:'11.16',ev:['pages/order_detail_1069.json','pages/reports_with_data.json']},
+      {g:'orders',id:'ORDER_CALENDAR',name:'订单团期日历',desc:'按年月、出发/回团日期和条件查看日历事件。',state:'有日历接口结构摘录；页面、筛选和完整响应体未留独立证据。',spec:'11.17',ev:['network_09_supplement.json']},
+      {g:'orders',id:'ORDER_BATCH',name:'订单批量操作',desc:'批量状态操作、软删除及选择后逐项结果反馈。',state:'批量软删除等动作有记录；批量锁团和部分逆向操作待测。',spec:'11.18',ev:['network_08_cleanup.json','network_09_supplement.json']},
+      {g:'orders',id:'ORDER_LOCK',name:'锁团与解锁',desc:'锁团状态、编辑限制、解锁原因及状态审计。',state:'收款仅 40% 时锁团成功；解锁填原因和页面编辑受限有记录，服务端绕过测试待补。',spec:'11.19',ev:['pages/order_detail_1069.json','network_08_cleanup.json']},
+      {g:'orders',id:'RECONCILE',name:'订单对账',desc:'订单/供应商应付对账标记与取消对账。',state:'确认对账请求与“只改变标记”记录存在；取消对账未执行。',spec:'11.20',ev:['network_09_supplement.json']},
+      {g:'orders',id:'RECYCLE',name:'回收站与恢复',desc:'订单/线索软删除、恢复、引用检查和物理删除策略。',state:'订单移入回收站并恢复有记录；级联与彻底删除规则仍有缺口。',spec:'11.38',ev:['pages/orders_trash.json','pages/leads_trash.json','network_08_cleanup.json']},
+      {g:'orders',id:'TOURIST',name:'游客名单',desc:'按订单维护游客、人数差额、CSV 模板与追加导入。',state:'目标站逐行维护/导入已观察；人数不一致仅警告可保存；异常文件/部分失败待测。',spec:'复刻规格 §3.3 / 需求 §6',ev:['pages/order_detail_1069.json','network_14_tourists.json']},
+      {g:'orders',id:'IMPORT',name:'数据导入',desc:'模板下载、文件解析、预览、错误行、重复处理与提交结果。',state:'通用导入未发现完整证据；游客 CSV 有独立能力，其余模块不能推定已支持。',spec:'11.29',ev:['network_14_tourists.json']},
+      {g:'orders',id:'EXPORT',name:'数据导出',desc:'CSV/其他格式、当前筛选和数据范围一致、敏感列授权。',state:'CSV 下载与响应信息有记录；文件内容、筛选继承与权限过滤待测。',spec:'11.30',ev:['network_09_supplement.json']},
+      {g:'orders',id:'ATTACHMENT',name:'业务附件',desc:'订单合同、收付款凭证的上传、预览、下载和对象授权。',state:'上传及登录门禁有记录；同租户对象权限、跨租户授权和服务端大小限制未验证。',spec:'11.31',ev:['network_15_attachment.json','pages/orders_create.json']},
+      {g:'orders',id:'AI_PARSE',name:'AI 文本解析',desc:'把文本转成订单字段建议，人工复核后再保存/关联档案。',state:'解析成功有记录；目标站解析会自动创建客户/线路；复刻建议改成人工确认副作用。',spec:'11.39',ev:['network_07_ai_parse.json']},
+
+      {g:'finance',id:'RECEIPT',name:'收款申请',desc:'选择订单应收项目，录金额/方式/凭证，校验额度和部分收款。',state:'部分收款、审批、确认和回读有实测；撤回/退款/冲正仍待规则。',spec:'11.21',ev:['pages/receipt_create.json','pages/customer_payments_after.json']},
+      {g:'finance',id:'PAYMENT',name:'付款申请',desc:'选择订单、供应商与应付项目，支持部分付款及凭证。',state:'全额付款、审批确认、回读有记录；异常金额和重复提交需验收。',spec:'11.22',ev:['pages/payment_create.json','pages/order_detail_1069.json']},
+      {g:'finance',id:'FINANCIAL_ITEMS',name:'应收应付项目',desc:'订单保存后生成独立应收/应付明细，追踪原额、已确认、在途和可申请余额。',state:'目标站订单详情与财务操作可见应收/应付项目；并发额度等完整边界仍需验收。项目级余额/事务约束来自本项目需求契约，不冒充目标站数据库事实。',spec:'需求 §7 / 复刻规格 §2、§4',ev:['pages/order_detail_1069.json','pages/receipt_create.json','pages/payment_create.json']},
+      {g:'finance',id:'APPROVAL',name:'逐级审批',desc:'收付款审批队列、逐级授权、驳回重提、撤回和并发保护。',state:'两级通过/部分驳回路径有记录；审批 UI 未跑通，自审、撤回、并发及配置变更待核。',spec:'11.23',ev:['network_16_role_permission.json','network_08_cleanup.json']},
+      {g:'finance',id:'CONFIRM',name:'收付款内部确认',desc:'最终审批后的业务确认和流水入账；清楚区别真实资金划转。',state:'最终审批自动确认有记录（限当时配置）；关闭自动确认后的手工路径未验证。',spec:'11.24',ev:['pages/order_detail_1069.json']},
+      {g:'finance',id:'SETTLEMENT',name:'供应商批量结算',desc:'按供应商/项目挑选待结算项，预览复核并防重复纳入。',state:'单笔 2300 付清及二次明细确认有记录；重复纳入、月结和审批路径待测。',spec:'11.25',ev:['pages/batch_settle.json','network_19_batch_settle.json']},
+      {g:'finance',id:'BALANCE',name:'账户余额',desc:'按资金账户统计期初、已确认收款、付款和当前余额。',state:'按付款方式分账户的余额页面已回读；完整并发/撤回重算需由复刻验收。',spec:'11.26',ev:['pages/balances_with_data.json']},
+
+      {g:'analytics',id:'HOME',name:'仪表盘工作台',desc:'订单摘要、财务待办/趋势、风险提醒、CRM 摘要和快捷入口。',state:'目标站空态/有数据页面已读；卡片逐项下钻未验证；本项目当前为组织信息占位页。',spec:'11.2',ev:['pages/dashboard.json']},
+      {g:'analytics',id:'REPORT',name:'经营分析',desc:'订单总览、订单明细、供应商统计和统一日期/状态口径。',state:'主要报表与口径文字已回读；各指标下钻和更多状态组合待验证。',spec:'11.27',ev:['pages/reports_with_data.json']},
+      {g:'analytics',id:'PERFORMANCE',name:'员工业绩统计',desc:'按员工归属统计贡献、线路表现、本人/全部数据范围。',state:'创建人贡献、线路表现、亏损提醒已读取；角色数据范围和指标组合待验证。',spec:'11.28',ev:['pages/statistics_with_data.json']},
+
+      {g:'config',id:'APPROVAL_SETTING',name:'审批流程设置',desc:'收款/付款审批层级、审批人、自动确认和撤回策略。',state:'页面配置项已读；配置保存及对在途申请的影响未执行。',spec:'11.35',ev:['pages/settings_approval.json']},
+      {g:'config',id:'ORDER_SETTING',name:'订单规则设置',desc:'订单列表字段、自动锁团条件、提成等订单行为配置。',state:'列设置/自动锁团/提成字段已读；保存效果和业务影响未验证。',spec:'11.36',ev:['pages/settings_order.json']}
+    ];
+    const projectState = '本项目：业务功能未实现';
+    const grade = (s) => /未|待|需|仍|不完整|尚|缺/.test(s) ? 'partial' : 'good';
+    function renderModule(m) {
+      const evidence = m.ev.map(path => `<a href="research/evidence/${path}">${path.split('/').pop()}</a>`).join('');
+      const status = grade(m.state);
+      return `<article class="module" data-search="${(m.id+' '+m.name+' '+m.desc).toLowerCase()}"><div class="module-top"><div class="module-name"><span class="module-id">${m.id}</span><h3>${m.name}</h3></div><span class="tag ${status}">${status==='good'?'有执行/回读':'页面观察/验证有缺口'}</span></div><p class="module-desc">${m.desc}</p><div class="module-evidence"><div><strong>目标站：</strong>${m.state}</div><div><strong>项目代码：</strong>${m.id==='AUTH'?'认证/会话基础已实现，业务流程仍需补齐':m.id==='TENANT_SCOPE'?'组织上下文/RLS 底座已起步，业务对象隔离未完成':m.id==='HOME'?'仅首页占位，不含目标站仪表盘':'业务功能未实现'}</div><div><strong>范围出处：</strong><a href="REPLICATION_SPEC.md">复刻规格 §${m.spec}</a></div><div class="evidence-links">${evidence}</div></div></article>`;
+    }
+    const groups = {foundation:'grid-foundation',master:'grid-master',crm:'grid-crm',orders:'grid-orders',finance:'grid-finance',analytics:'grid-analytics',config:'grid-config'};
+    for (const m of modules) document.getElementById(groups[m.g]).insertAdjacentHTML('beforeend',renderModule(m));
+    document.getElementById('search').addEventListener('input',e=>{ const q=e.target.value.trim().toLowerCase(); document.querySelectorAll('.module').forEach(card=>card.classList.toggle('hidden',!card.dataset.search.includes(q))); document.querySelectorAll('.domain').forEach(section=>section.classList.toggle('hidden',[...section.querySelectorAll('.module')].every(card=>card.classList.contains('hidden')))); });
+    const navLinks=[...document.querySelectorAll('.topnav a')]; const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{ if(entry.isIntersecting){navLinks.forEach(a=>a.classList.toggle('active',a.hash==='#'+entry.target.id));}}),{rootMargin:'-25% 0px -65% 0px'}); document.querySelectorAll('main > .section').forEach(section=>observer.observe(section));
+  </script>
+</body>
+</html>

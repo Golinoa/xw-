@@ -1,0 +1,1250 @@
+{
+  "url": "https://trip.lipseo.com/leads",
+  "title": "飞途旅游订单系统",
+  "heading": "CRM 仪表盘",
+  "meta": {
+    "csrf": true
+  },
+  "text": "飞途旅游订单系统\n导航菜单\n仪表盘\n新建订单\n订单管理\n收款管理\n付款管理\n批量结算\n账户余额\n审核工作台\n经营分析\n业绩统计\nCRM管理\n基础数据\n地区管理\n供应商管理\n线路管理\n客户管理\n操作日志\n系统设置\n系统设置\n用户管理\n角色权限\n飞途OMS v3.7 © 2026\n今天的努力，是明天成功的基石。\n有效期至 2026-10-05\n标签\n马总\n管理员\n仪表盘\n线索列表\n公海\n回收站\n设置\nCRM 仪表盘\n2026年10月01日 · 本月 0 单成交\n新建线索\n快速跟进\n今日待跟进\n0\n0\n▲ 今日\n已逾期跟进\n0\n0\n需处理\n预计成交金额\n¥0\n本月\n0单\n本月已成交\n0\n0线索\n本月成交率\n0%\n偏低\n客户趋势\n7天\n30天\n本月\n销售漏斗\n新线索\n0%\n需求沟通\n0%\n报价中\n0%\n方案确认\n0%\n0\n已成单\n0\n已放弃\nCRM 任务中心\n0\n待跟进客户\n0\n超时客户\n0\n待报价客户\n0\n待成交客户\n0\n今日出发\n0\n今日返团\nAI 工作建议\n当前所有线索跟进正常，继续保持！\n处理超时\n今日待跟进客户\n查看全部\n客户\t阶段\t意向\t风险\t电话\t预算\t来源\t负责人\t\n🎉 暂无待跟进客户\n团队排行榜\n1\n马总\n成交 0 单 · 跟进 0 · 率 0%",
+  "forms": [
+    {
+      "action": "https://trip.lipseo.com/logout",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "退出登录",
+          "type": "submit",
+          "cls": "dropdown-item"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/leads",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "name",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "phone",
+          "type": "text",
+          "id": "addPhone",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "email",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "source_id",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "请选择"
+            },
+            {
+              "v": "1580",
+              "t": "老客户转介绍"
+            },
+            {
+              "v": "1581",
+              "t": "└ 老客户推荐"
+            },
+            {
+              "v": "1582",
+              "t": "└ VIP/高净值客户推荐"
+            },
+            {
+              "v": "1567",
+              "t": "实体门店与地推"
+            },
+            {
+              "v": "1568",
+              "t": "└ 线下门店自然到访"
+            },
+            {
+              "v": "1569",
+              "t": "└ 社区推广活动"
+            },
+            {
+              "v": "1542",
+              "t": "旅游平台 (OTA)"
+            },
+            {
+              "v": "1543",
+              "t": "└ 携程"
+            },
+            {
+              "v": "1544",
+              "t": "└ 去哪儿"
+            },
+            {
+              "v": "1545",
+              "t": "└ 飞猪"
+            },
+            {
+              "v": "1546",
+              "t": "└ 同程旅行"
+            },
+            {
+              "v": "1547",
+              "t": "└ 美团酒旅"
+            },
+            {
+              "v": "1548",
+              "t": "└ Booking/Agoda（境外）"
+            },
+            {
+              "v": "1583",
+              "t": "达人与KOL/KOC"
+            },
+            {
+              "v": "1584",
+              "t": "└ 旅游博主"
+            },
+            {
+              "v": "1585",
+              "t": "└ 媒体/记者采风"
+            },
+            {
+              "v": "1570",
+              "t": "异业联盟合作"
+            },
+            {
+              "v": "1571",
+              "t": "└ 银行/金融机构"
+            },
+            {
+              "v": "1572",
+              "t": "└ 航空公司/航司会员"
+            },
+            {
+              "v": "1573",
+              "t": "└ 高端车友会"
+            },
+            {
+              "v": "1574",
+              "t": "└ 婚纱摄影机构"
+            },
+            {
+              "v": "1575",
+              "t": "└ 教育/研学机构"
+            },
+            {
+              "v": "1549",
+              "t": "新媒体与短视频"
+            },
+            {
+              "v": "1550",
+              "t": "└ 抖音"
+            },
+            {
+              "v": "1551",
+              "t": "└ 快手"
+            },
+            {
+              "v": "1552",
+              "t": "└ 视频号"
+            },
+            {
+              "v": "1553",
+              "t": "内容种草社区"
+            },
+            {
+              "v": "1554",
+              "t": "└ 小红书"
+            },
+            {
+              "v": "1555",
+              "t": "└ 马蜂窝"
+            },
+            {
+              "v": "1556",
+              "t": "└ 大众点评"
+            },
+            {
+              "v": "1576",
+              "t": "企业与团队业务 (B2B)"
+            },
+            {
+              "v": "1577",
+              "t": "└ 企业团建/拓展"
+            },
+            {
+              "v": "1578",
+              "t": "└ 政府/事业单位采购"
+            },
+            {
+              "v": "1579",
+              "t": "└ 旅行社同业切位/包房"
+            },
+            {
+              "v": "1557",
+              "t": "搜索引擎营销"
+            },
+            {
+              "v": "1558",
+              "t": "└ 百度搜索（竞价/SEO）"
+            },
+            {
+              "v": "1559",
+              "t": "└ 搜狗搜索"
+            },
+            {
+              "v": "1560",
+              "t": "社交与信息流广告"
+            },
+            {
+              "v": "1561",
+              "t": "└ 微信朋友圈广告"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "destination",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "请选择"
+            },
+            {
+              "v": "广东省内",
+              "t": "广东省内"
+            },
+            {
+              "v": "　└ 广州",
+              "t": "└ 广州"
+            },
+            {
+              "v": "　└ 深圳",
+              "t": "└ 深圳"
+            },
+            {
+              "v": "　└ 湛江",
+              "t": "└ 湛江"
+            },
+            {
+              "v": "中东",
+              "t": "中东"
+            },
+            {
+              "v": "　└ 迪拜",
+              "t": "└ 迪拜"
+            },
+            {
+              "v": "　└ 阿联酋",
+              "t": "└ 阿联酋"
+            },
+            {
+              "v": "　└ 埃及",
+              "t": "└ 埃及"
+            },
+            {
+              "v": "非洲",
+              "t": "非洲"
+            },
+            {
+              "v": "　└ 肯尼亚",
+              "t": "└ 肯尼亚"
+            },
+            {
+              "v": "亚洲",
+              "t": "亚洲"
+            },
+            {
+              "v": "　└ 泰国",
+              "t": "└ 泰国"
+            },
+            {
+              "v": "　└ 新加坡",
+              "t": "└ 新加坡"
+            },
+            {
+              "v": "　└ 韩国",
+              "t": "└ 韩国"
+            },
+            {
+              "v": "　└ 日本",
+              "t": "└ 日本"
+            },
+            {
+              "v": "欧洲",
+              "t": "欧洲"
+            },
+            {
+              "v": "　└ 德国",
+              "t": "└ 德国"
+            },
+            {
+              "v": "　└ 英国",
+              "t": "└ 英国"
+            },
+            {
+              "v": "国内",
+              "t": "国内"
+            },
+            {
+              "v": "　└ 海南",
+              "t": "└ 海南"
+            },
+            {
+              "v": "　└ 四川",
+              "t": "└ 四川"
+            },
+            {
+              "v": "　└ 西藏",
+              "t": "└ 西藏"
+            },
+            {
+              "v": "　└ 新疆",
+              "t": "└ 新疆"
+            },
+            {
+              "v": "　└ 湖南",
+              "t": "└ 湖南"
+            },
+            {
+              "v": "　└ 云南",
+              "t": "└ 云南"
+            },
+            {
+              "v": "　└ 甘肃",
+              "t": "└ 甘肃"
+            },
+            {
+              "v": "　└ 内蒙古",
+              "t": "└ 内蒙古"
+            },
+            {
+              "v": "　└ 广西",
+              "t": "└ 广西"
+            },
+            {
+              "v": "　└ 北京",
+              "t": "└ 北京"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "departure_city",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "请选择"
+            },
+            {
+              "v": "北京",
+              "t": "北京"
+            },
+            {
+              "v": "上海",
+              "t": "上海"
+            },
+            {
+              "v": "广州",
+              "t": "广州"
+            },
+            {
+              "v": "深圳",
+              "t": "深圳"
+            },
+            {
+              "v": "成都",
+              "t": "成都"
+            },
+            {
+              "v": "重庆",
+              "t": "重庆"
+            },
+            {
+              "v": "杭州",
+              "t": "杭州"
+            },
+            {
+              "v": "南京",
+              "t": "南京"
+            },
+            {
+              "v": "武汉",
+              "t": "武汉"
+            },
+            {
+              "v": "西安",
+              "t": "西安"
+            },
+            {
+              "v": "昆明",
+              "t": "昆明"
+            },
+            {
+              "v": "三亚",
+              "t": "三亚"
+            },
+            {
+              "v": "厦门",
+              "t": "厦门"
+            },
+            {
+              "v": "青岛",
+              "t": "青岛"
+            },
+            {
+              "v": "大连",
+              "t": "大连"
+            },
+            {
+              "v": "沈阳",
+              "t": "沈阳"
+            },
+            {
+              "v": "哈尔滨",
+              "t": "哈尔滨"
+            },
+            {
+              "v": "长沙",
+              "t": "长沙"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "route_type_id",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "请选择"
+            },
+            {
+              "v": "384",
+              "t": "出境包团"
+            },
+            {
+              "v": "385",
+              "t": "出境散拼"
+            },
+            {
+              "v": "393",
+              "t": "省内包团"
+            },
+            {
+              "v": "394",
+              "t": "省内散拼"
+            },
+            {
+              "v": "389",
+              "t": "国内包团"
+            },
+            {
+              "v": "390",
+              "t": "国内散拼"
+            },
+            {
+              "v": "391",
+              "t": "定制游"
+            },
+            {
+              "v": "392",
+              "t": "游轮"
+            },
+            {
+              "v": "386",
+              "t": "单订机票"
+            },
+            {
+              "v": "387",
+              "t": "单订车"
+            },
+            {
+              "v": "388",
+              "t": "单订酒店"
+            },
+            {
+              "v": "395",
+              "t": "其他"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "intent_level",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "请选择"
+            },
+            {
+              "v": "高",
+              "t": "高"
+            },
+            {
+              "v": "中",
+              "t": "中"
+            },
+            {
+              "v": "低",
+              "t": "低"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "departure_date",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "选择日期",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "budget_min",
+          "type": "number",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "budget_max",
+          "type": "number",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "adult_count",
+          "type": "number",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "2",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "child_count",
+          "type": "number",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "0",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "remark",
+          "type": "textarea",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "保存",
+          "type": "submit",
+          "cls": "crm-btn-sm crm-btn-primary"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/password/update",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "current_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password_confirmation",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "修改密码",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "headers": [
+        "客户",
+        "阶段",
+        "意向",
+        "风险",
+        "电话",
+        "预算",
+        "来源",
+        "负责人",
+        ""
+      ],
+      "rows": 1,
+      "sample": [
+        [
+          "🎉 暂无待跟进客户"
+        ]
+      ]
+    }
+  ],
+  "buttons": [
+    {
+      "tag": "BUTTON",
+      "t": "0",
+      "cls": "btn btn-sm position-relative d-flex align-items-center",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "标签",
+      "cls": "btn btn-sm d-flex align-items-center oms-tab-toggle",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "马总 管理员",
+      "cls": "btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-1",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "修改密码",
+      "cls": "dropdown-item",
+      "href": "#",
+      "toggle": "modal",
+      "target": "#changePasswordModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "退出登录",
+      "cls": "dropdown-item",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "新建线索",
+      "cls": "crm-btn crm-btn-primary",
+      "href": "",
+      "toggle": "modal",
+      "target": "#addModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "7天",
+      "cls": "seg-tab active",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "30天",
+      "cls": "seg-tab",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "本月",
+      "cls": "seg-tab",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "保存",
+      "cls": "crm-btn-sm crm-btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "×",
+      "cls": "lightbox-close",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认删除",
+      "cls": "btn btn-sm btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn px-4 py-2 confirm-btn-cancel",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认",
+      "cls": "btn px-4 py-2 confirm-btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "修改密码",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "«",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "‹",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "›",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "»",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "清除",
+      "cls": "",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "今天",
+      "cls": "dtp-today",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    }
+  ],
+  "modals": [
+    {
+      "id": "addModal",
+      "title": "新建客户线索",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "phone",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "email",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "source_id",
+          "type": "select-one",
+          "required": false
+        },
+        {
+          "name": "destination",
+          "type": "select-one",
+          "required": false
+        },
+        {
+          "name": "departure_city",
+          "type": "select-one",
+          "required": false
+        },
+        {
+          "name": "route_type_id",
+          "type": "select-one",
+          "required": false
+        },
+        {
+          "name": "intent_level",
+          "type": "select-one",
+          "required": false
+        },
+        {
+          "name": "departure_date",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "budget_min",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "budget_max",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "adult_count",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "child_count",
+          "type": "number",
+          "required": false
+        },
+        {
+          "name": "remark",
+          "type": "textarea",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "lightboxModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "opPasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "",
+          "type": "password",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "confirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "changePasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "current_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password_confirmation",
+          "type": "password",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "nav": [
+    {
+      "t": "仪表盘",
+      "href": "https://trip.lipseo.com"
+    },
+    {
+      "t": "新建订单",
+      "href": "https://trip.lipseo.com/orders/create"
+    },
+    {
+      "t": "订单管理",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "收款管理",
+      "href": "https://trip.lipseo.com/customer-payments"
+    },
+    {
+      "t": "付款管理",
+      "href": "https://trip.lipseo.com/supplier-payments"
+    },
+    {
+      "t": "批量结算",
+      "href": "https://trip.lipseo.com/supplier-payments/batch-settle"
+    },
+    {
+      "t": "账户余额",
+      "href": "https://trip.lipseo.com/account-balances"
+    },
+    {
+      "t": "审核工作台",
+      "href": "https://trip.lipseo.com/review"
+    },
+    {
+      "t": "经营分析",
+      "href": "https://trip.lipseo.com/reports"
+    },
+    {
+      "t": "业绩统计",
+      "href": "https://trip.lipseo.com/statistics"
+    },
+    {
+      "t": "CRM管理",
+      "href": "https://trip.lipseo.com/leads"
+    },
+    {
+      "t": "地区管理",
+      "href": "https://trip.lipseo.com/regions"
+    },
+    {
+      "t": "供应商管理",
+      "href": "https://trip.lipseo.com/suppliers"
+    },
+    {
+      "t": "线路管理",
+      "href": "https://trip.lipseo.com/routes"
+    },
+    {
+      "t": "客户管理",
+      "href": "https://trip.lipseo.com/customers"
+    },
+    {
+      "t": "操作日志",
+      "href": "https://trip.lipseo.com/audit-logs"
+    },
+    {
+      "t": "系统设置",
+      "href": "https://trip.lipseo.com/settings/company"
+    },
+    {
+      "t": "用户管理",
+      "href": "https://trip.lipseo.com/users"
+    },
+    {
+      "t": "角色权限",
+      "href": "https://trip.lipseo.com/roles"
+    },
+    {
+      "t": "帮助文档",
+      "href": "/docs"
+    },
+    {
+      "t": "更新记录",
+      "href": "/docs/changelog"
+    },
+    {
+      "t": "仪表盘",
+      "href": "https://trip.lipseo.com/leads"
+    },
+    {
+      "t": "线索列表",
+      "href": "https://trip.lipseo.com/leads/list"
+    },
+    {
+      "t": "公海",
+      "href": "https://trip.lipseo.com/leads/pool"
+    },
+    {
+      "t": "回收站",
+      "href": "https://trip.lipseo.com/leads/trash"
+    },
+    {
+      "t": "设置",
+      "href": "https://trip.lipseo.com/leads/settings"
+    },
+    {
+      "t": "快速跟进",
+      "href": "https://trip.lipseo.com/leads/list?follow_up=today"
+    },
+    {
+      "t": "0 待跟进客户",
+      "href": "https://trip.lipseo.com/leads/list?follow_up=today"
+    },
+    {
+      "t": "0 超时客户",
+      "href": "https://trip.lipseo.com/leads/list?follow_up=overdue"
+    },
+    {
+      "t": "0 待报价客户",
+      "href": "https://trip.lipseo.com/leads/list?stage=%E6%8A%A5%E4%BB%B7%E4%B8%AD"
+    },
+    {
+      "t": "0 待成交客户",
+      "href": "https://trip.lipseo.com/leads/list?stage=%E6%96%B9%E6%A1%88%E7%A1%AE%E8%AE%A4"
+    },
+    {
+      "t": "处理超时",
+      "href": "https://trip.lipseo.com/leads/list?follow_up=overdue"
+    },
+    {
+      "t": "查看全部",
+      "href": "https://trip.lipseo.com/leads/list?follow_up=today"
+    }
+  ],
+  "pills": [
+    "仪表盘",
+    "新建订单",
+    "订单管理",
+    "收款管理",
+    "付款管理",
+    "批量结算",
+    "账户余额",
+    "审核工作台",
+    "经营分析",
+    "业绩统计",
+    "CRM管理",
+    "地区管理",
+    "供应商管理",
+    "线路管理",
+    "客户管理",
+    "操作日志",
+    "系统设置",
+    "用户管理",
+    "角色权限"
+  ]
+}

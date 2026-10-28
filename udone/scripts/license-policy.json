@@ -1,0 +1,126 @@
+{
+  "policyNote": "Narrow engineering dependency allowlist under explicit user delegation; this is not legal advice and does not approve application bundling or redistribution.",
+  "allowedExpressions": [
+    "MIT",
+    "MIT OR Apache-2.0",
+    "(MIT OR CC0-1.0)",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "CC0-1.0",
+    "0BSD"
+  ],
+  "approvedExceptions": [
+    {
+      "name": "@azu/style-format",
+      "version": "1.0.1",
+      "license": "WTFPL",
+      "scope": "Development-only textlint formatter dependency pulled by Secretlint.",
+      "decision": "Approved only for this exact development-tool package, version, and scope under explicit user delegation.",
+      "approver": "Project owner (explicit user delegation)",
+      "decisionDate": "2026-10-05",
+      "obligations": "If redistributed, retain the upstream license text and required notices; review the exact distribution before release."
+    },
+    {
+      "name": "@img/sharp-win32-x64",
+      "version": "0.35.4",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later",
+      "scope": "Development-only. Windows-only optional package reached through Wrangler/Miniflare tooling; not imported by application code.",
+      "decision": "Approved only for this exact development-tool package, version, and scope under explicit user delegation.",
+      "approver": "Project owner (explicit user delegation)",
+      "decisionDate": "2026-10-05",
+      "obligations": "Do not bundle or redistribute this optional package without a separate license review; if distribution is approved, preserve Apache notices and evaluate applicable LGPL source, relinking, and notice obligations."
+    },
+    {
+      "name": "argparse",
+      "version": "2.0.1",
+      "license": "Python-2.0",
+      "scope": "Development-only YAML/metadata parsing dependency in Secretlint and ESLint tooling.",
+      "decision": "Approved only for this exact development-tool package, version, and scope under explicit user delegation.",
+      "approver": "Project owner (explicit user delegation)",
+      "decisionDate": "2026-10-05",
+      "obligations": "If redistributed, retain the upstream license text and required notices; review the exact distribution before release."
+    },
+    {
+      "name": "binaryextensions",
+      "version": "6.11.0",
+      "license": "Artistic-2.0",
+      "scope": "Development-only source/file classification dependency pulled by Secretlint.",
+      "decision": "Approved only for this exact development-tool package, version, and scope under explicit user delegation.",
+      "approver": "Project owner (explicit user delegation)",
+      "decisionDate": "2026-10-05",
+      "obligations": "If redistributed, retain the upstream license text and required notices; review the exact distribution before release."
+    },
+    {
+      "name": "editions",
+      "version": "6.22.0",
+      "license": "Artistic-2.0",
+      "scope": "Development-only source/file classification dependency pulled by Secretlint.",
+      "decision": "Approved only for this exact development-tool package, version, and scope under explicit user delegation.",
+      "approver": "Project owner (explicit user delegation)",
+      "decisionDate": "2026-10-05",
+      "obligations": "If redistributed, retain the upstream license text and required notices; review the exact distribution before release."
+    },
+    {
+      "name": "istextorbinary",
+      "version": "9.5.0",
+      "license": "Artistic-2.0",
+      "scope": "Development-only source/file classification dependency pulled by Secretlint.",
+      "decision": "Approved only for this exact development-tool package, version, and scope under explicit user delegation.",
+      "approver": "Project owner (explicit user delegation)",
+      "decisionDate": "2026-10-05",
+      "obligations": "If redistributed, retain the upstream license text and required notices; review the exact distribution before release."
+    },
+    {
+      "name": "textextensions",
+      "version": "6.11.0",
+      "license": "Artistic-2.0",
+      "scope": "Development-only source/file classification dependency pulled by Secretlint.",
+      "decision": "Approved only for this exact development-tool package, version, and scope under explicit user delegation.",
+      "approver": "Project owner (explicit user delegation)",
+      "decisionDate": "2026-10-05",
+      "obligations": "If redistributed, retain the upstream license text and required notices; review the exact distribution before release."
+    },
+    {
+      "name": "version-range",
+      "version": "4.15.0",
+      "license": "Artistic-2.0",
+      "scope": "Development-only source/file classification dependency pulled by Secretlint.",
+      "decision": "Approved only for this exact development-tool package, version, and scope under explicit user delegation.",
+      "approver": "Project owner (explicit user delegation)",
+      "decisionDate": "2026-10-05",
+      "obligations": "If redistributed, retain the upstream license text and required notices; review the exact distribution before release."
+    },
+    {
+      "name": "lru-cache",
+      "version": "11.5.3",
+      "license": "BlueOak-1.0.0",
+      "scope": "Development-only transitive package metadata utility.",
+      "decision": "Approved only for this exact development-tool package, version, and scope under explicit user delegation.",
+      "approver": "Project owner (explicit user delegation)",
+      "decisionDate": "2026-10-05",
+      "obligations": "If redistributed, retain the upstream license text and required notices; review the exact distribution before release."
+    },
+    {
+      "name": "minimatch",
+      "version": "10.2.6",
+      "license": "BlueOak-1.0.0",
+      "scope": "Development-only transitive matching utility.",
+      "decision": "Approved only for this exact development-tool package, version, and scope under explicit user delegation.",
+      "approver": "Project owner (explicit user delegation)",
+      "decisionDate": "2026-10-05",
+      "obligations": "If redistributed, retain the upstream license text and required notices; review the exact distribution before release."
+    },
+    {
+      "name": "spdx-exceptions",
+      "version": "2.5.0",
+      "license": "CC-BY-3.0",
+      "scope": "Development-only SPDX exception data used by package metadata tooling.",
+      "decision": "Approved only for this exact development-tool package, version, and scope under explicit user delegation.",
+      "approver": "Project owner (explicit user delegation)",
+      "decisionDate": "2026-10-05",
+      "obligations": "If redistributed, provide attribution and the required CC-BY-3.0 license notice; do not treat the approval as an application bundling exception."
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "url": "https://trip.lipseo.com/login",
+  "title": "登录 - 旅行社订单管理系统",
+  "heading": "旅行社订单管理系统",
+  "meta": {
+    "csrf": false
+  },
+  "text": "旅行社订单管理系统\n\nTravel Agency OMS\n\n订单全流程管理\n收支清晰可追溯\n数据统计一目了然\n欢迎回来\n\n请输入用户名和密码登录系统\n\n用户名或手机号\n密码\n记住我\n登 录",
+  "forms": [
+    {
+      "action": "https://trip.lipseo.com/login",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "username",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "用户名或手机号",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "请输入密码",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "remember",
+          "type": "checkbox",
+          "id": "remember",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "checked": false,
+          "label": "记住我"
+        }
+      ],
+      "buttons": [
+        {
+          "t": "登 录",
+          "type": "submit",
+          "cls": "btn-login"
+        }
+      ]
+    }
+  ],
+  "tables": [],
+  "buttons": [
+    {
+      "tag": "BUTTON",
+      "t": "登 录",
+      "cls": "btn-login",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    }
+  ],
+  "modals": [],
+  "nav": [],
+  "pills": []
+}

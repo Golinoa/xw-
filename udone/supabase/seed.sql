@@ -1,0 +1,2 @@
+-- Deliberately empty: identity data belongs to Supabase Auth and tenant setup
+-- requires a real authenticated owner. Keep local/production data out of seed.

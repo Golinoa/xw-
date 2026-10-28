@@ -1,0 +1,1082 @@
+{
+  "url": "https://trip.lipseo.com/suppliers",
+  "title": "飞途旅游订单系统",
+  "heading": "",
+  "meta": {
+    "csrf": true
+  },
+  "text": "飞途旅游订单系统\n导航菜单\n仪表盘\n新建订单\n订单管理\n收款管理\n付款管理\n批量结算\n账户余额\n审核工作台\n经营分析\n业绩统计\nCRM管理\n基础数据\n地区管理\n供应商管理\n线路管理\n客户管理\n操作日志\n系统设置\n系统设置\n用户管理\n角色权限\n飞途OMS v3.7 © 2026\n今天的努力，是明天成功的基石。\n有效期至 2026-10-05\n标签\n马总\n管理员\n供应商管理\n\n管理合作供应商信息，包括类型、联系人、联系方式等\n\n回收站\n添加供应商\n关键词\n类型\n全部类型\n地接公司\n其它成本\n门票\n酒店\n机票\n保险\n车队\n签证\n导游\n结算类型\n全部结算\n非月结\n月结\n搜索\n重置\n\t名称\t类型\t结算\t联系人\t电话\t备注\t添加人\t关联订单\t供应商成本\t状态\t操作\n\n\n暂无供应商记录",
+  "forms": [
+    {
+      "action": "https://trip.lipseo.com/logout",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "退出登录",
+          "type": "submit",
+          "cls": "dropdown-item"
+        }
+      ]
+    },
+    {
+      "action": "",
+      "method": "GET",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "keyword",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "搜索名称/联系人/电话",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "type",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "全部类型"
+            },
+            {
+              "v": "local_agent",
+              "t": "地接公司"
+            },
+            {
+              "v": "other",
+              "t": "其它成本"
+            },
+            {
+              "v": "type_1783701990",
+              "t": "门票"
+            },
+            {
+              "v": "type_1783701996",
+              "t": "酒店"
+            },
+            {
+              "v": "type_1783702000",
+              "t": "机票"
+            },
+            {
+              "v": "type_1783702006",
+              "t": "保险"
+            },
+            {
+              "v": "type_1783702045",
+              "t": "车队"
+            },
+            {
+              "v": "type_1783762121",
+              "t": "签证"
+            },
+            {
+              "v": "type_1783762130",
+              "t": "导游"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "settlement_type",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "全部结算"
+            },
+            {
+              "v": "non_monthly",
+              "t": "非月结"
+            },
+            {
+              "v": "monthly",
+              "t": "月结"
+            }
+          ],
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "搜索",
+          "type": "submit",
+          "cls": "btn btn-primary btn-sm oms-filter-btn"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/suppliers/batch",
+      "method": "POST",
+      "enctype": "",
+      "id": "batchForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "batch_action",
+          "type": "hidden",
+          "id": "batchActionInput",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": []
+    },
+    {
+      "action": "https://trip.lipseo.com/suppliers",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "name",
+          "type": "text",
+          "id": "addSupplierName",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "公司名称",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "type",
+          "type": "select-one",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "请选择"
+            },
+            {
+              "v": "local_agent",
+              "t": "地接公司"
+            },
+            {
+              "v": "other",
+              "t": "其它成本"
+            },
+            {
+              "v": "type_1783701990",
+              "t": "门票"
+            },
+            {
+              "v": "type_1783701996",
+              "t": "酒店"
+            },
+            {
+              "v": "type_1783702000",
+              "t": "机票"
+            },
+            {
+              "v": "type_1783702006",
+              "t": "保险"
+            },
+            {
+              "v": "type_1783702045",
+              "t": "车队"
+            },
+            {
+              "v": "type_1783762121",
+              "t": "签证"
+            },
+            {
+              "v": "type_1783762130",
+              "t": "导游"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "settlement_type",
+          "type": "select-one",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "non_monthly",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "请选择"
+            },
+            {
+              "v": "non_monthly",
+              "t": "非月结"
+            },
+            {
+              "v": "monthly",
+              "t": "月结"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "contact_person",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "contact_phone",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "remark",
+          "type": "textarea",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "is_active",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": true,
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-muted"
+        },
+        {
+          "t": "保存",
+          "type": "submit",
+          "cls": "btn btn-primary"
+        }
+      ]
+    },
+    {
+      "action": "",
+      "method": "POST",
+      "enctype": "",
+      "id": "editForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "_method",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "name",
+          "type": "text",
+          "id": "eName",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "type",
+          "type": "select-one",
+          "id": "eType",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "请选择"
+            },
+            {
+              "v": "local_agent",
+              "t": "地接公司"
+            },
+            {
+              "v": "other",
+              "t": "其它成本"
+            },
+            {
+              "v": "type_1783701990",
+              "t": "门票"
+            },
+            {
+              "v": "type_1783701996",
+              "t": "酒店"
+            },
+            {
+              "v": "type_1783702000",
+              "t": "机票"
+            },
+            {
+              "v": "type_1783702006",
+              "t": "保险"
+            },
+            {
+              "v": "type_1783702045",
+              "t": "车队"
+            },
+            {
+              "v": "type_1783762121",
+              "t": "签证"
+            },
+            {
+              "v": "type_1783762130",
+              "t": "导游"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "settlement_type",
+          "type": "select-one",
+          "id": "eSettlementType",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "请选择"
+            },
+            {
+              "v": "non_monthly",
+              "t": "非月结"
+            },
+            {
+              "v": "monthly",
+              "t": "月结"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "contact_person",
+          "type": "text",
+          "id": "eContactPerson",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "contact_phone",
+          "type": "text",
+          "id": "eContactPhone",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "remark",
+          "type": "textarea",
+          "id": "eRemark",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "is_active",
+          "type": "checkbox",
+          "id": "eActive",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": false,
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-muted"
+        },
+        {
+          "t": "保存",
+          "type": "submit",
+          "cls": "btn btn-primary"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/password/update",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "current_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password_confirmation",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "修改密码",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "headers": [
+        "",
+        "名称",
+        "类型",
+        "结算",
+        "联系人",
+        "电话",
+        "备注",
+        "添加人",
+        "关联订单",
+        "供应商成本",
+        "状态",
+        "操作"
+      ],
+      "rows": 1,
+      "sample": [
+        [
+          "暂无供应商记录"
+        ]
+      ]
+    }
+  ],
+  "buttons": [
+    {
+      "tag": "BUTTON",
+      "t": "0",
+      "cls": "btn btn-sm position-relative d-flex align-items-center",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "标签",
+      "cls": "btn btn-sm d-flex align-items-center oms-tab-toggle",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "马总 管理员",
+      "cls": "btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-1",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "修改密码",
+      "cls": "dropdown-item",
+      "href": "#",
+      "toggle": "modal",
+      "target": "#changePasswordModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "退出登录",
+      "cls": "dropdown-item",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "回收站",
+      "cls": "btn btn-sm btn-ored",
+      "href": "https://trip.lipseo.com/suppliers/trash",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "添加供应商",
+      "cls": "btn btn-sm btn-amber px-3",
+      "href": "",
+      "toggle": "modal",
+      "target": "#addModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "搜索",
+      "cls": "btn btn-primary btn-sm oms-filter-btn",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "重置",
+      "cls": "btn btn-sm btn-muted oms-filter-btn",
+      "href": "https://trip.lipseo.com/suppliers",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "批量删除",
+      "cls": "btn btn-sm btn-ored",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消选择",
+      "cls": "btn btn-sm btn-outline-secondary ms-auto oms-batch-cancel",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "保存",
+      "cls": "btn btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "保存",
+      "cls": "btn btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "×",
+      "cls": "lightbox-close",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认删除",
+      "cls": "btn btn-sm btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn px-4 py-2 confirm-btn-cancel",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认",
+      "cls": "btn px-4 py-2 confirm-btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "修改密码",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    }
+  ],
+  "modals": [
+    {
+      "id": "addModal",
+      "title": "添加供应商",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "settlement_type",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "contact_person",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "contact_phone",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "remark",
+          "type": "textarea",
+          "required": false
+        },
+        {
+          "name": "is_active",
+          "type": "checkbox",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "editModal",
+      "title": "编辑供应商",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "_method",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "settlement_type",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "contact_person",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "contact_phone",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "remark",
+          "type": "textarea",
+          "required": false
+        },
+        {
+          "name": "is_active",
+          "type": "checkbox",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "lightboxModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "opPasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "",
+          "type": "password",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "confirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "changePasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "current_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password_confirmation",
+          "type": "password",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "nav": [
+    {
+      "t": "仪表盘",
+      "href": "https://trip.lipseo.com"
+    },
+    {
+      "t": "新建订单",
+      "href": "https://trip.lipseo.com/orders/create"
+    },
+    {
+      "t": "订单管理",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "收款管理",
+      "href": "https://trip.lipseo.com/customer-payments"
+    },
+    {
+      "t": "付款管理",
+      "href": "https://trip.lipseo.com/supplier-payments"
+    },
+    {
+      "t": "批量结算",
+      "href": "https://trip.lipseo.com/supplier-payments/batch-settle"
+    },
+    {
+      "t": "账户余额",
+      "href": "https://trip.lipseo.com/account-balances"
+    },
+    {
+      "t": "审核工作台",
+      "href": "https://trip.lipseo.com/review"
+    },
+    {
+      "t": "经营分析",
+      "href": "https://trip.lipseo.com/reports"
+    },
+    {
+      "t": "业绩统计",
+      "href": "https://trip.lipseo.com/statistics"
+    },
+    {
+      "t": "CRM管理",
+      "href": "https://trip.lipseo.com/leads"
+    },
+    {
+      "t": "地区管理",
+      "href": "https://trip.lipseo.com/regions"
+    },
+    {
+      "t": "供应商管理",
+      "href": "https://trip.lipseo.com/suppliers"
+    },
+    {
+      "t": "线路管理",
+      "href": "https://trip.lipseo.com/routes"
+    },
+    {
+      "t": "客户管理",
+      "href": "https://trip.lipseo.com/customers"
+    },
+    {
+      "t": "操作日志",
+      "href": "https://trip.lipseo.com/audit-logs"
+    },
+    {
+      "t": "系统设置",
+      "href": "https://trip.lipseo.com/settings/company"
+    },
+    {
+      "t": "用户管理",
+      "href": "https://trip.lipseo.com/users"
+    },
+    {
+      "t": "角色权限",
+      "href": "https://trip.lipseo.com/roles"
+    },
+    {
+      "t": "帮助文档",
+      "href": "/docs"
+    },
+    {
+      "t": "更新记录",
+      "href": "/docs/changelog"
+    },
+    {
+      "t": "回收站",
+      "href": "https://trip.lipseo.com/suppliers/trash"
+    },
+    {
+      "t": "重置",
+      "href": "https://trip.lipseo.com/suppliers"
+    }
+  ],
+  "pills": [
+    "仪表盘",
+    "新建订单",
+    "订单管理",
+    "收款管理",
+    "付款管理",
+    "批量结算",
+    "账户余额",
+    "审核工作台",
+    "经营分析",
+    "业绩统计",
+    "CRM管理",
+    "地区管理",
+    "供应商管理",
+    "线路管理",
+    "客户管理",
+    "操作日志",
+    "系统设置",
+    "用户管理",
+    "角色权限"
+  ]
+}

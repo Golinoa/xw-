@@ -1,0 +1,748 @@
+{
+  "url": "https://trip.lipseo.com/reports",
+  "title": "飞途旅游订单系统",
+  "heading": "",
+  "meta": {
+    "csrf": true
+  },
+  "text": "飞途旅游订单系统\n导航菜单\n仪表盘\n新建订单\n订单管理\n收款管理\n付款管理\n批量结算\n账户余额\n审核工作台\n经营分析\n业绩统计\nCRM管理\n基础数据\n地区管理\n供应商管理\n线路管理\n客户管理\n操作日志\n系统设置\n系统设置\n用户管理\n角色权限\n飞途OMS v3.7 © 2026\n每一个订单，都是一份信任。\n有效期至 2026-10-05\n4\n标签\n马总\n管理员\n经营分析\n经营总览\n订单明细\n供应商统计\n快捷时段\n本年\n本月\n上月\n本季度\n自定义\n开始日期\n结束日期\n时间类型\n出团日期\n创建时间\n预定日期\n  \n查询\n当前统计范围：1 单（仅进行中+已锁团订单，不含已取消）。收款仅计入已确认，付款仅计入已付款。\n订单总数（有效订单数）\n1\n共 3 人\n订单总额（订单金额合计）\n¥7,500.00\n已收客户款（已确认收款）\n¥3,000.00\n待收客户款（应收未收）\n¥4,500.00\n应付成本（应付供应商）\n¥4,800.00\n已付供应商（已付款）\n¥4,800.00\n预估利润（收入减成本）\n¥2,700.00\n净现金流（实收减实付）\n¥-1,800.00\n收款完成率（已收÷总额）\n40%\n付款完成率（已付÷应付）\n100%\n毛利率（毛利÷总额）\n36%\n客单价（总额÷人数）\n¥2,500.00\n 近12个月资金收付趋势\n按已确认收付款日期统计，固定展示最近12个月，不受上方订单查询区间影响\n财务预警 · 待处理事项\n待收款订单\n1 单 ¥4,500.00\n待付款订单\n0 单\n预计亏损订单\n0 单\n订单状态分布\n状态\t数量\t订单金额\t预估利润\n已锁团\t1\t¥7,500.00\t¥2,700.00\n结算状态汇总\n0\n未开始结算\n1\n结算中\n0\n已结清\n客户来源分析\n客户来源\t订单\t订单金额\t占比\n旅游平台 (OTA)\t1\t¥7,500.00\t100%\n出游目的地排行\n地区\t单\t订单金额\n广州\t1\t¥7,500.00\n订单规模分布\n规模\t订单\t人数\t订单金额\t占比\n小团(1-5人)\t1\t3\t¥7,500.00\t100%\n收款方式统计\n方式\t笔数\t金额\n微信\t1\t¥3,000.00\n合计\t1\t¥3,000.00\n付款方式统计\n方式\t笔数\t金额\n建设银行\t1\t¥4,800.00\n合计\t1\t¥4,800.00",
+  "forms": [
+    {
+      "action": "https://trip.lipseo.com/logout",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "退出登录",
+          "type": "submit",
+          "cls": "dropdown-item"
+        }
+      ]
+    },
+    {
+      "action": "",
+      "method": "GET",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "quick",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "date_from",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "2026-01-01",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "date_to",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "2026-12-31",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "date_type",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "departure_date",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "departure_date",
+              "t": "出团日期"
+            },
+            {
+              "v": "created_at",
+              "t": "创建时间"
+            },
+            {
+              "v": "booking_date",
+              "t": "预定日期"
+            }
+          ],
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "本年",
+          "type": "submit",
+          "cls": "seg-btn active"
+        },
+        {
+          "t": "本月",
+          "type": "submit",
+          "cls": "seg-btn "
+        },
+        {
+          "t": "上月",
+          "type": "submit",
+          "cls": "seg-btn "
+        },
+        {
+          "t": "本季度",
+          "type": "submit",
+          "cls": "seg-btn "
+        },
+        {
+          "t": "自定义",
+          "type": "submit",
+          "cls": "seg-btn "
+        },
+        {
+          "t": "查询",
+          "type": "submit",
+          "cls": "btn btn-primary btn-sm oms-filter-btn"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/password/update",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "current_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password_confirmation",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "修改密码",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "headers": [
+        "状态",
+        "数量",
+        "订单金额",
+        "预估利润"
+      ],
+      "rows": 1,
+      "sample": [
+        [
+          "已锁团",
+          "1",
+          "¥7,500.00",
+          "¥2,700.00"
+        ]
+      ]
+    },
+    {
+      "headers": [
+        "客户来源",
+        "订单",
+        "订单金额",
+        "占比"
+      ],
+      "rows": 1,
+      "sample": [
+        [
+          "旅游平台 (OTA)",
+          "1",
+          "¥7,500.00",
+          "100%"
+        ]
+      ]
+    },
+    {
+      "headers": [
+        "地区",
+        "单",
+        "订单金额"
+      ],
+      "rows": 1,
+      "sample": [
+        [
+          "广州",
+          "1",
+          "¥7,500.00"
+        ]
+      ]
+    },
+    {
+      "headers": [
+        "规模",
+        "订单",
+        "人数",
+        "订单金额",
+        "占比"
+      ],
+      "rows": 1,
+      "sample": [
+        [
+          "小团(1-5人)",
+          "1",
+          "3",
+          "¥7,500.00",
+          "100%"
+        ]
+      ]
+    },
+    {
+      "headers": [
+        "方式",
+        "笔数",
+        "金额"
+      ],
+      "rows": 2,
+      "sample": [
+        [
+          "微信",
+          "1",
+          "¥3,000.00"
+        ],
+        [
+          "合计",
+          "1",
+          "¥3,000.00"
+        ]
+      ]
+    },
+    {
+      "headers": [
+        "方式",
+        "笔数",
+        "金额"
+      ],
+      "rows": 2,
+      "sample": [
+        [
+          "建设银行",
+          "1",
+          "¥4,800.00"
+        ],
+        [
+          "合计",
+          "1",
+          "¥4,800.00"
+        ]
+      ]
+    }
+  ],
+  "buttons": [
+    {
+      "tag": "BUTTON",
+      "t": "4",
+      "cls": "btn btn-sm position-relative d-flex align-items-center",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "标签",
+      "cls": "btn btn-sm d-flex align-items-center oms-tab-toggle",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "马总 管理员",
+      "cls": "btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-1",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "修改密码",
+      "cls": "dropdown-item",
+      "href": "#",
+      "toggle": "modal",
+      "target": "#changePasswordModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "退出登录",
+      "cls": "dropdown-item",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "本年",
+      "cls": "seg-btn active",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "本月",
+      "cls": "seg-btn ",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "上月",
+      "cls": "seg-btn ",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "本季度",
+      "cls": "seg-btn ",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "自定义",
+      "cls": "seg-btn ",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "查询",
+      "cls": "btn btn-primary btn-sm oms-filter-btn",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "×",
+      "cls": "lightbox-close",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认删除",
+      "cls": "btn btn-sm btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn px-4 py-2 confirm-btn-cancel",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认",
+      "cls": "btn px-4 py-2 confirm-btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "修改密码",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "«",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "‹",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "›",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "»",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "清除",
+      "cls": "",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "今天",
+      "cls": "dtp-today",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "«",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "‹",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "›",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "»",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "清除",
+      "cls": "",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "今天",
+      "cls": "dtp-today",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    }
+  ],
+  "modals": [
+    {
+      "id": "lightboxModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "opPasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "",
+          "type": "password",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "confirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "changePasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "current_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password_confirmation",
+          "type": "password",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "nav": [
+    {
+      "t": "仪表盘",
+      "href": "https://trip.lipseo.com"
+    },
+    {
+      "t": "新建订单",
+      "href": "https://trip.lipseo.com/orders/create"
+    },
+    {
+      "t": "订单管理",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "收款管理",
+      "href": "https://trip.lipseo.com/customer-payments"
+    },
+    {
+      "t": "付款管理",
+      "href": "https://trip.lipseo.com/supplier-payments"
+    },
+    {
+      "t": "批量结算",
+      "href": "https://trip.lipseo.com/supplier-payments/batch-settle"
+    },
+    {
+      "t": "账户余额",
+      "href": "https://trip.lipseo.com/account-balances"
+    },
+    {
+      "t": "审核工作台",
+      "href": "https://trip.lipseo.com/review"
+    },
+    {
+      "t": "经营分析",
+      "href": "https://trip.lipseo.com/reports"
+    },
+    {
+      "t": "业绩统计",
+      "href": "https://trip.lipseo.com/statistics"
+    },
+    {
+      "t": "CRM管理",
+      "href": "https://trip.lipseo.com/leads"
+    },
+    {
+      "t": "地区管理",
+      "href": "https://trip.lipseo.com/regions"
+    },
+    {
+      "t": "供应商管理",
+      "href": "https://trip.lipseo.com/suppliers"
+    },
+    {
+      "t": "线路管理",
+      "href": "https://trip.lipseo.com/routes"
+    },
+    {
+      "t": "客户管理",
+      "href": "https://trip.lipseo.com/customers"
+    },
+    {
+      "t": "操作日志",
+      "href": "https://trip.lipseo.com/audit-logs"
+    },
+    {
+      "t": "系统设置",
+      "href": "https://trip.lipseo.com/settings/company"
+    },
+    {
+      "t": "用户管理",
+      "href": "https://trip.lipseo.com/users"
+    },
+    {
+      "t": "角色权限",
+      "href": "https://trip.lipseo.com/roles"
+    },
+    {
+      "t": "付款审核通过 · 马总3分钟前¥4800.00 · ORD20261001000",
+      "href": "/orders/1069#payment-PMT2026100200001"
+    },
+    {
+      "t": "付款审核通过 · 复刻调研_财务4分钟前¥4800.00 · ORD202610",
+      "href": "/orders/1069#payment-PMT2026100200001"
+    },
+    {
+      "t": "收款审核通过 · 马总7分钟前¥3000.00 · ORD20261001000",
+      "href": "/orders/1069#payment-RCP2026100100005"
+    },
+    {
+      "t": "收款审核通过 · 复刻调研_财务9分钟前¥3000.00 · ORD202610",
+      "href": "/orders/1069#payment-RCP2026100100005"
+    },
+    {
+      "t": "帮助文档",
+      "href": "/docs"
+    },
+    {
+      "t": "更新记录",
+      "href": "/docs/changelog"
+    },
+    {
+      "t": "订单明细",
+      "href": "https://trip.lipseo.com/reports/orders"
+    },
+    {
+      "t": "供应商统计",
+      "href": "https://trip.lipseo.com/reports/suppliers"
+    }
+  ],
+  "pills": [
+    "仪表盘",
+    "新建订单",
+    "订单管理",
+    "收款管理",
+    "付款管理",
+    "批量结算",
+    "账户余额",
+    "审核工作台",
+    "经营分析",
+    "业绩统计",
+    "CRM管理",
+    "地区管理",
+    "供应商管理",
+    "线路管理",
+    "客户管理",
+    "操作日志",
+    "系统设置",
+    "用户管理",
+    "角色权限",
+    "经营总览",
+    "订单明细",
+    "供应商统计"
+  ]
+}

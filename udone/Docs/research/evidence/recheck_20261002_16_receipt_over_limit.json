@@ -1,0 +1,44 @@
+{
+  "session": "oms-recheck",
+  "requests": {
+    "success": true,
+    "data": {
+      "requests": [
+        {
+          "headers": {
+            "Referer": "",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36"
+          },
+          "method": "GET",
+          "mimeType": "image/svg+xml",
+          "requestId": "14440.227",
+          "resourceType": "Image",
+          "responseHeaders": {
+            "Content-Type": "image/svg+xml"
+          },
+          "status": 200,
+          "timestamp": 1790929405703,
+          "url": "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e"
+        },
+        {
+          "headers": {
+            "Referer": "",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36"
+          },
+          "method": "GET",
+          "mimeType": "image/svg+xml",
+          "requestId": "14440.228",
+          "resourceType": "Image",
+          "responseHeaders": {
+            "Content-Type": "image/svg+xml"
+          },
+          "status": 200,
+          "timestamp": 1790929405703,
+          "url": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E"
+        }
+      ]
+    },
+    "error": null
+  },
+  "details": []
+}

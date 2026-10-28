@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>有单 OMS · 图标规范</title>
+<style>
+:root{font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:#202d37;background:#f0f8fd;--blue:#0077d6;--cyan:#00877e;--line:#e3edf4;--muted:#687887;--space:16px}*{box-sizing:border-box}body{margin:0;padding:48px 24px}.page{max-width:1080px;margin:auto}.eyebrow{font-size:12px;letter-spacing:.12em;color:#0077d6;font-weight:600}.title{font-size:30px;margin:10px 0 8px;color:#101820}.lead{color:#536370;margin:0 0 28px}.section{background:#fff;border:1px solid var(--line);border-radius:4px;padding:24px;margin:18px 0}.section h2{font-size:18px;margin:0 0 18px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.item{border:1px solid #eaf0f5;border-radius:4px;padding:20px 14px;text-align:center}.item svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block;margin:0 auto 10px}.item span{font-size:13px}.blue{color:var(--blue)}.cyan{color:var(--cyan)}.muted{color:var(--muted)}.sizes{display:flex;align-items:end;gap:32px;flex-wrap:wrap}.size{text-align:center;color:#536370;font-size:12px}.size svg{stroke:#34424d;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block;margin:0 auto 8px}.buttons{display:flex;gap:12px;flex-wrap:wrap}.btn{display:flex;align-items:center;gap:8px;background:#0077d6;border:0;border-radius:4px;color:white;padding:10px 14px;font-family:inherit;font-size:14px;font-weight:500}.btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}.iconbtn{width:40px;height:40px;border:1px solid var(--line);background:white;border-radius:4px;display:grid;place-items:center;color:#34424d}.iconbtn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.note{font-size:13px;color:#536370;line-height:1.8}.pill{background:#eaf6ff;color:#005eaa;padding:4px 8px;border-radius:4px;font-size:12px;display:inline-flex;align-items:center;gap:6px}.pill svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}@media(max-width:640px){body{padding:28px 14px}.grid{grid-template-columns:repeat(2,1fr)}.section{padding:18px}}
+</style></head>
+<body><main class="page">
+<div class="eyebrow">DESIGN SYSTEM / ICONOGRAPHY</div><h1 class="title">图标规范</h1><p class="lead">以轻量线性图标组织导航、操作和状态，图标辅助信息，不替代文字。</p>
+<section class="section"><h2>常用语义 · 24px</h2><div class="grid">
+<div class="item blue"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/></svg><span>项目概览</span></div>
+<div class="item"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4 4"/></svg><span>搜索</span></div>
+<div class="item"><svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/><circle cx="9" cy="6" r="1.5" fill="white"/><circle cx="14" cy="12" r="1.5" fill="white"/></svg><span>筛选</span></div>
+<div class="item"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="1"/><path d="M8 3v4M16 3v4M4 9h16M8 13h3M8 16h6"/></svg><span>任务日历</span></div>
+<div class="item cyan"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16.5 9"/></svg><span>已完成</span></div>
+<div class="item" style="color:#9a4d00"><svg viewBox="0 0 24 24"><path d="M12 3 22 20H2zM12 9v5M12 17h.01"/></svg><span>待确认</span></div>
+<div class="item" style="color:#b42318"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6m0-6-6 6"/></svg><span>失败</span></div>
+<div class="item"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.6-3.3 3-5 7-5s6.4 1.7 7 5M19 8v6m-3-3h6"/></svg><span>添加成员</span></div>
+</div></section>
+<section class="section"><h2>尺寸层级</h2><div class="sizes">
+<div class="size"><svg width="16" height="16" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4 4"/></svg>16px · 紧凑操作</div>
+<div class="size"><svg width="20" height="20" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4 4"/></svg>20px · 导航 / 按钮</div>
+<div class="size"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4 4"/></svg>24px · 卡片入口</div>
+</div></section>
+<section class="section"><h2>组件中的使用</h2><div class="buttons"><button class="btn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>新建任务</button><button class="iconbtn" aria-label="查看筛选条件"><svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg></button><span class="pill"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16.5 9"/></svg>已完成</span></div><p class="note">纯图标按钮提供可访问名称；提示文案不能成为唯一名称。语意状态同时显示图形和文案。</p></section>
+</main></body></html>

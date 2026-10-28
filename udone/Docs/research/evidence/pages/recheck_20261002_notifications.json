@@ -1,0 +1,516 @@
+{
+  "url": "https://trip.lipseo.com/",
+  "title": "飞途旅游订单系统",
+  "heading": "",
+  "meta": {
+    "csrf": true
+  },
+  "text": "飞途旅游订单系统\n导航菜单\n仪表盘\n新建订单\n订单管理\n收款管理\n付款管理\n批量结算\n账户余额\n审核工作台\n经营分析\n业绩统计\nCRM管理\n基础数据\n地区管理\n供应商管理\n线路管理\n客户管理\n操作日志\n系统设置\n系统设置\n用户管理\n角色权限\n飞途OMS v3.7 © 2026\n每一个订单，都是一份信任。\n有效期至 2026-10-05\n3\n付款审核通过 · 复刻调研_财务\n16小时前\n¥4800.00 · ORD2026100100005\n收款审核通过 · 马总\n16小时前\n¥3000.00 · ORD2026100100005\n收款审核通过 · 复刻调研_财务\n16小时前\n¥3000.00 · ORD2026100100005\n标签\n马总\n管理员\n仪表盘\n查看今日业务、待办事项与需要关注的订单 · 2026年10月02日\n新建订单\n申请收款\n申请付款\n去审核\n查看经营分析\n今日有效订单\n0\n进行中订单\n0\n待我审核事项\n0\n本月已收款\n¥0.00\n待我审核收款\n0\n暂无待审核收款\n待我审核付款\n0\n暂无待审核付款\n待收款订单\n0 单\n¥0.00\n待付款订单\n0 单\n¥0.00\n本月资金收付趋势\n已审核收付款\n有效订单状态\nCRM\n全部\n我的线索\n0\n今日待跟进\n0\n逾期未跟\n0\n风险提醒\n当前暂无风险提醒\n近期出发订单\n近7天\n暂无近期出发订单\n最近有效订单\n查看全部 →\n暂无订单\n查看完整经营分析",
+  "forms": [
+    {
+      "action": "https://trip.lipseo.com/logout",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "退出登录",
+          "type": "submit",
+          "cls": "dropdown-item"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/password/update",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "current_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password_confirmation",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "修改密码",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "headers": [
+        "订单号",
+        "客户",
+        "产品",
+        "出发日期",
+        "订单金额",
+        "未收款",
+        "创建人",
+        ""
+      ],
+      "rows": 0,
+      "sample": []
+    },
+    {
+      "headers": [
+        "订单号",
+        "客户",
+        "产品",
+        "订单金额",
+        "未收款",
+        "未付款",
+        "创建人",
+        ""
+      ],
+      "rows": 0,
+      "sample": []
+    },
+    {
+      "headers": [
+        "订单号",
+        "客户",
+        "产品",
+        "订单金额",
+        "应付款",
+        "预估利润",
+        "创建人",
+        ""
+      ],
+      "rows": 0,
+      "sample": []
+    }
+  ],
+  "buttons": [
+    {
+      "tag": "BUTTON",
+      "t": "3",
+      "cls": "btn btn-sm position-relative d-flex align-items-center show",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "标签",
+      "cls": "btn btn-sm d-flex align-items-center oms-tab-toggle",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "马总 管理员",
+      "cls": "btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-1",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "修改密码",
+      "cls": "dropdown-item",
+      "href": "#",
+      "toggle": "modal",
+      "target": "#changePasswordModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "退出登录",
+      "cls": "dropdown-item",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "新建订单",
+      "cls": "btn btn-sm btn-add",
+      "href": "https://trip.lipseo.com/orders/create",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "申请收款",
+      "cls": "btn btn-sm btn-add",
+      "href": "https://trip.lipseo.com/customer-payments/create",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "申请付款",
+      "cls": "btn btn-sm btn-add",
+      "href": "https://trip.lipseo.com/supplier-payments/create",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "去审核",
+      "cls": "btn btn-sm btn-submit",
+      "href": "https://trip.lipseo.com/review",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "查看经营分析",
+      "cls": "btn btn-sm btn-view",
+      "href": "https://trip.lipseo.com/reports",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "查看完整经营分析",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "https://trip.lipseo.com/reports",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "×",
+      "cls": "lightbox-close",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认删除",
+      "cls": "btn btn-sm btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn px-4 py-2 confirm-btn-cancel",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认",
+      "cls": "btn px-4 py-2 confirm-btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "修改密码",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    }
+  ],
+  "modals": [
+    {
+      "id": "modalNearDepartureUnpaid",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "modalDoneUnsettled",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "modalLossOrders",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "lightboxModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "opPasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "",
+          "type": "password",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "confirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "changePasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "current_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password_confirmation",
+          "type": "password",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "nav": [
+    {
+      "t": "仪表盘",
+      "href": "https://trip.lipseo.com"
+    },
+    {
+      "t": "新建订单",
+      "href": "https://trip.lipseo.com/orders/create"
+    },
+    {
+      "t": "订单管理",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "收款管理",
+      "href": "https://trip.lipseo.com/customer-payments"
+    },
+    {
+      "t": "付款管理",
+      "href": "https://trip.lipseo.com/supplier-payments"
+    },
+    {
+      "t": "批量结算",
+      "href": "https://trip.lipseo.com/supplier-payments/batch-settle"
+    },
+    {
+      "t": "账户余额",
+      "href": "https://trip.lipseo.com/account-balances"
+    },
+    {
+      "t": "审核工作台",
+      "href": "https://trip.lipseo.com/review"
+    },
+    {
+      "t": "经营分析",
+      "href": "https://trip.lipseo.com/reports"
+    },
+    {
+      "t": "业绩统计",
+      "href": "https://trip.lipseo.com/statistics"
+    },
+    {
+      "t": "CRM管理",
+      "href": "https://trip.lipseo.com/leads"
+    },
+    {
+      "t": "地区管理",
+      "href": "https://trip.lipseo.com/regions"
+    },
+    {
+      "t": "供应商管理",
+      "href": "https://trip.lipseo.com/suppliers"
+    },
+    {
+      "t": "线路管理",
+      "href": "https://trip.lipseo.com/routes"
+    },
+    {
+      "t": "客户管理",
+      "href": "https://trip.lipseo.com/customers"
+    },
+    {
+      "t": "操作日志",
+      "href": "https://trip.lipseo.com/audit-logs"
+    },
+    {
+      "t": "系统设置",
+      "href": "https://trip.lipseo.com/settings/company"
+    },
+    {
+      "t": "用户管理",
+      "href": "https://trip.lipseo.com/users"
+    },
+    {
+      "t": "角色权限",
+      "href": "https://trip.lipseo.com/roles"
+    },
+    {
+      "t": "付款审核通过 · 复刻调研_财务16小时前¥4800.00 · ORD20261",
+      "href": "/orders/1069#payment-PMT2026100200001"
+    },
+    {
+      "t": "收款审核通过 · 马总16小时前¥3000.00 · ORD2026100100",
+      "href": "/orders/1069#payment-RCP2026100100005"
+    },
+    {
+      "t": "收款审核通过 · 复刻调研_财务16小时前¥3000.00 · ORD20261",
+      "href": "/orders/1069#payment-RCP2026100100005"
+    },
+    {
+      "t": "帮助文档",
+      "href": "/docs"
+    },
+    {
+      "t": "更新记录",
+      "href": "/docs/changelog"
+    },
+    {
+      "t": "新建订单",
+      "href": "https://trip.lipseo.com/orders/create"
+    },
+    {
+      "t": "申请收款",
+      "href": "https://trip.lipseo.com/customer-payments/create"
+    },
+    {
+      "t": "申请付款",
+      "href": "https://trip.lipseo.com/supplier-payments/create"
+    },
+    {
+      "t": "去审核",
+      "href": "https://trip.lipseo.com/review"
+    },
+    {
+      "t": "查看经营分析",
+      "href": "https://trip.lipseo.com/reports"
+    },
+    {
+      "t": "全部",
+      "href": "https://trip.lipseo.com/leads/list"
+    },
+    {
+      "t": "查看全部 →",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "查看完整经营分析",
+      "href": "https://trip.lipseo.com/reports"
+    }
+  ],
+  "pills": [
+    "仪表盘",
+    "新建订单",
+    "订单管理",
+    "收款管理",
+    "付款管理",
+    "批量结算",
+    "账户余额",
+    "审核工作台",
+    "经营分析",
+    "业绩统计",
+    "CRM管理",
+    "地区管理",
+    "供应商管理",
+    "线路管理",
+    "客户管理",
+    "操作日志",
+    "系统设置",
+    "用户管理",
+    "角色权限"
+  ]
+}

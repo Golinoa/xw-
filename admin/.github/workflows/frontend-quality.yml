@@ -1,0 +1,51 @@
+name: Frontend Quality
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-quality-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend-quality:
+    name: frontend-quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10.33.4
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Verify pinned toolchain
+        run: node scripts/quality/check-toolchain.mjs
+
+      - name: Install locked frontend and quality tools
+        run: pnpm install --filter '@vben/web-antd...' --filter '@vben/vsh...' --filter '@vben/vite-config...' --filter '@vben/eslint-config...' --filter '@vben/oxfmt-config...' --filter '@vben/oxlint-config...' --filter '@vben/stylelint-config...' --filter . --frozen-lockfile
+
+      - name: Run frontend quality gates
+        run: pnpm run quality:check
+
+      - name: Upload PR preview build
+        if: success() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-antd-preview-${{ github.event.pull_request.number }}
+          path: apps/web-antd/dist/
+          if-no-files-found: error
+          retention-days: 3

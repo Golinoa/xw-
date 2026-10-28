@@ -1,0 +1,814 @@
+{
+  "url": "https://trip.lipseo.com/settings/order",
+  "title": "飞途旅游订单系统",
+  "heading": "",
+  "meta": {
+    "csrf": true
+  },
+  "text": "飞途旅游订单系统\n导航菜单\n仪表盘\n新建订单\n订单管理\n收款管理\n付款管理\n批量结算\n账户余额\n审核工作台\n经营分析\n业绩统计\nCRM管理\n基础数据\n地区管理\n供应商管理\n线路管理\n客户管理\n操作日志\n系统设置\n系统设置\n用户管理\n角色权限\n飞途OMS v3.7 © 2026\n今天的努力，是明天成功的基石。\n有效期至 2026-10-05\n标签\n马总\n管理员\n公司设置\n操作安全\n付款方式\n线路类型\n供应商类型\n审批流程\n出发城市\n客户来源渠道\n订单管理\n订单列表显示列\n\n勾选列并自定义名称，保存后即时生效。\n\n显示\t列名\t排序\n\t团号\t⠿\n\t客户\t⠿\n\t客户来源\t⠿\n\t产品 / 地区\t⠿\n\t出发日期\t⠿\n\t供应商\t⠿\n\t订单金额\t⠿\n\t已收款\t⠿\n\t未收款\t⠿\n\t应付款\t⠿\n\t已付款\t⠿\n\t未付款\t⠿\n\t预估利润\t⠿\n\t毛利率\t⠿\n\t收/付款进度\t⠿\n\t状态\t⠿\n\t创建人\t⠿\n\t创建/修改时间\t⠿\n保存设置\n全选\n全不选\n订单业务设置\n收付款均达 100% 后自动锁团\n关闭时：需在订单列表手动点击\"待锁团\"标签，勾选订单后批量锁团，锁团按钮仅对拥有\"锁团\"权限的角色可见。\n开启时：当收款和付款均达到 100%，系统自动将订单标记为已锁团。\n业绩提成率（%）\n业绩统计「创建人业绩明细」：提成 = 该创建人预估利润 × 提成率；仅正利润计提成，亏损不计、不倒扣。\n保存设置\n使用说明\n勾选列控制在订单列表中显示哪些列。拖拽右侧⠿手柄调整列顺序。\n列名为只读展示，由超管在 SaaS 管理平台统一设置，全系统同步。\n勾选列越多表格越宽，建议 6-8 个。\n\"订单号\" 和 \"操作\" 为固定列，不在此管理。",
+  "forms": [
+    {
+      "action": "https://trip.lipseo.com/logout",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "退出登录",
+          "type": "submit",
+          "cls": "dropdown-item"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/settings/order",
+      "method": "POST",
+      "enctype": "",
+      "id": "colSettingsForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "tour_code",
+          "placeholder": "",
+          "checked": false,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "customer_name",
+          "placeholder": "",
+          "checked": true,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "customer_source",
+          "placeholder": "",
+          "checked": true,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "product_name",
+          "placeholder": "",
+          "checked": true,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "departure_date",
+          "placeholder": "",
+          "checked": true,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "local_agent",
+          "placeholder": "",
+          "checked": true,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "total_amount",
+          "placeholder": "",
+          "checked": true,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "paid_amount",
+          "placeholder": "",
+          "checked": false,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "unpaid_receipt",
+          "placeholder": "",
+          "checked": true,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "total_payable",
+          "placeholder": "",
+          "checked": true,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "supplier_cost",
+          "placeholder": "",
+          "checked": false,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "unpaid_payment",
+          "placeholder": "",
+          "checked": true,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "net_profit",
+          "placeholder": "",
+          "checked": true,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "est_margin",
+          "placeholder": "",
+          "checked": false,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "receipt_progress",
+          "placeholder": "",
+          "checked": true,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "status",
+          "placeholder": "",
+          "checked": true,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "creator",
+          "placeholder": "",
+          "checked": true,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "columns[]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "timestamps",
+          "placeholder": "",
+          "checked": true,
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "column_order",
+          "type": "hidden",
+          "id": "columnOrder",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "保存设置",
+          "type": "submit",
+          "cls": "btn btn-primary"
+        },
+        {
+          "t": "全选",
+          "type": "button",
+          "cls": "btn btn-outline-secondary"
+        },
+        {
+          "t": "全不选",
+          "type": "button",
+          "cls": "btn btn-outline-secondary"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/settings/order",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "order_auto_complete",
+          "type": "checkbox",
+          "id": "orderAutoComplete",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": false,
+          "label": "收付款均达 100% 后自动锁团"
+        },
+        {
+          "tag": "INPUT",
+          "name": "commission_rate",
+          "type": "number",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "留空 = 不启用",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "保存设置",
+          "type": "submit",
+          "cls": "btn btn-primary btn-sm"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/password/update",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "current_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password_confirmation",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "修改密码",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "headers": [
+        "显示",
+        "列名",
+        "排序"
+      ],
+      "rows": 18,
+      "sample": [
+        [
+          "",
+          "团号",
+          "⠿"
+        ],
+        [
+          "",
+          "客户",
+          "⠿"
+        ],
+        [
+          "",
+          "客户来源",
+          "⠿"
+        ],
+        [
+          "",
+          "产品 / 地区",
+          "⠿"
+        ],
+        [
+          "",
+          "出发日期",
+          "⠿"
+        ]
+      ]
+    }
+  ],
+  "buttons": [
+    {
+      "tag": "BUTTON",
+      "t": "0",
+      "cls": "btn btn-sm position-relative d-flex align-items-center",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "标签",
+      "cls": "btn btn-sm d-flex align-items-center oms-tab-toggle",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "马总 管理员",
+      "cls": "btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-1",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "修改密码",
+      "cls": "dropdown-item",
+      "href": "#",
+      "toggle": "modal",
+      "target": "#changePasswordModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "退出登录",
+      "cls": "dropdown-item",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "保存设置",
+      "cls": "btn btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "全选",
+      "cls": "btn btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "全不选",
+      "cls": "btn btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "保存设置",
+      "cls": "btn btn-primary btn-sm",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "×",
+      "cls": "lightbox-close",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认删除",
+      "cls": "btn btn-sm btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn px-4 py-2 confirm-btn-cancel",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认",
+      "cls": "btn px-4 py-2 confirm-btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "修改密码",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    }
+  ],
+  "modals": [
+    {
+      "id": "lightboxModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "opPasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "",
+          "type": "password",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "confirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "changePasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "current_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password_confirmation",
+          "type": "password",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "nav": [
+    {
+      "t": "仪表盘",
+      "href": "https://trip.lipseo.com"
+    },
+    {
+      "t": "新建订单",
+      "href": "https://trip.lipseo.com/orders/create"
+    },
+    {
+      "t": "订单管理",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "收款管理",
+      "href": "https://trip.lipseo.com/customer-payments"
+    },
+    {
+      "t": "付款管理",
+      "href": "https://trip.lipseo.com/supplier-payments"
+    },
+    {
+      "t": "批量结算",
+      "href": "https://trip.lipseo.com/supplier-payments/batch-settle"
+    },
+    {
+      "t": "账户余额",
+      "href": "https://trip.lipseo.com/account-balances"
+    },
+    {
+      "t": "审核工作台",
+      "href": "https://trip.lipseo.com/review"
+    },
+    {
+      "t": "经营分析",
+      "href": "https://trip.lipseo.com/reports"
+    },
+    {
+      "t": "业绩统计",
+      "href": "https://trip.lipseo.com/statistics"
+    },
+    {
+      "t": "CRM管理",
+      "href": "https://trip.lipseo.com/leads"
+    },
+    {
+      "t": "地区管理",
+      "href": "https://trip.lipseo.com/regions"
+    },
+    {
+      "t": "供应商管理",
+      "href": "https://trip.lipseo.com/suppliers"
+    },
+    {
+      "t": "线路管理",
+      "href": "https://trip.lipseo.com/routes"
+    },
+    {
+      "t": "客户管理",
+      "href": "https://trip.lipseo.com/customers"
+    },
+    {
+      "t": "操作日志",
+      "href": "https://trip.lipseo.com/audit-logs"
+    },
+    {
+      "t": "系统设置",
+      "href": "https://trip.lipseo.com/settings/company"
+    },
+    {
+      "t": "用户管理",
+      "href": "https://trip.lipseo.com/users"
+    },
+    {
+      "t": "角色权限",
+      "href": "https://trip.lipseo.com/roles"
+    },
+    {
+      "t": "帮助文档",
+      "href": "/docs"
+    },
+    {
+      "t": "更新记录",
+      "href": "/docs/changelog"
+    },
+    {
+      "t": "公司设置",
+      "href": "https://trip.lipseo.com/settings/company"
+    },
+    {
+      "t": "操作安全",
+      "href": "https://trip.lipseo.com/settings/operation"
+    },
+    {
+      "t": "付款方式",
+      "href": "https://trip.lipseo.com/settings/payment-methods"
+    },
+    {
+      "t": "线路类型",
+      "href": "https://trip.lipseo.com/settings/route-types"
+    },
+    {
+      "t": "供应商类型",
+      "href": "https://trip.lipseo.com/settings/supplier-types"
+    },
+    {
+      "t": "审批流程",
+      "href": "https://trip.lipseo.com/settings/approval"
+    },
+    {
+      "t": "出发城市",
+      "href": "https://trip.lipseo.com/settings/departure-cities"
+    },
+    {
+      "t": "客户来源渠道",
+      "href": "https://trip.lipseo.com/settings/customer-sources"
+    },
+    {
+      "t": "订单管理",
+      "href": "https://trip.lipseo.com/settings/order"
+    }
+  ],
+  "pills": [
+    "仪表盘",
+    "新建订单",
+    "订单管理",
+    "收款管理",
+    "付款管理",
+    "批量结算",
+    "账户余额",
+    "审核工作台",
+    "经营分析",
+    "业绩统计",
+    "CRM管理",
+    "地区管理",
+    "供应商管理",
+    "线路管理",
+    "客户管理",
+    "操作日志",
+    "系统设置",
+    "用户管理",
+    "角色权限",
+    "公司设置",
+    "操作安全",
+    "付款方式",
+    "线路类型",
+    "供应商类型",
+    "审批流程",
+    "出发城市",
+    "客户来源渠道",
+    "订单管理"
+  ]
+}

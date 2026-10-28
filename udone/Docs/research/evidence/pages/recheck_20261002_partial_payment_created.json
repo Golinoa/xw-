@@ -1,0 +1,2541 @@
+{
+  "url": "https://trip.lipseo.com/orders/1073",
+  "title": "飞途旅游订单系统",
+  "heading": "",
+  "meta": {
+    "csrf": true
+  },
+  "text": "飞途旅游订单系统\n导航菜单\n仪表盘\n新建订单\n订单管理\n收款管理\n付款管理\n批量结算\n账户余额\n审核工作台\n经营分析\n业绩统计\nCRM管理\n基础数据\n地区管理\n供应商管理\n线路管理\n客户管理\n操作日志\n系统设置\n系统设置\n用户管理\n角色权限\n飞途OMS v3.7 © 2026\n每一个订单，都是一份信任。\n有效期至 2026-10-05\n3\n标签\n马总\n管理员\n进行中\nORD2026100200004\n· 复刻补测_20261002_客户 · 复刻补测_20261002_线路 · 广州出发 ·\n2026-10-20 · 1人\n修改\n申请收款\n申请付款\n订单信息\n国内包团\n客户与联系人\n客户名称\n复刻补测_20261002_客户\n联系电话\n138****9901\n出行人数\n游客名单（2人）\n1人(1大0小)\n创建人\n马总\n客户来源\n旅游平台 (OTA)\n线路与团期\n产品名称\n复刻补测_20261002_线路\n目的地\n广东省内 › 广州\n线路\n复刻补测_20261002_线路\n团号\nFK-RETEST-1002\n预定日期\n2026-10-02\n出团日期\n2026-10-20\n回团日期\n2026-10-22\n出发城市\n广州\n金额与成本\n#\t应收项目（¥1,100.00）\t金额\t备注\n1\t基础团款\t¥1,000.00\t报价：¥1,000.00 = ¥1,000.00×1人\n2\t补测附加应收\t¥100.00\t\n#\t应付项目（¥650.00）\t金额\t备注\n1\t复刻补测_20261002_供应商(基础成本)非月结\t¥600.00\t成本小计：¥600.00 = ¥600.00×1人\n2\t复刻补测_20261002_供应商(补测附加应付) 非月结\t¥50.00\t\n合同附件（1）\n复刻补测_20261002_线路 复刻...\n资金流水\n申请收款\n申请付款\n应收\n¥1,100.00\n已收款\n¥0.00\n未收款\n¥1,100.00\n应付\n¥650.00\n已付款\n¥0.00\n未付款\n¥650.00\n收款信息\n#\t客户 / 项目\t应收金额\t已收\t未收\t收款方式\t款项用途及备注\t创建人\t附件\t状态\t操作\n1\t\n复刻补测_20261002_客户\n基础团款\n\t¥300.00\t¥0.00\t¥300.00\t微信\t\n复刻补测_凭证收款\n\t马总\t\n \n\t待 财务审核\t\n编辑\n详情\n\n合计\t¥300.00\t¥0.00\t¥300.00\t\n付款信息\n#\t供应商 / 项目\t应付金额\t已付\t未付\t付款方式\t款项用途及备注\t创建人\t附件\t状态\t操作\n1\t\n复刻补测_20261002_供应商\n基础成本\n\t¥200.00\t¥0.00\t¥200.00\t建设银行\t\n复刻补测_部分付款凭证\n\t马总\t\n \n\t待 财务审批\t\n编辑\n详情\n\n合计\t¥200.00\t¥0.00\t¥200.00\t\n资金进度\n收款\n应收\n¥1,100.00\n已收\n¥0.00\n未收\n¥800.00\n付款\n应付\n¥650.00\n已付\n¥0.00\n未付\n¥450.00\n进度详情\n收款进度\n0%\n¥0.00 / ¥1,100.00\n付款进度\n0%\n¥0.00 / ¥650.00\n利润核算\n¥450.00\n收入\n基础团款\n¥1,000.00\n补测附加应收\n¥100.00\n应收合计\n¥1,100.00\n成本\n复刻补测_20261002_供应商(基础成本)\n¥600.00\n复刻补测_20261002_供应商(补测附加应付)\n¥50.00\n成本合计\n¥650.00\n预估利润\n¥450.00\n基于订单金额与计划成本计算\n净现金流\n¥0.00\n基于已收款与已付款计算，随收付款动态变化\n快捷操作\n返回列表\n转为预订单\n锁团\n取消订单\n操作日志\n付款记录已创建，等待审核",
+  "forms": [
+    {
+      "action": "https://trip.lipseo.com/logout",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "退出登录",
+          "type": "submit",
+          "cls": "dropdown-item"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/orders/1073/mark-booking",
+      "method": "POST",
+      "enctype": "",
+      "id": "showMarkBooking",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "转为预订单",
+          "type": "button",
+          "cls": "btn btn-outline-warning w-100 py-2 d-flex align-items-center justify-content-center tx-xxs rounded-3"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/orders/1073/complete",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "锁团",
+          "type": "submit",
+          "cls": "btn btn-outline-success w-100 py-2 d-flex align-items-center justify-content-center tx-xxs rounded-3"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/customer-payments",
+      "method": "POST",
+      "enctype": "multipart/form-data",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "order_id",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "order_item_id",
+          "type": "select-one",
+          "id": "recvItemSelect",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "2919",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "选择应收项目..."
+            },
+            {
+              "v": "2919",
+              "t": "1. 基础团款 ¥1,000.00（剩 ¥700.00）"
+            },
+            {
+              "v": "2920",
+              "t": "2. 补测附加应收 ¥100.00（剩 ¥100.00）"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "amount",
+          "type": "number",
+          "id": "recvAmount",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "payment_method",
+          "type": "select-one",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "建设银行",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "建设银行",
+              "t": "建设银行"
+            },
+            {
+              "v": "农业银行",
+              "t": "农业银行"
+            },
+            {
+              "v": "中国银行",
+              "t": "中国银行"
+            },
+            {
+              "v": "平安银行",
+              "t": "平安银行"
+            },
+            {
+              "v": "邮政银行",
+              "t": "邮政银行"
+            },
+            {
+              "v": "交通银行",
+              "t": "交通银行"
+            },
+            {
+              "v": "浦发银行",
+              "t": "浦发银行"
+            },
+            {
+              "v": "深圳农商银行",
+              "t": "深圳农商银行"
+            },
+            {
+              "v": "中信银行",
+              "t": "中信银行"
+            },
+            {
+              "v": "广发银行",
+              "t": "广发银行"
+            },
+            {
+              "v": "PayPal",
+              "t": "PayPal"
+            },
+            {
+              "v": "云闪付",
+              "t": "云闪付"
+            },
+            {
+              "v": "工商银行",
+              "t": "工商银行"
+            },
+            {
+              "v": "微信",
+              "t": "微信"
+            },
+            {
+              "v": "支付宝",
+              "t": "支付宝"
+            },
+            {
+              "v": "现金",
+              "t": "现金"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "receipt_no",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "转账单号等",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "bank_transaction_no",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "银行流水号",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "receipt_files[]",
+          "type": "file",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": "点击上传Ctrl+V 粘贴图片"
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "remark",
+          "type": "textarea",
+          "id": "recvRemark",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-muted"
+        },
+        {
+          "t": "提交审核",
+          "type": "submit",
+          "cls": "btn btn-success px-4"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/supplier-payments",
+      "method": "POST",
+      "enctype": "multipart/form-data",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "order_id",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "order_item_id",
+          "type": "select-one",
+          "id": "expenseItemSelect",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "2921",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "选择应付项目..."
+            },
+            {
+              "v": "2921",
+              "t": "1. 复刻补测_20261002_供应商·基础成本 ¥600.00（剩 ¥400.00）"
+            },
+            {
+              "v": "2922",
+              "t": "2. 复刻补测_20261002_供应商·补测附加应付 ¥50.00（剩 ¥50.00）"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "supplier_name",
+          "type": "hidden",
+          "id": "expenseSupplierName",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "搜索...",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "supplier_contact",
+          "type": "text",
+          "id": "expenseSupplierContact",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "测试联系人",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "supplier_phone",
+          "type": "text",
+          "id": "expenseSupplierPhone",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "amount",
+          "type": "number",
+          "id": "payAmount",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "payment_method",
+          "type": "select-one",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "建设银行",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "建设银行",
+              "t": "建设银行"
+            },
+            {
+              "v": "农业银行",
+              "t": "农业银行"
+            },
+            {
+              "v": "中国银行",
+              "t": "中国银行"
+            },
+            {
+              "v": "平安银行",
+              "t": "平安银行"
+            },
+            {
+              "v": "邮政银行",
+              "t": "邮政银行"
+            },
+            {
+              "v": "交通银行",
+              "t": "交通银行"
+            },
+            {
+              "v": "浦发银行",
+              "t": "浦发银行"
+            },
+            {
+              "v": "深圳农商银行",
+              "t": "深圳农商银行"
+            },
+            {
+              "v": "中信银行",
+              "t": "中信银行"
+            },
+            {
+              "v": "广发银行",
+              "t": "广发银行"
+            },
+            {
+              "v": "PayPal",
+              "t": "PayPal"
+            },
+            {
+              "v": "云闪付",
+              "t": "云闪付"
+            },
+            {
+              "v": "工商银行",
+              "t": "工商银行"
+            },
+            {
+              "v": "微信",
+              "t": "微信"
+            },
+            {
+              "v": "支付宝",
+              "t": "支付宝"
+            },
+            {
+              "v": "现金",
+              "t": "现金"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "invoice_no",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "bank_transaction_no",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "银行流水号",
+          "label": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "account_no",
+          "type": "textarea",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "收款账号/系统号",
+          "label": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "remark",
+          "type": "textarea",
+          "id": "payRemark",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "invoice_files[]",
+          "type": "file",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": "点击上传Ctrl+V 粘贴图片"
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-muted"
+        },
+        {
+          "t": "提交审核",
+          "type": "submit",
+          "cls": "btn btn-danger px-4"
+        }
+      ]
+    },
+    {
+      "action": "",
+      "method": "POST",
+      "enctype": "multipart/form-data",
+      "id": "editIncomeForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "_method",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "order_item_id",
+          "type": "select-one",
+          "id": "eiItemSelect",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "选择应收项目..."
+            },
+            {
+              "v": "2919",
+              "t": "1. 基础团款 ¥1,000.00（剩 ¥700.00）"
+            },
+            {
+              "v": "2920",
+              "t": "2. 补测附加应收 ¥100.00（剩 ¥100.00）"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "amount",
+          "type": "number",
+          "id": "eiAmount",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "payment_method",
+          "type": "select-one",
+          "id": "eiMethod",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "建设银行",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "建设银行",
+              "t": "建设银行"
+            },
+            {
+              "v": "农业银行",
+              "t": "农业银行"
+            },
+            {
+              "v": "中国银行",
+              "t": "中国银行"
+            },
+            {
+              "v": "平安银行",
+              "t": "平安银行"
+            },
+            {
+              "v": "邮政银行",
+              "t": "邮政银行"
+            },
+            {
+              "v": "交通银行",
+              "t": "交通银行"
+            },
+            {
+              "v": "浦发银行",
+              "t": "浦发银行"
+            },
+            {
+              "v": "深圳农商银行",
+              "t": "深圳农商银行"
+            },
+            {
+              "v": "中信银行",
+              "t": "中信银行"
+            },
+            {
+              "v": "广发银行",
+              "t": "广发银行"
+            },
+            {
+              "v": "PayPal",
+              "t": "PayPal"
+            },
+            {
+              "v": "云闪付",
+              "t": "云闪付"
+            },
+            {
+              "v": "工商银行",
+              "t": "工商银行"
+            },
+            {
+              "v": "微信",
+              "t": "微信"
+            },
+            {
+              "v": "支付宝",
+              "t": "支付宝"
+            },
+            {
+              "v": "现金",
+              "t": "现金"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "receipt_no",
+          "type": "text",
+          "id": "eiReceiptNo",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "bank_transaction_no",
+          "type": "text",
+          "id": "eiBankNo",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "银行流水号",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "keep_receipt_files",
+          "type": "hidden",
+          "id": "eiKeepFiles",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "receipt_files[]",
+          "type": "file",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": "点击上传Ctrl+V 粘贴图片"
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "reply",
+          "type": "textarea",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "回复驳回原因...",
+          "label": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "remark",
+          "type": "textarea",
+          "id": "eiRemark",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "保存",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    },
+    {
+      "action": "",
+      "method": "POST",
+      "enctype": "multipart/form-data",
+      "id": "editExpenseForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "_method",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "order_item_id",
+          "type": "select-one",
+          "id": "eeItemSelect",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "选择应付项目..."
+            },
+            {
+              "v": "2921",
+              "t": "1. 复刻补测_20261002_供应商·基础成本 ¥600.00（剩 ¥400.00）"
+            },
+            {
+              "v": "2922",
+              "t": "2. 复刻补测_20261002_供应商·补测附加应付 ¥50.00（剩 ¥50.00）"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "supplier_name",
+          "type": "hidden",
+          "id": "eeSupplierName",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "搜索...",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "supplier_contact",
+          "type": "text",
+          "id": "eeSupplierContact",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "supplier_phone",
+          "type": "text",
+          "id": "eeSupplierPhone",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "amount",
+          "type": "number",
+          "id": "eeAmount",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "payment_method",
+          "type": "select-one",
+          "id": "eeMethod",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "建设银行",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "建设银行",
+              "t": "建设银行"
+            },
+            {
+              "v": "农业银行",
+              "t": "农业银行"
+            },
+            {
+              "v": "中国银行",
+              "t": "中国银行"
+            },
+            {
+              "v": "平安银行",
+              "t": "平安银行"
+            },
+            {
+              "v": "邮政银行",
+              "t": "邮政银行"
+            },
+            {
+              "v": "交通银行",
+              "t": "交通银行"
+            },
+            {
+              "v": "浦发银行",
+              "t": "浦发银行"
+            },
+            {
+              "v": "深圳农商银行",
+              "t": "深圳农商银行"
+            },
+            {
+              "v": "中信银行",
+              "t": "中信银行"
+            },
+            {
+              "v": "广发银行",
+              "t": "广发银行"
+            },
+            {
+              "v": "PayPal",
+              "t": "PayPal"
+            },
+            {
+              "v": "云闪付",
+              "t": "云闪付"
+            },
+            {
+              "v": "工商银行",
+              "t": "工商银行"
+            },
+            {
+              "v": "微信",
+              "t": "微信"
+            },
+            {
+              "v": "支付宝",
+              "t": "支付宝"
+            },
+            {
+              "v": "现金",
+              "t": "现金"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "invoice_no",
+          "type": "text",
+          "id": "eeInvoiceNo",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "bank_transaction_no",
+          "type": "text",
+          "id": "eeBankNo",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "银行流水号",
+          "label": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "account_no",
+          "type": "textarea",
+          "id": "eeAccountNo",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "收款账号/系统号",
+          "label": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "remark",
+          "type": "textarea",
+          "id": "eeRemark",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "keep_invoice_files",
+          "type": "hidden",
+          "id": "eeKeepFiles",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "invoice_files[]",
+          "type": "file",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": "点击上传Ctrl+V 粘贴图片"
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "reply",
+          "type": "textarea",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "回复驳回原因...",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-muted"
+        },
+        {
+          "t": "保存",
+          "type": "submit",
+          "cls": "btn btn-danger px-4"
+        }
+      ]
+    },
+    {
+      "action": "",
+      "method": "POST",
+      "enctype": "",
+      "id": "paymentRejectForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "reject_reason",
+          "type": "textarea",
+          "id": "paymentRejectReason",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "请填写驳回原因",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "确认驳回",
+          "type": "submit",
+          "cls": "btn btn-sm btn-danger px-4"
+        }
+      ]
+    },
+    {
+      "action": "",
+      "method": "POST",
+      "enctype": "multipart/form-data",
+      "id": "paidConfirmForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "paid_files[]",
+          "type": "file",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": "点击选择文件（JPG/PNG/PDF，≤10MB）"
+        }
+      ],
+      "buttons": [
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "确认已付款",
+          "type": "submit",
+          "cls": "btn btn-sm btn-warning text-white px-4"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/orders/1073/unlock",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "reason",
+          "type": "textarea",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "请填写解锁原因，以便追溯订单变更...",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "确认解锁",
+          "type": "submit",
+          "cls": "btn btn-sm btn-warning"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/password/update",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "current_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password_confirmation",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "修改密码",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "headers": [
+        "#",
+        "应收项目（¥1,100.00）",
+        "金额",
+        "备注"
+      ],
+      "rows": 2,
+      "sample": [
+        [
+          "1",
+          "基础团款",
+          "¥1,000.00",
+          "报价：¥1,000.00 = ¥1,000.00×1人"
+        ],
+        [
+          "2",
+          "补测附加应收",
+          "¥100.00",
+          ""
+        ]
+      ]
+    },
+    {
+      "headers": [
+        "#",
+        "应付项目（¥650.00）",
+        "金额",
+        "备注"
+      ],
+      "rows": 2,
+      "sample": [
+        [
+          "1",
+          "复刻补测_20261002_供应商(基础成本)非月结",
+          "¥600.00",
+          "成本小计：¥600.00 = ¥600.00×1人"
+        ],
+        [
+          "2",
+          "复刻补测_20261002_供应商(补测附加应付) 非月结",
+          "¥50.00",
+          ""
+        ]
+      ]
+    },
+    {
+      "headers": [
+        "#",
+        "客户 / 项目",
+        "应收金额",
+        "已收",
+        "未收",
+        "收款方式",
+        "款项用途及备注",
+        "创建人",
+        "附件",
+        "状态",
+        "操作"
+      ],
+      "rows": 2,
+      "sample": [
+        [
+          "1",
+          "复刻补测_20261002_客户基础团款",
+          "¥300.00",
+          "¥0.00",
+          "¥300.00",
+          "微信",
+          "复刻补测_凭证收款",
+          "马总",
+          "",
+          "待 财务审核",
+          "编辑 详情"
+        ],
+        [
+          "合计",
+          "¥300.00",
+          "¥0.00",
+          "¥300.00",
+          ""
+        ]
+      ]
+    },
+    {
+      "headers": [
+        "#",
+        "供应商 / 项目",
+        "应付金额",
+        "已付",
+        "未付",
+        "付款方式",
+        "款项用途及备注",
+        "创建人",
+        "附件",
+        "状态",
+        "操作"
+      ],
+      "rows": 2,
+      "sample": [
+        [
+          "1",
+          "复刻补测_20261002_供应商基础成本",
+          "¥200.00",
+          "¥0.00",
+          "¥200.00",
+          "建设银行",
+          "复刻补测_部分付款凭证",
+          "马总",
+          "",
+          "待 财务审批",
+          "编辑 详情"
+        ],
+        [
+          "合计",
+          "¥200.00",
+          "¥0.00",
+          "¥200.00",
+          ""
+        ]
+      ]
+    },
+    {
+      "headers": [
+        "时间",
+        "操作人",
+        "操作",
+        "详情"
+      ],
+      "rows": 6,
+      "sample": [
+        [
+          "2026-10-02 16:24",
+          "马总",
+          "创建",
+          "创建了付款 ¥200.00 ORD2026100200004"
+        ],
+        [
+          "2026-10-02 16:24",
+          "马总",
+          "创建",
+          "创建了收款 ¥300.00 ORD2026100200004"
+        ],
+        [
+          "2026-10-02 16:21",
+          "马总",
+          "确认出团",
+          "确认出团订单"
+        ],
+        [
+          "2026-10-02 16:21",
+          "马总",
+          "创建",
+          "创建了订单 ORD2026100200004"
+        ],
+        [
+          "2026-10-02 16:21",
+          "马总",
+          "更新",
+          "更新了订单（供应商 空 → 复刻补测_20261002_供应商）"
+        ]
+      ]
+    },
+    {
+      "headers": [
+        "姓名*",
+        "手机",
+        "证件类型",
+        "证件号*",
+        "类型",
+        "年龄",
+        "性别",
+        "备注",
+        ""
+      ],
+      "rows": 2,
+      "sample": [
+        [
+          "",
+          "",
+          "身份证护照港澳通行证台胞证其他",
+          "",
+          "成人儿童",
+          "",
+          "-男女",
+          "",
+          ""
+        ],
+        [
+          "",
+          "",
+          "身份证护照港澳通行证台胞证其他",
+          "",
+          "成人儿童",
+          "",
+          "-男女",
+          "",
+          ""
+        ]
+      ]
+    }
+  ],
+  "buttons": [
+    {
+      "tag": "BUTTON",
+      "t": "3",
+      "cls": "btn btn-sm position-relative d-flex align-items-center",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "标签",
+      "cls": "btn btn-sm d-flex align-items-center oms-tab-toggle",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "马总 管理员",
+      "cls": "btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-1",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "修改密码",
+      "cls": "dropdown-item",
+      "href": "#",
+      "toggle": "modal",
+      "target": "#changePasswordModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "退出登录",
+      "cls": "dropdown-item",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "修改",
+      "cls": "btn btn-sm btn-primary",
+      "href": "https://trip.lipseo.com/orders/1073/edit",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "申请收款",
+      "cls": "btn btn-sm btn btn-sm oms-btn-income",
+      "href": "",
+      "toggle": "modal",
+      "target": "#incomeModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "申请付款",
+      "cls": "btn btn-sm btn btn-sm oms-btn-expense",
+      "href": "",
+      "toggle": "modal",
+      "target": "#expenseModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "申请收款",
+      "cls": "btn btn-sm btn-act cf-add-btn cf-add-btn-income",
+      "href": "",
+      "toggle": "modal",
+      "target": "#incomeModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "申请付款",
+      "cls": "btn btn-sm btn-act cf-add-btn cf-add-btn-expense",
+      "href": "",
+      "toggle": "modal",
+      "target": "#expenseModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "编辑",
+      "cls": "btn btn-sm btn-act cf-btn cf-btn-edit",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "详情",
+      "cls": "btn btn-sm btn-act cf-btn cf-btn-detail",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "编辑",
+      "cls": "btn btn-sm btn-act cf-btn cf-btn-edit",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "详情",
+      "cls": "btn btn-sm btn-act cf-btn cf-btn-detail",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted px-4",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确定撤回",
+      "cls": "btn btn-sm btn-amber px-4",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "返回列表",
+      "cls": "btn btn-light flex-fill py-2 rounded-3 border d-flex align-items-center justify-",
+      "href": "https://trip.lipseo.com/orders",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "转为预订单",
+      "cls": "btn btn-outline-warning w-100 py-2 d-flex align-items-center justify-content-cen",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "锁团",
+      "cls": "btn btn-outline-success w-100 py-2 d-flex align-items-center justify-content-cen",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消订单",
+      "cls": "btn btn-outline-danger w-100 py-2 d-flex align-items-center justify-content-cent",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "提交审核",
+      "cls": "btn btn-success px-4",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "提交审核",
+      "cls": "btn btn-danger px-4",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "保存",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "保存",
+      "cls": "btn btn-danger px-4",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认驳回",
+      "cls": "btn btn-sm btn-danger px-4",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认通过",
+      "cls": "btn btn-sm btn-success px-4",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认已付款",
+      "cls": "btn btn-sm btn-warning text-white px-4",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认解锁",
+      "cls": "btn btn-sm btn-warning",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "下载模板",
+      "cls": "tm-import-btn",
+      "href": "/templates/tourist_import_template.csv",
+      "toggle": "tooltip",
+      "target": ""
+    },
+    {
+      "tag": "LABEL",
+      "t": "导入名单",
+      "cls": "tm-import-btn mb-0",
+      "href": "",
+      "toggle": "tooltip",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "添加游客",
+      "cls": "btn btn-sm btn-outline-secondary tx-xs",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "保存",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "×",
+      "cls": "lightbox-close",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认删除",
+      "cls": "btn btn-sm btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn px-4 py-2 confirm-btn-cancel",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认",
+      "cls": "btn px-4 py-2 confirm-btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "修改密码",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    }
+  ],
+  "modals": [
+    {
+      "id": "undoConfirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "eventDetailModal",
+      "title": "资金详情",
+      "fields": []
+    },
+    {
+      "id": "fileListModal",
+      "title": "附件列表",
+      "fields": []
+    },
+    {
+      "id": "incomeModal",
+      "title": "申请收款",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "order_id",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "order_item_id",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "payment_method",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "receipt_no",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "bank_transaction_no",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "receipt_files[]",
+          "type": "file",
+          "required": false
+        },
+        {
+          "name": "remark",
+          "type": "textarea",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "expenseModal",
+      "title": "申请付款",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "order_id",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "order_item_id",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "supplier_name",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "supplier_contact",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "supplier_phone",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "payment_method",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "invoice_no",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "bank_transaction_no",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "account_no",
+          "type": "textarea",
+          "required": false
+        },
+        {
+          "name": "remark",
+          "type": "textarea",
+          "required": true
+        },
+        {
+          "name": "invoice_files[]",
+          "type": "file",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "editIncomeModal",
+      "title": "编辑收款申请",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "_method",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "order_item_id",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "payment_method",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "receipt_no",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "bank_transaction_no",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "keep_receipt_files",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "receipt_files[]",
+          "type": "file",
+          "required": false
+        },
+        {
+          "name": "reply",
+          "type": "textarea",
+          "required": false
+        },
+        {
+          "name": "remark",
+          "type": "textarea",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "editExpenseModal",
+      "title": "编辑付款申请",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "_method",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "order_item_id",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "supplier_name",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "supplier_contact",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "supplier_phone",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "payment_method",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "invoice_no",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "bank_transaction_no",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "account_no",
+          "type": "textarea",
+          "required": false
+        },
+        {
+          "name": "remark",
+          "type": "textarea",
+          "required": true
+        },
+        {
+          "name": "keep_invoice_files",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "invoice_files[]",
+          "type": "file",
+          "required": false
+        },
+        {
+          "name": "reply",
+          "type": "textarea",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "paymentRejectModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "reject_reason",
+          "type": "textarea",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "approveConfirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "paidConfirmModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "paid_files[]",
+          "type": "file",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "unlockModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "reason",
+          "type": "textarea",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "touristModal",
+      "title": "管理游客名单",
+      "fields": [
+        {
+          "name": "",
+          "type": "file",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "select-one",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "select-one",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "select-one",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "select-one",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "select-one",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "select-one",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "lightboxModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "opPasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "",
+          "type": "password",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "confirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "changePasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "current_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password_confirmation",
+          "type": "password",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "nav": [
+    {
+      "t": "仪表盘",
+      "href": "https://trip.lipseo.com"
+    },
+    {
+      "t": "新建订单",
+      "href": "https://trip.lipseo.com/orders/create"
+    },
+    {
+      "t": "订单管理",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "收款管理",
+      "href": "https://trip.lipseo.com/customer-payments"
+    },
+    {
+      "t": "付款管理",
+      "href": "https://trip.lipseo.com/supplier-payments"
+    },
+    {
+      "t": "批量结算",
+      "href": "https://trip.lipseo.com/supplier-payments/batch-settle"
+    },
+    {
+      "t": "账户余额",
+      "href": "https://trip.lipseo.com/account-balances"
+    },
+    {
+      "t": "审核工作台",
+      "href": "https://trip.lipseo.com/review"
+    },
+    {
+      "t": "经营分析",
+      "href": "https://trip.lipseo.com/reports"
+    },
+    {
+      "t": "业绩统计",
+      "href": "https://trip.lipseo.com/statistics"
+    },
+    {
+      "t": "CRM管理",
+      "href": "https://trip.lipseo.com/leads"
+    },
+    {
+      "t": "地区管理",
+      "href": "https://trip.lipseo.com/regions"
+    },
+    {
+      "t": "供应商管理",
+      "href": "https://trip.lipseo.com/suppliers"
+    },
+    {
+      "t": "线路管理",
+      "href": "https://trip.lipseo.com/routes"
+    },
+    {
+      "t": "客户管理",
+      "href": "https://trip.lipseo.com/customers"
+    },
+    {
+      "t": "操作日志",
+      "href": "https://trip.lipseo.com/audit-logs"
+    },
+    {
+      "t": "系统设置",
+      "href": "https://trip.lipseo.com/settings/company"
+    },
+    {
+      "t": "用户管理",
+      "href": "https://trip.lipseo.com/users"
+    },
+    {
+      "t": "角色权限",
+      "href": "https://trip.lipseo.com/roles"
+    },
+    {
+      "t": "付款审核通过 · 复刻调研_财务16小时前¥4800.00 · ORD20261",
+      "href": "/orders/1069#payment-PMT2026100200001"
+    },
+    {
+      "t": "收款审核通过 · 马总16小时前¥3000.00 · ORD2026100100",
+      "href": "/orders/1069#payment-RCP2026100100005"
+    },
+    {
+      "t": "收款审核通过 · 复刻调研_财务16小时前¥3000.00 · ORD20261",
+      "href": "/orders/1069#payment-RCP2026100100005"
+    },
+    {
+      "t": "帮助文档",
+      "href": "/docs"
+    },
+    {
+      "t": "更新记录",
+      "href": "/docs/changelog"
+    },
+    {
+      "t": "修改",
+      "href": "https://trip.lipseo.com/orders/1073/edit"
+    },
+    {
+      "t": "复刻补测_20261002_线路 复刻...",
+      "href": "https://trip.lipseo.com/files/32/2026-10/contracts/ORD2026100200004_01.pdf"
+    },
+    {
+      "t": "预览",
+      "href": "https://trip.lipseo.com/files/32/2026-10/contracts/ORD2026100200004_01.pdf"
+    },
+    {
+      "t": "下载",
+      "href": "https://trip.lipseo.com/files/32/2026-10/contracts/ORD2026100200004_01.pdf"
+    },
+    {
+      "t": "返回列表",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "下载模板",
+      "href": "/templates/tourist_import_template.csv"
+    }
+  ],
+  "pills": [
+    "仪表盘",
+    "新建订单",
+    "订单管理",
+    "收款管理",
+    "付款管理",
+    "批量结算",
+    "账户余额",
+    "审核工作台",
+    "经营分析",
+    "业绩统计",
+    "CRM管理",
+    "地区管理",
+    "供应商管理",
+    "线路管理",
+    "客户管理",
+    "操作日志",
+    "系统设置",
+    "用户管理",
+    "角色权限"
+  ]
+}

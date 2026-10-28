@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="有单 OMS 字体与排版规范预览。">
+  <title>有单 OMS · 字体与排版</title>
+  <style>
+    :root{font-family:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;color:#202d37;background:#f0f8fd;font-synthesis:none;--blue:#0077d6;--cyan:#00877e;--line:#dce8f0;--muted:#536370;--surface:#fff;--pale:#eaf6ff;--shadow:0 10px 32px rgb(32 65 91 / 7%)}
+    *{box-sizing:border-box}body{margin:0}.page{max-width:1120px;margin:auto;padding:38px 24px 64px}.eyebrow{font-size:11px;font-weight:600;letter-spacing:.12em;color:var(--blue);text-transform:uppercase}h1{margin:10px 0 8px;font-size:32px;line-height:40px;font-weight:600;letter-spacing:-.025em}.lead{margin:0;color:var(--muted);font-size:14px;line-height:22px}.notice{margin:20px 0 30px;padding:14px 16px;border:1px solid #99d5ff;border-left:4px solid var(--blue);border-radius:4px;background:var(--surface);font-size:13px;line-height:21px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:14px;margin:28px 0 12px}h2{margin:0;font-size:20px;line-height:28px;font-weight:600}.sub{margin:4px 0 0;color:var(--muted);font-size:12px;line-height:20px}.pill{padding:5px 9px;border-radius:4px;background:var(--pale);color:#005eaa;font-size:11px;font-weight:500;white-space:nowrap}.card{padding:18px;border:1px solid var(--line);border-radius:4px;background:var(--surface);box-shadow:var(--shadow)}.type-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.type-row{display:grid;grid-template-columns:104px 1fr;align-items:center;gap:14px;padding:14px 12px;border-bottom:1px solid #edf2f6}.type-row:last-child{border-bottom:0}.meta{display:grid;gap:4px}.meta code{color:#005eaa;font:600 11px/16px ui-monospace,Consolas,monospace}.meta small{color:var(--muted);font-size:10px;line-height:15px}.sample{margin:0}.t12{font-size:12px;line-height:20px}.t14{font-size:14px;line-height:22px}.t16{font-size:16px;line-height:24px}.t18{font-size:18px;line-height:28px}.t20{font-size:20px;line-height:28px}.t22{font-size:22px;line-height:32px}.t24{font-size:24px;line-height:32px}.w400{font-weight:400}.w500{font-weight:500}.w600{font-weight:600}.weight-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.weight-item{padding:16px;border:1px solid var(--line);border-radius:4px;background:#fff}.weight-item strong{display:block;margin-bottom:9px;color:#005eaa;font:600 11px/16px ui-monospace,Consolas,monospace}.weight-item p{margin:0;font-size:16px;line-height:24px}.roles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.role{padding:14px;border:1px solid var(--line);border-radius:4px;background:#fff}.role b{display:block;margin-bottom:5px;font-size:13px;line-height:20px}.role p{margin:0;color:var(--muted);font-size:12px;line-height:20px}.example{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}.example h3{margin:0 0 4px;font-size:18px;line-height:28px;font-weight:600}.example .desc{margin:0;color:var(--muted);font-size:14px;line-height:22px}.metrics{display:flex;gap:28px}.metric small{display:block;color:var(--muted);font-size:12px;line-height:20px}.metric strong{display:block;color:var(--blue);font-size:22px;line-height:32px;font-weight:600;font-variant-numeric:tabular-nums}.rule-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.rule{padding:14px;border:1px solid var(--line);border-radius:4px;background:#fff}.rule b{display:block;margin-bottom:5px;font-size:13px;line-height:20px}.rule p{margin:0;color:var(--muted);font-size:12px;line-height:20px}.font-stack{display:block;overflow-wrap:anywhere;margin-top:8px;padding:10px;border-radius:4px;background:#f5f9fc;color:#34424d;font:12px/20px ui-monospace,Consolas,monospace}#toast{position:fixed;right:18px;bottom:18px;padding:10px 14px;border-radius:4px;background:#202d37;color:#fff;font-size:12px;opacity:0;transform:translateY(8px);transition:.18s;pointer-events:none}#toast.show{opacity:1;transform:none}button{font:inherit}button.copy{padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer}button.copy:focus-visible{outline:2px solid var(--blue);outline-offset:3px}footer{margin-top:28px;color:var(--muted);font-size:11px;line-height:18px}
+    @media(max-width:720px){.type-grid,.roles{grid-template-columns:1fr}.rule-grid{grid-template-columns:1fr}.type-row{grid-template-columns:88px 1fr}.page{padding:28px 16px 48px}}@media(max-width:480px){.page{padding:22px 12px 40px}.weight-grid{grid-template-columns:1fr}.section-head{align-items:start;flex-direction:column}.card{padding:12px}.example{grid-template-columns:1fr}.metrics{gap:22px}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="eyebrow">YOUNCE · DESIGN SYSTEM</div>
+    <h1>字体与排版</h1>
+    <p class="lead">建立清晰、稳定、适合高密度管理界面的文字层级。</p>
+    <div class="notice"><strong>默认：</strong>PingFang SC 字体栈 · 14px 正文 · 400 / 500 / 600 三档字重。</div>
+
+    <section>
+      <div class="section-head"><div><h2>字号阶梯</h2><p class="sub">12–24px，每 2px 一级。点击 token 复制名称。</p></div><span class="pill">7 级</span></div>
+      <div class="type-grid" id="type-scale"></div>
+    </section>
+
+    <section>
+      <div class="section-head"><div><h2>字重</h2><p class="sub">用有限字重表达层级，避免同屏粗细混乱。</p></div><span class="pill">400 / 500 / 600</span></div>
+      <div class="weight-grid card">
+        <div class="weight-item"><strong>Regular · 400</strong><p class="w400">项目任务按计划执行</p></div>
+        <div class="weight-item"><strong>Medium · 500</strong><p class="w500">项目任务按计划执行</p></div>
+        <div class="weight-item"><strong>Semibold · 600</strong><p class="w600">项目任务按计划执行</p></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><div><h2>界面层级示例</h2><p class="sub">同一页面通过字号、字重和颜色建立阅读顺序。</p></div></div>
+      <div class="card example">
+        <div><h3>项目任务概览</h3><p class="desc">查看项目当前进度、待办任务和成员安排。</p><p class="t12" style="margin:10px 0 0;color:var(--muted)">最近更新 · 2026-10-05 14:30</p></div>
+        <div class="metrics"><div class="metric"><small>进行中</small><strong>18</strong></div><div class="metric"><small>已完成</small><strong>42</strong></div></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><div><h2>字号用途</h2><p class="sub">用途是项目补充规则，便于页面保持一致。</p></div></div>
+      <div class="roles">
+        <article class="role"><b>页面与区块</b><p>页面标题 24px；区块标题 18–20px；关键摘要 22px。</p></article>
+        <article class="role"><b>业务正文</b><p>正文、表单、导航和表格默认 14px；强调正文 16px。</p></article>
+        <article class="role"><b>辅助信息</b><p>时间、说明和密集表格可用 12px；重要内容保持 14px 及以上。</p></article>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><div><h2>字体与内容边界</h2><p class="sub">补齐跨平台与长文本使用规则。</p></div></div>
+      <div class="rule-grid">
+        <article class="rule"><b>字体回退</b><p>按系统使用 PingFang SC、Microsoft YaHei 和系统 UI 字体回退，不随产品分发字体文件。</p><code class="font-stack">"PingFang SC", "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", sans-serif</code></article>
+        <article class="rule"><b>行高与数字</b><p>正文默认 14 / 22px；关键数据列可启用等宽数字，保持数值对齐。</p></article>
+        <article class="rule"><b>截断与换行</b><p>标题允许换行；需要截断时提供可访问的完整内容查看方式，不只依赖悬停。</p></article>
+        <article class="rule"><b>层级与可读性</b><p>不以颜色或粗体单独表达状态；缩放与窄屏下文字不裁切，关键内容不低于 14px。</p></article>
+      </div>
+    </section>
+
+    <footer>有单 OMS Design-system · 字体与排版</footer>
+  </main>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script>
+    const scale = [
+      ['text-xs', 12, 20, '辅助、密集内容'], ['text-sm', 14, 22, '默认正文'],
+      ['text-md', 16, 24, '强调正文'], ['text-lg', 18, 28, '卡片标题'],
+      ['text-xl', 20, 28, '区块标题'], ['text-2xl', 22, 32, '摘要标题'],
+      ['text-3xl', 24, 32, '页面标题']
+    ];
+    const root = document.getElementById('type-scale');
+    root.innerHTML = scale.map(([name,size,line,role]) => `<article class="type-row card"><div class="meta"><button class="copy" type="button" data-copy="${name}"><code>${name}</code></button><small>${size} / ${line}px · ${role}</small></div><p class="sample" style="font-size:${size}px;line-height:${line}px;font-weight:${size>=18?600:400}">项目进度与任务安排</p></article>`).join('');
+    let timer;
+    document.addEventListener('click', async event => {
+      const button = event.target.closest('[data-copy]'); if (!button) return;
+      try { await navigator.clipboard.writeText(button.dataset.copy); } catch { const input=document.createElement('textarea');input.value=button.dataset.copy;document.body.append(input);input.select();document.execCommand('copy');input.remove(); }
+      const toast = document.getElementById('toast'); toast.textContent = `已复制 ${button.dataset.copy}`; toast.classList.add('show'); clearTimeout(timer); timer = setTimeout(() => toast.classList.remove('show'), 1300);
+    });
+  </script>
+</body>
+</html>

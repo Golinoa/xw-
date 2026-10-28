@@ -1,0 +1,792 @@
+{
+  "url": "https://trip.lipseo.com/leads/settings",
+  "title": "飞途旅游订单系统",
+  "heading": "",
+  "meta": {
+    "csrf": true
+  },
+  "text": "飞途旅游订单系统\n导航菜单\n仪表盘\n新建订单\n订单管理\n收款管理\n付款管理\n批量结算\n账户余额\n审核工作台\n经营分析\n业绩统计\nCRM管理\n基础数据\n地区管理\n供应商管理\n线路管理\n客户管理\n操作日志\n系统设置\n系统设置\n用户管理\n角色权限\n飞途OMS v3.7 © 2026\n每一个订单，都是一份信任。\n有效期至 2026-10-05\n4\n标签\n马总\n管理员\n仪表盘\n线索列表\n公海\n回收站\n设置\nCRM 设置\n管理公海超时规则与销售阶段配置\n公海设置\n超时天数（天）\n超过此天数未跟进，线索自动进入公海\n阶段管理\n拖拽排序暂未支持，阶段按列表顺序排列。第一个为默认阶段，成交/放弃标记为终态\n添加阶段\n1\n成交\n放弃\n2\n成交\n放弃\n3\n成交\n放弃\n4\n成交\n放弃\n5\n成交\n放弃\n6\n成交\n放弃\n保存设置",
+  "forms": [
+    {
+      "action": "https://trip.lipseo.com/logout",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "退出登录",
+          "type": "submit",
+          "cls": "dropdown-item"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/leads/settings",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "pool_timeout_days",
+          "type": "number",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "7",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[0][name]",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "新线索",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[0][color]",
+          "type": "color",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "#3b82f6",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[0][is_won]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": false,
+          "label": "成交"
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[0][is_lost]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": false,
+          "label": "放弃"
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[1][name]",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "需求沟通",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[1][color]",
+          "type": "color",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "#f59e0b",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[1][is_won]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": false,
+          "label": "成交"
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[1][is_lost]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": false,
+          "label": "放弃"
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[2][name]",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "报价中",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[2][color]",
+          "type": "color",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "#8b5cf6",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[2][is_won]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": false,
+          "label": "成交"
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[2][is_lost]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": false,
+          "label": "放弃"
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[3][name]",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "方案确认",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[3][color]",
+          "type": "color",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "#06b6d4",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[3][is_won]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": false,
+          "label": "成交"
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[3][is_lost]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": false,
+          "label": "放弃"
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[4][name]",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "已成单",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[4][color]",
+          "type": "color",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "#10b981",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[4][is_won]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": true,
+          "label": "成交"
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[4][is_lost]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": false,
+          "label": "放弃"
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[5][name]",
+          "type": "text",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "已放弃",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[5][color]",
+          "type": "color",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "#ef4444",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[5][is_won]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": false,
+          "label": "成交"
+        },
+        {
+          "tag": "INPUT",
+          "name": "stages[5][is_lost]",
+          "type": "checkbox",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "1",
+          "placeholder": "",
+          "checked": true,
+          "label": "放弃"
+        }
+      ],
+      "buttons": [
+        {
+          "t": "添加阶段",
+          "type": "button",
+          "cls": "crm-btn-sm crm-btn-o ms-auto"
+        },
+        {
+          "t": "",
+          "type": "button",
+          "cls": "crm-btn-sm crm-btn-d"
+        },
+        {
+          "t": "",
+          "type": "button",
+          "cls": "crm-btn-sm crm-btn-d"
+        },
+        {
+          "t": "",
+          "type": "button",
+          "cls": "crm-btn-sm crm-btn-d"
+        },
+        {
+          "t": "",
+          "type": "button",
+          "cls": "crm-btn-sm crm-btn-d"
+        },
+        {
+          "t": "",
+          "type": "button",
+          "cls": "crm-btn-sm crm-btn-d"
+        },
+        {
+          "t": "",
+          "type": "button",
+          "cls": "crm-btn-sm crm-btn-d"
+        },
+        {
+          "t": "保存设置",
+          "type": "submit",
+          "cls": "crm-btn-sm crm-btn-p px-4"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/password/update",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "current_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password_confirmation",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "修改密码",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    }
+  ],
+  "tables": [],
+  "buttons": [
+    {
+      "tag": "BUTTON",
+      "t": "4",
+      "cls": "btn btn-sm position-relative d-flex align-items-center",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "标签",
+      "cls": "btn btn-sm d-flex align-items-center oms-tab-toggle",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "马总 管理员",
+      "cls": "btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-1",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "修改密码",
+      "cls": "dropdown-item",
+      "href": "#",
+      "toggle": "modal",
+      "target": "#changePasswordModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "退出登录",
+      "cls": "dropdown-item",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "添加阶段",
+      "cls": "crm-btn-sm crm-btn-o ms-auto",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "保存设置",
+      "cls": "crm-btn-sm crm-btn-p px-4",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "×",
+      "cls": "lightbox-close",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认删除",
+      "cls": "btn btn-sm btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn px-4 py-2 confirm-btn-cancel",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认",
+      "cls": "btn px-4 py-2 confirm-btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "修改密码",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    }
+  ],
+  "modals": [
+    {
+      "id": "lightboxModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "opPasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "",
+          "type": "password",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "confirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "changePasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "current_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password_confirmation",
+          "type": "password",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "nav": [
+    {
+      "t": "仪表盘",
+      "href": "https://trip.lipseo.com"
+    },
+    {
+      "t": "新建订单",
+      "href": "https://trip.lipseo.com/orders/create"
+    },
+    {
+      "t": "订单管理",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "收款管理",
+      "href": "https://trip.lipseo.com/customer-payments"
+    },
+    {
+      "t": "付款管理",
+      "href": "https://trip.lipseo.com/supplier-payments"
+    },
+    {
+      "t": "批量结算",
+      "href": "https://trip.lipseo.com/supplier-payments/batch-settle"
+    },
+    {
+      "t": "账户余额",
+      "href": "https://trip.lipseo.com/account-balances"
+    },
+    {
+      "t": "审核工作台",
+      "href": "https://trip.lipseo.com/review"
+    },
+    {
+      "t": "经营分析",
+      "href": "https://trip.lipseo.com/reports"
+    },
+    {
+      "t": "业绩统计",
+      "href": "https://trip.lipseo.com/statistics"
+    },
+    {
+      "t": "CRM管理",
+      "href": "https://trip.lipseo.com/leads"
+    },
+    {
+      "t": "地区管理",
+      "href": "https://trip.lipseo.com/regions"
+    },
+    {
+      "t": "供应商管理",
+      "href": "https://trip.lipseo.com/suppliers"
+    },
+    {
+      "t": "线路管理",
+      "href": "https://trip.lipseo.com/routes"
+    },
+    {
+      "t": "客户管理",
+      "href": "https://trip.lipseo.com/customers"
+    },
+    {
+      "t": "操作日志",
+      "href": "https://trip.lipseo.com/audit-logs"
+    },
+    {
+      "t": "系统设置",
+      "href": "https://trip.lipseo.com/settings/company"
+    },
+    {
+      "t": "用户管理",
+      "href": "https://trip.lipseo.com/users"
+    },
+    {
+      "t": "角色权限",
+      "href": "https://trip.lipseo.com/roles"
+    },
+    {
+      "t": "付款审核通过 · 马总48分钟前¥4800.00 · ORD2026100100",
+      "href": "/orders/1069#payment-PMT2026100200001"
+    },
+    {
+      "t": "付款审核通过 · 复刻调研_财务49分钟前¥4800.00 · ORD20261",
+      "href": "/orders/1069#payment-PMT2026100200001"
+    },
+    {
+      "t": "收款审核通过 · 马总52分钟前¥3000.00 · ORD2026100100",
+      "href": "/orders/1069#payment-RCP2026100100005"
+    },
+    {
+      "t": "收款审核通过 · 复刻调研_财务54分钟前¥3000.00 · ORD20261",
+      "href": "/orders/1069#payment-RCP2026100100005"
+    },
+    {
+      "t": "帮助文档",
+      "href": "/docs"
+    },
+    {
+      "t": "更新记录",
+      "href": "/docs/changelog"
+    },
+    {
+      "t": "仪表盘",
+      "href": "https://trip.lipseo.com/leads"
+    },
+    {
+      "t": "线索列表",
+      "href": "https://trip.lipseo.com/leads/list"
+    },
+    {
+      "t": "公海",
+      "href": "https://trip.lipseo.com/leads/pool"
+    },
+    {
+      "t": "回收站",
+      "href": "https://trip.lipseo.com/leads/trash"
+    },
+    {
+      "t": "设置",
+      "href": "https://trip.lipseo.com/leads/settings"
+    }
+  ],
+  "pills": [
+    "仪表盘",
+    "新建订单",
+    "订单管理",
+    "收款管理",
+    "付款管理",
+    "批量结算",
+    "账户余额",
+    "审核工作台",
+    "经营分析",
+    "业绩统计",
+    "CRM管理",
+    "地区管理",
+    "供应商管理",
+    "线路管理",
+    "客户管理",
+    "操作日志",
+    "系统设置",
+    "用户管理",
+    "角色权限"
+  ]
+}

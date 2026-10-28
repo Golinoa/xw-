@@ -1,0 +1,995 @@
+{
+  "success": true,
+  "data": {
+    "requests": [
+      {
+        "headers": {
+          "Accept": "application/json",
+          "Referer": "https://trip.lipseo.com/customers",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "X-Requested-With": "XMLHttpRequest",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "GET",
+        "mimeType": "application/json",
+        "requestId": "41592.887",
+        "resourceType": "Fetch",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "no-cache, private",
+          "content-encoding": "gzip",
+          "content-type": "application/json",
+          "date": "Thu, 01 Oct 2026 15:45:27 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869528732,
+        "url": "https://trip.lipseo.com/notifications"
+      },
+      {
+        "headers": {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Origin": "https://trip.lipseo.com",
+          "Referer": "https://trip.lipseo.com/customers",
+          "Upgrade-Insecure-Requests": "1",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "POST",
+        "postData": "_token=[REDACTED]&name=&phone=[MASKED]&email=[MASKED]&id_number=[MASKED]&customer_source_id=&birthday=&birthday_calendar=solar&remark=",
+        "requestId": "[REDACTED_TOKEN]",
+        "resourceType": "Document",
+        "timestamp": 1790869536104,
+        "url": "https://trip.lipseo.com/customers"
+      },
+      {
+        "headers": {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Origin": "https://trip.lipseo.com",
+          "Referer": "https://trip.lipseo.com/customers",
+          "Upgrade-Insecure-Requests": "1",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "GET",
+        "mimeType": "text/html",
+        "requestId": "[REDACTED_TOKEN]",
+        "resourceType": "Document",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "no-cache, private",
+          "content-encoding": "gzip",
+          "content-type": "text/html; charset=utf-8",
+          "date": "Thu, 01 Oct 2026 15:45:28 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869536104,
+        "url": "https://trip.lipseo.com/customers"
+      },
+      {
+        "headers": {
+          "Origin": "https://trip.lipseo.com",
+          "Referer": "https://trip.lipseo.com/customers",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "GET",
+        "mimeType": "font/woff2",
+        "requestId": "41592.889",
+        "resourceType": "Font",
+        "responseHeaders": {
+          "accept-ranges": "bytes",
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "content-length": "130396",
+          "content-type": "font/woff2",
+          "date": "Thu, 01 Oct 2026 15:29:17 GMT",
+          "etag": "\"6a166325-1fd5c\"",
+          "last-modified": "Wed, 27 May 2026 03:21:09 GMT",
+          "server": "nginx"
+        },
+        "status": 200,
+        "timestamp": 1790869536104,
+        "url": "https://trip.lipseo.com/vendor/bootstrap-icons/fonts/bootstrap-icons.woff2"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "text/css",
+        "requestId": "41592.890",
+        "resourceType": "Stylesheet",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=43200",
+          "content-encoding": "gzip",
+          "content-type": "text/css",
+          "date": "Thu, 01 Oct 2026 15:24:20 GMT",
+          "etag": "W/\"6a166325-38df4\"",
+          "expires": "Fri, 02 Oct 2026 03:24:20 GMT",
+          "last-modified": "Wed, 27 May 2026 03:21:09 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869536104,
+        "url": "https://trip.lipseo.com/vendor/bootstrap/bootstrap.min.css"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "text/css",
+        "requestId": "41592.891",
+        "resourceType": "Stylesheet",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=43200",
+          "content-encoding": "gzip",
+          "content-type": "text/css",
+          "date": "Thu, 01 Oct 2026 15:24:20 GMT",
+          "etag": "W/\"6a3d09ae-14f73\"",
+          "expires": "Fri, 02 Oct 2026 03:24:20 GMT",
+          "last-modified": "Thu, 25 Jun 2026 10:57:50 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869536104,
+        "url": "https://trip.lipseo.com/vendor/bootstrap-icons/bootstrap-icons.css"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "text/css",
+        "requestId": "41592.892",
+        "resourceType": "Stylesheet",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=43200",
+          "content-encoding": "gzip",
+          "content-type": "text/css",
+          "date": "Thu, 01 Oct 2026 15:29:17 GMT",
+          "etag": "W/\"6a7c79ef-7a3d\"",
+          "expires": "Fri, 02 Oct 2026 03:29:17 GMT",
+          "last-modified": "Wed, 12 Aug 2026 13:49:35 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869536104,
+        "url": "https://trip.lipseo.com/vendor/oms-app.css?v=20260808e"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "application/javascript",
+        "requestId": "41592.893",
+        "resourceType": "Script",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=43200",
+          "content-encoding": "gzip",
+          "content-type": "application/javascript",
+          "date": "Thu, 01 Oct 2026 15:29:17 GMT",
+          "etag": "W/\"6a166325-32257\"",
+          "expires": "Fri, 02 Oct 2026 03:29:17 GMT",
+          "last-modified": "Wed, 27 May 2026 03:21:09 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869536104,
+        "url": "https://trip.lipseo.com/vendor/chartjs/chart.umd.min.js"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "image/png",
+        "requestId": "41592.894",
+        "resourceType": "Image",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=3600, private",
+          "content-encoding": "gzip",
+          "content-type": "image/png",
+          "date": "Thu, 01 Oct 2026 15:29:17 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869536104,
+        "url": "https://trip.lipseo.com/files/32/logo/logo_1790482156_AnCuX4.png"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "application/javascript",
+        "requestId": "41592.895",
+        "resourceType": "Script",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=43200",
+          "content-encoding": "gzip",
+          "content-type": "application/javascript",
+          "date": "Thu, 01 Oct 2026 15:29:17 GMT",
+          "etag": "W/\"6a166325-13b17\"",
+          "expires": "Fri, 02 Oct 2026 03:29:17 GMT",
+          "last-modified": "Wed, 27 May 2026 03:21:09 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869536104,
+        "url": "https://trip.lipseo.com/vendor/bootstrap/bootstrap.bundle.min.js"
+      },
+      {
+        "headers": {
+          "Referer": ""
+        },
+        "method": "GET",
+        "mimeType": "font/woff2",
+        "requestId": "41592.903",
+        "resourceType": "Font",
+        "responseHeaders": {
+          "accept-ranges": "bytes",
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "content-length": "130396",
+          "content-type": "font/woff2",
+          "date": "Thu, 01 Oct 2026 15:24:20 GMT",
+          "etag": "\"6a166325-1fd5c\"",
+          "last-modified": "Wed, 27 May 2026 03:21:09 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000"
+        },
+        "status": 200,
+        "timestamp": 1790869536104,
+        "url": "https://trip.lipseo.com/vendor/bootstrap-icons/fonts/bootstrap-icons.woff2?[REDACTED_TOKEN]"
+      },
+      {
+        "headers": {
+          "Referer": "",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36"
+        },
+        "method": "GET",
+        "mimeType": "image/svg+xml",
+        "requestId": "41592.905",
+        "resourceType": "Image",
+        "responseHeaders": {
+          "Content-Type": "image/svg+xml"
+        },
+        "status": 200,
+        "timestamp": 1790869536105,
+        "url": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E"
+      },
+      {
+        "headers": {
+          "Accept": "application/json",
+          "Referer": "https://trip.lipseo.com/customers",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "X-Requested-With": "XMLHttpRequest",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "GET",
+        "mimeType": "application/json",
+        "requestId": "41592.906",
+        "resourceType": "Fetch",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "no-cache, private",
+          "content-encoding": "gzip",
+          "content-type": "application/json",
+          "date": "Thu, 01 Oct 2026 15:45:29 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869536105,
+        "url": "https://trip.lipseo.com/notifications"
+      },
+      {
+        "headers": {
+          "Accept": "application/json",
+          "Referer": "https://trip.lipseo.com/customers",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "X-Requested-With": "XMLHttpRequest",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "GET",
+        "mimeType": "application/json",
+        "requestId": "41592.907",
+        "resourceType": "Fetch",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "no-cache, private",
+          "content-encoding": "gzip",
+          "content-type": "application/json",
+          "date": "Thu, 01 Oct 2026 15:46:29 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869591152,
+        "url": "https://trip.lipseo.com/notifications"
+      },
+      {
+        "headers": {
+          "Upgrade-Insecure-Requests": "1",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "GET",
+        "mimeType": "text/html",
+        "requestId": "[REDACTED_TOKEN]",
+        "resourceType": "Document",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "no-cache, private",
+          "content-encoding": "gzip",
+          "content-type": "text/html; charset=utf-8",
+          "date": "Thu, 01 Oct 2026 15:46:31 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869597263,
+        "url": "https://trip.lipseo.com/customers"
+      },
+      {
+        "headers": {
+          "Origin": "https://trip.lipseo.com",
+          "Referer": "https://trip.lipseo.com/customers",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "GET",
+        "mimeType": "font/woff2",
+        "requestId": "41592.909",
+        "resourceType": "Font",
+        "responseHeaders": {
+          "accept-ranges": "bytes",
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "content-length": "130396",
+          "content-type": "font/woff2",
+          "date": "Thu, 01 Oct 2026 15:29:17 GMT",
+          "etag": "\"6a166325-1fd5c\"",
+          "last-modified": "Wed, 27 May 2026 03:21:09 GMT",
+          "server": "nginx"
+        },
+        "status": 200,
+        "timestamp": 1790869597263,
+        "url": "https://trip.lipseo.com/vendor/bootstrap-icons/fonts/bootstrap-icons.woff2"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "text/css",
+        "requestId": "41592.910",
+        "resourceType": "Stylesheet",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=43200",
+          "content-encoding": "gzip",
+          "content-type": "text/css",
+          "date": "Thu, 01 Oct 2026 15:24:20 GMT",
+          "etag": "W/\"6a166325-38df4\"",
+          "expires": "Fri, 02 Oct 2026 03:24:20 GMT",
+          "last-modified": "Wed, 27 May 2026 03:21:09 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869597263,
+        "url": "https://trip.lipseo.com/vendor/bootstrap/bootstrap.min.css"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "text/css",
+        "requestId": "41592.911",
+        "resourceType": "Stylesheet",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=43200",
+          "content-encoding": "gzip",
+          "content-type": "text/css",
+          "date": "Thu, 01 Oct 2026 15:24:20 GMT",
+          "etag": "W/\"6a3d09ae-14f73\"",
+          "expires": "Fri, 02 Oct 2026 03:24:20 GMT",
+          "last-modified": "Thu, 25 Jun 2026 10:57:50 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869597263,
+        "url": "https://trip.lipseo.com/vendor/bootstrap-icons/bootstrap-icons.css"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "text/css",
+        "requestId": "41592.912",
+        "resourceType": "Stylesheet",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=43200",
+          "content-encoding": "gzip",
+          "content-type": "text/css",
+          "date": "Thu, 01 Oct 2026 15:29:17 GMT",
+          "etag": "W/\"6a7c79ef-7a3d\"",
+          "expires": "Fri, 02 Oct 2026 03:29:17 GMT",
+          "last-modified": "Wed, 12 Aug 2026 13:49:35 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869597263,
+        "url": "https://trip.lipseo.com/vendor/oms-app.css?v=20260808e"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "application/javascript",
+        "requestId": "41592.913",
+        "resourceType": "Script",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=43200",
+          "content-encoding": "gzip",
+          "content-type": "application/javascript",
+          "date": "Thu, 01 Oct 2026 15:29:17 GMT",
+          "etag": "W/\"6a166325-32257\"",
+          "expires": "Fri, 02 Oct 2026 03:29:17 GMT",
+          "last-modified": "Wed, 27 May 2026 03:21:09 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869597263,
+        "url": "https://trip.lipseo.com/vendor/chartjs/chart.umd.min.js"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "image/png",
+        "requestId": "41592.914",
+        "resourceType": "Image",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=3600, private",
+          "content-encoding": "gzip",
+          "content-type": "image/png",
+          "date": "Thu, 01 Oct 2026 15:29:17 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869597263,
+        "url": "https://trip.lipseo.com/files/32/logo/logo_1790482156_AnCuX4.png"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "application/javascript",
+        "requestId": "41592.915",
+        "resourceType": "Script",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=43200",
+          "content-encoding": "gzip",
+          "content-type": "application/javascript",
+          "date": "Thu, 01 Oct 2026 15:29:17 GMT",
+          "etag": "W/\"6a166325-13b17\"",
+          "expires": "Fri, 02 Oct 2026 03:29:17 GMT",
+          "last-modified": "Wed, 27 May 2026 03:21:09 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869597263,
+        "url": "https://trip.lipseo.com/vendor/bootstrap/bootstrap.bundle.min.js"
+      },
+      {
+        "headers": {
+          "Referer": ""
+        },
+        "method": "GET",
+        "mimeType": "font/woff2",
+        "requestId": "41592.923",
+        "resourceType": "Font",
+        "responseHeaders": {
+          "accept-ranges": "bytes",
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "content-length": "130396",
+          "content-type": "font/woff2",
+          "date": "Thu, 01 Oct 2026 15:24:20 GMT",
+          "etag": "\"6a166325-1fd5c\"",
+          "last-modified": "Wed, 27 May 2026 03:21:09 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000"
+        },
+        "status": 200,
+        "timestamp": 1790869597263,
+        "url": "https://trip.lipseo.com/vendor/bootstrap-icons/fonts/bootstrap-icons.woff2?[REDACTED_TOKEN]"
+      },
+      {
+        "headers": {
+          "Referer": "",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36"
+        },
+        "method": "GET",
+        "mimeType": "image/svg+xml",
+        "requestId": "41592.925",
+        "resourceType": "Image",
+        "responseHeaders": {
+          "Content-Type": "image/svg+xml"
+        },
+        "status": 200,
+        "timestamp": 1790869597263,
+        "url": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E"
+      },
+      {
+        "headers": {
+          "Accept": "application/json",
+          "Referer": "https://trip.lipseo.com/customers",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "X-Requested-With": "XMLHttpRequest",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "GET",
+        "mimeType": "application/json",
+        "requestId": "41592.926",
+        "resourceType": "Fetch",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "no-cache, private",
+          "content-encoding": "gzip",
+          "content-type": "application/json",
+          "date": "Thu, 01 Oct 2026 15:46:31 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869597263,
+        "url": "https://trip.lipseo.com/notifications"
+      },
+      {
+        "headers": {
+          "Referer": "",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36"
+        },
+        "method": "GET",
+        "mimeType": "image/svg+xml",
+        "requestId": "41592.927",
+        "resourceType": "Image",
+        "responseHeaders": {
+          "Content-Type": "image/svg+xml"
+        },
+        "status": 200,
+        "timestamp": 1790869603080,
+        "url": "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e"
+      },
+      {
+        "headers": {
+          "Referer": "",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36"
+        },
+        "method": "GET",
+        "mimeType": "image/svg+xml",
+        "requestId": "41592.928",
+        "resourceType": "Image",
+        "responseHeaders": {
+          "Content-Type": "image/svg+xml"
+        },
+        "status": 200,
+        "timestamp": 1790869603080,
+        "url": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z'/%3E%3C/svg%3E"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "GET",
+        "mimeType": "application/json",
+        "requestId": "41592.929",
+        "resourceType": "Fetch",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "no-cache, private",
+          "content-encoding": "gzip",
+          "content-type": "application/json",
+          "date": "Thu, 01 Oct 2026 15:46:46 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding",
+          "x-ratelimit-limit": "60",
+          "x-ratelimit-remaining": "59"
+        },
+        "status": 200,
+        "timestamp": 1790869610155,
+        "url": "https://trip.lipseo.com/check-unique?table=customers&field=name&value=复刻调研_测试客户"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "GET",
+        "mimeType": "application/json",
+        "requestId": "41592.930",
+        "resourceType": "Fetch",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "no-cache, private",
+          "content-encoding": "gzip",
+          "content-type": "application/json",
+          "date": "Thu, 01 Oct 2026 15:46:50 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding",
+          "x-ratelimit-limit": "60",
+          "x-ratelimit-remaining": "58"
+        },
+        "status": 200,
+        "timestamp": 1790869613572,
+        "url": "https://trip.lipseo.com/check-unique?table=customers&field=phone&value=138****8001"
+      },
+      {
+        "headers": {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Origin": "https://trip.lipseo.com",
+          "Referer": "https://trip.lipseo.com/customers",
+          "Upgrade-Insecure-Requests": "1",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "POST",
+        "postData": "_token=[REDACTED]&name=复刻调研_测试客户&phone=[MASKED]&email=[MASKED]&id_number=[MASKED]&customer_source_id=1542&birthday=&birthday_calendar=solar&remark=虚构测试客户，复刻调研用",
+        "requestId": "[REDACTED_TOKEN]",
+        "resourceType": "Document",
+        "timestamp": 1790869631588,
+        "url": "https://trip.lipseo.com/customers"
+      },
+      {
+        "headers": {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Origin": "https://trip.lipseo.com",
+          "Referer": "https://trip.lipseo.com/customers",
+          "Upgrade-Insecure-Requests": "1",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "GET",
+        "mimeType": "text/html",
+        "requestId": "[REDACTED_TOKEN]",
+        "resourceType": "Document",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "no-cache, private",
+          "content-encoding": "gzip",
+          "content-type": "text/html; charset=utf-8",
+          "date": "Thu, 01 Oct 2026 15:47:04 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869631589,
+        "url": "https://trip.lipseo.com/customers"
+      },
+      {
+        "headers": {
+          "Origin": "https://trip.lipseo.com",
+          "Referer": "https://trip.lipseo.com/customers",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "GET",
+        "mimeType": "font/woff2",
+        "requestId": "41592.932",
+        "resourceType": "Font",
+        "responseHeaders": {
+          "accept-ranges": "bytes",
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "content-length": "130396",
+          "content-type": "font/woff2",
+          "date": "Thu, 01 Oct 2026 15:29:17 GMT",
+          "etag": "\"6a166325-1fd5c\"",
+          "last-modified": "Wed, 27 May 2026 03:21:09 GMT",
+          "server": "nginx"
+        },
+        "status": 200,
+        "timestamp": 1790869631589,
+        "url": "https://trip.lipseo.com/vendor/bootstrap-icons/fonts/bootstrap-icons.woff2"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "text/css",
+        "requestId": "41592.933",
+        "resourceType": "Stylesheet",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=43200",
+          "content-encoding": "gzip",
+          "content-type": "text/css",
+          "date": "Thu, 01 Oct 2026 15:24:20 GMT",
+          "etag": "W/\"6a166325-38df4\"",
+          "expires": "Fri, 02 Oct 2026 03:24:20 GMT",
+          "last-modified": "Wed, 27 May 2026 03:21:09 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869631589,
+        "url": "https://trip.lipseo.com/vendor/bootstrap/bootstrap.min.css"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "text/css",
+        "requestId": "41592.934",
+        "resourceType": "Stylesheet",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=43200",
+          "content-encoding": "gzip",
+          "content-type": "text/css",
+          "date": "Thu, 01 Oct 2026 15:24:20 GMT",
+          "etag": "W/\"6a3d09ae-14f73\"",
+          "expires": "Fri, 02 Oct 2026 03:24:20 GMT",
+          "last-modified": "Thu, 25 Jun 2026 10:57:50 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869631589,
+        "url": "https://trip.lipseo.com/vendor/bootstrap-icons/bootstrap-icons.css"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "text/css",
+        "requestId": "41592.935",
+        "resourceType": "Stylesheet",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=43200",
+          "content-encoding": "gzip",
+          "content-type": "text/css",
+          "date": "Thu, 01 Oct 2026 15:29:17 GMT",
+          "etag": "W/\"6a7c79ef-7a3d\"",
+          "expires": "Fri, 02 Oct 2026 03:29:17 GMT",
+          "last-modified": "Wed, 12 Aug 2026 13:49:35 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869631589,
+        "url": "https://trip.lipseo.com/vendor/oms-app.css?v=20260808e"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "application/javascript",
+        "requestId": "41592.936",
+        "resourceType": "Script",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=43200",
+          "content-encoding": "gzip",
+          "content-type": "application/javascript",
+          "date": "Thu, 01 Oct 2026 15:29:17 GMT",
+          "etag": "W/\"6a166325-32257\"",
+          "expires": "Fri, 02 Oct 2026 03:29:17 GMT",
+          "last-modified": "Wed, 27 May 2026 03:21:09 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869631589,
+        "url": "https://trip.lipseo.com/vendor/chartjs/chart.umd.min.js"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "image/png",
+        "requestId": "41592.937",
+        "resourceType": "Image",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=3600, private",
+          "content-encoding": "gzip",
+          "content-type": "image/png",
+          "date": "Thu, 01 Oct 2026 15:29:17 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869631589,
+        "url": "https://trip.lipseo.com/files/32/logo/logo_1790482156_AnCuX4.png"
+      },
+      {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/customers"
+        },
+        "method": "GET",
+        "mimeType": "application/javascript",
+        "requestId": "41592.938",
+        "resourceType": "Script",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=43200",
+          "content-encoding": "gzip",
+          "content-type": "application/javascript",
+          "date": "Thu, 01 Oct 2026 15:29:17 GMT",
+          "etag": "W/\"6a166325-13b17\"",
+          "expires": "Fri, 02 Oct 2026 03:29:17 GMT",
+          "last-modified": "Wed, 27 May 2026 03:21:09 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869631589,
+        "url": "https://trip.lipseo.com/vendor/bootstrap/bootstrap.bundle.min.js"
+      },
+      {
+        "headers": {
+          "Referer": ""
+        },
+        "method": "GET",
+        "mimeType": "font/woff2",
+        "requestId": "41592.946",
+        "resourceType": "Font",
+        "responseHeaders": {
+          "accept-ranges": "bytes",
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "content-length": "130396",
+          "content-type": "font/woff2",
+          "date": "Thu, 01 Oct 2026 15:24:20 GMT",
+          "etag": "\"6a166325-1fd5c\"",
+          "last-modified": "Wed, 27 May 2026 03:21:09 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000"
+        },
+        "status": 200,
+        "timestamp": 1790869631589,
+        "url": "https://trip.lipseo.com/vendor/bootstrap-icons/fonts/bootstrap-icons.woff2?[REDACTED_TOKEN]"
+      },
+      {
+        "headers": {
+          "Referer": "",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36"
+        },
+        "method": "GET",
+        "mimeType": "image/svg+xml",
+        "requestId": "41592.948",
+        "resourceType": "Image",
+        "responseHeaders": {
+          "Content-Type": "image/svg+xml"
+        },
+        "status": 200,
+        "timestamp": 1790869631589,
+        "url": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E"
+      },
+      {
+        "headers": {
+          "Accept": "application/json",
+          "Referer": "https://trip.lipseo.com/customers",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "X-Requested-With": "XMLHttpRequest",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "GET",
+        "mimeType": "application/json",
+        "requestId": "41592.949",
+        "resourceType": "Fetch",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "no-cache, private",
+          "content-encoding": "gzip",
+          "content-type": "application/json",
+          "date": "Thu, 01 Oct 2026 15:47:04 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000",
+          "vary": "Accept-Encoding"
+        },
+        "status": 200,
+        "timestamp": 1790869631589,
+        "url": "https://trip.lipseo.com/notifications"
+      }
+    ]
+  },
+  "error": null
+}

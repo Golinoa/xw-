@@ -1,0 +1,666 @@
+{
+  "url": "https://trip.lipseo.com/account-balances",
+  "title": "飞途旅游订单系统",
+  "heading": "",
+  "meta": {
+    "csrf": true
+  },
+  "text": "飞途旅游订单系统\n导航菜单\n仪表盘\n新建订单\n订单管理\n收款管理\n付款管理\n批量结算\n账户余额\n审核工作台\n经营分析\n业绩统计\nCRM管理\n基础数据\n地区管理\n供应商管理\n线路管理\n客户管理\n操作日志\n系统设置\n系统设置\n用户管理\n角色权限\n飞途OMS v3.7 © 2026\n今天的努力，是明天成功的基石。\n有效期至 2026-10-05\n标签\n马总\n管理员\n账户余额\n\n各付款方式账户的期初余额、收支流水及当前余额总览\n\n总余额\n¥0.00\n总收款（已审核）\n¥0.00\n总付款（已审核）\n¥0.00\n账户名称\t账号\t类型\t期初余额\t收款（+）\t付款（-）\t当前余额\t操作\n招商银行\t-\t通用\t¥0.00\t+¥0.00\t-¥0.00\t¥0.00\t\n设置\n建设银行\t-\t通用\t¥0.00\t+¥0.00\t-¥0.00\t¥0.00\t\n设置\n农业银行\t-\t通用\t¥0.00\t+¥0.00\t-¥0.00\t¥0.00\t\n设置\n中国银行\t-\t通用\t¥0.00\t+¥0.00\t-¥0.00\t¥0.00\t\n设置\n平安银行\t-\t通用\t¥0.00\t+¥0.00\t-¥0.00\t¥0.00\t\n设置\n邮政银行\t-\t通用\t¥0.00\t+¥0.00\t-¥0.00\t¥0.00\t\n设置\n交通银行\t-\t通用\t¥0.00\t+¥0.00\t-¥0.00\t¥0.00\t\n设置\n浦发银行\t-\t通用\t¥0.00\t+¥0.00\t-¥0.00\t¥0.00\t\n设置\n深圳农商银行\t-\t通用\t¥0.00\t+¥0.00\t-¥0.00\t¥0.00\t\n设置\n中信银行\t-\t通用\t¥0.00\t+¥0.00\t-¥0.00\t¥0.00\t\n设置\n广发银行\t-\t通用\t¥0.00\t+¥0.00\t-¥0.00\t¥0.00\t\n设置\nPayPal\t-\t通用\t¥0.00\t+¥0.00\t-¥0.00\t¥0.00\t\n设置\n云闪付\t-\t通用\t¥0.00\t+¥0.00\t-¥0.00\t¥0.00\t\n设置\n工商银行\t-\t通用\t¥0.00\t+¥0.00\t-¥0.00\t¥0.00\t\n设置\n微信\t-\t通用\t¥0.00\t+¥0.00\t-¥0.00\t¥0.00\t\n设置\n支付宝\t-\t通用\t¥0.00\t+¥0.00\t-¥0.00\t¥0.00\t\n设置\n现金\t-\t通用\t¥0.00\t+¥0.00\t-¥0.00\t¥0.00\t\n设置",
+  "forms": [
+    {
+      "action": "https://trip.lipseo.com/logout",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "退出登录",
+          "type": "submit",
+          "cls": "dropdown-item"
+        }
+      ]
+    },
+    {
+      "action": "",
+      "method": "POST",
+      "enctype": "",
+      "id": "balanceForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "account_number",
+          "type": "text",
+          "id": "bAccountNumber",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "如：6222xxxx",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "opening_balance",
+          "type": "number",
+          "id": "bBalance",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "0.00",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "保存",
+          "type": "submit",
+          "cls": "btn btn-primary btn-sm fw-500"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/password/update",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "current_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password_confirmation",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "修改密码",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "headers": [
+        "账户名称",
+        "账号",
+        "类型",
+        "期初余额",
+        "收款（+）",
+        "付款（-）",
+        "当前余额",
+        "操作"
+      ],
+      "rows": 17,
+      "sample": [
+        [
+          "招商银行",
+          "-",
+          "通用",
+          "¥0.00",
+          "+¥0.00",
+          "-¥0.00",
+          "¥0.00",
+          "设置"
+        ],
+        [
+          "建设银行",
+          "-",
+          "通用",
+          "¥0.00",
+          "+¥0.00",
+          "-¥0.00",
+          "¥0.00",
+          "设置"
+        ],
+        [
+          "农业银行",
+          "-",
+          "通用",
+          "¥0.00",
+          "+¥0.00",
+          "-¥0.00",
+          "¥0.00",
+          "设置"
+        ],
+        [
+          "中国银行",
+          "-",
+          "通用",
+          "¥0.00",
+          "+¥0.00",
+          "-¥0.00",
+          "¥0.00",
+          "设置"
+        ],
+        [
+          "平安银行",
+          "-",
+          "通用",
+          "¥0.00",
+          "+¥0.00",
+          "-¥0.00",
+          "¥0.00",
+          "设置"
+        ]
+      ]
+    }
+  ],
+  "buttons": [
+    {
+      "tag": "BUTTON",
+      "t": "0",
+      "cls": "btn btn-sm position-relative d-flex align-items-center",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "标签",
+      "cls": "btn btn-sm d-flex align-items-center oms-tab-toggle",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "马总 管理员",
+      "cls": "btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-1",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "修改密码",
+      "cls": "dropdown-item",
+      "href": "#",
+      "toggle": "modal",
+      "target": "#changePasswordModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "退出登录",
+      "cls": "dropdown-item",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "设置",
+      "cls": "btn btn-sm btn-edit d-inline-flex align-items-center",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "设置",
+      "cls": "btn btn-sm btn-edit d-inline-flex align-items-center",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "设置",
+      "cls": "btn btn-sm btn-edit d-inline-flex align-items-center",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "设置",
+      "cls": "btn btn-sm btn-edit d-inline-flex align-items-center",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "设置",
+      "cls": "btn btn-sm btn-edit d-inline-flex align-items-center",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "设置",
+      "cls": "btn btn-sm btn-edit d-inline-flex align-items-center",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "设置",
+      "cls": "btn btn-sm btn-edit d-inline-flex align-items-center",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "设置",
+      "cls": "btn btn-sm btn-edit d-inline-flex align-items-center",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "设置",
+      "cls": "btn btn-sm btn-edit d-inline-flex align-items-center",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "设置",
+      "cls": "btn btn-sm btn-edit d-inline-flex align-items-center",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "设置",
+      "cls": "btn btn-sm btn-edit d-inline-flex align-items-center",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "设置",
+      "cls": "btn btn-sm btn-edit d-inline-flex align-items-center",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "设置",
+      "cls": "btn btn-sm btn-edit d-inline-flex align-items-center",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "设置",
+      "cls": "btn btn-sm btn-edit d-inline-flex align-items-center",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "设置",
+      "cls": "btn btn-sm btn-edit d-inline-flex align-items-center",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "设置",
+      "cls": "btn btn-sm btn-edit d-inline-flex align-items-center",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "设置",
+      "cls": "btn btn-sm btn-edit d-inline-flex align-items-center",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "保存",
+      "cls": "btn btn-primary btn-sm fw-500",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "×",
+      "cls": "lightbox-close",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认删除",
+      "cls": "btn btn-sm btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn px-4 py-2 confirm-btn-cancel",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认",
+      "cls": "btn px-4 py-2 confirm-btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "修改密码",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    }
+  ],
+  "modals": [
+    {
+      "id": "balanceModal",
+      "title": "设置账户信息",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "account_number",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "opening_balance",
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "lightboxModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "opPasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "",
+          "type": "password",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "confirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "changePasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "current_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password_confirmation",
+          "type": "password",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "nav": [
+    {
+      "t": "仪表盘",
+      "href": "https://trip.lipseo.com"
+    },
+    {
+      "t": "新建订单",
+      "href": "https://trip.lipseo.com/orders/create"
+    },
+    {
+      "t": "订单管理",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "收款管理",
+      "href": "https://trip.lipseo.com/customer-payments"
+    },
+    {
+      "t": "付款管理",
+      "href": "https://trip.lipseo.com/supplier-payments"
+    },
+    {
+      "t": "批量结算",
+      "href": "https://trip.lipseo.com/supplier-payments/batch-settle"
+    },
+    {
+      "t": "账户余额",
+      "href": "https://trip.lipseo.com/account-balances"
+    },
+    {
+      "t": "审核工作台",
+      "href": "https://trip.lipseo.com/review"
+    },
+    {
+      "t": "经营分析",
+      "href": "https://trip.lipseo.com/reports"
+    },
+    {
+      "t": "业绩统计",
+      "href": "https://trip.lipseo.com/statistics"
+    },
+    {
+      "t": "CRM管理",
+      "href": "https://trip.lipseo.com/leads"
+    },
+    {
+      "t": "地区管理",
+      "href": "https://trip.lipseo.com/regions"
+    },
+    {
+      "t": "供应商管理",
+      "href": "https://trip.lipseo.com/suppliers"
+    },
+    {
+      "t": "线路管理",
+      "href": "https://trip.lipseo.com/routes"
+    },
+    {
+      "t": "客户管理",
+      "href": "https://trip.lipseo.com/customers"
+    },
+    {
+      "t": "操作日志",
+      "href": "https://trip.lipseo.com/audit-logs"
+    },
+    {
+      "t": "系统设置",
+      "href": "https://trip.lipseo.com/settings/company"
+    },
+    {
+      "t": "用户管理",
+      "href": "https://trip.lipseo.com/users"
+    },
+    {
+      "t": "角色权限",
+      "href": "https://trip.lipseo.com/roles"
+    },
+    {
+      "t": "帮助文档",
+      "href": "/docs"
+    },
+    {
+      "t": "更新记录",
+      "href": "/docs/changelog"
+    }
+  ],
+  "pills": [
+    "仪表盘",
+    "新建订单",
+    "订单管理",
+    "收款管理",
+    "付款管理",
+    "批量结算",
+    "账户余额",
+    "审核工作台",
+    "经营分析",
+    "业绩统计",
+    "CRM管理",
+    "地区管理",
+    "供应商管理",
+    "线路管理",
+    "客户管理",
+    "操作日志",
+    "系统设置",
+    "用户管理",
+    "角色权限"
+  ]
+}

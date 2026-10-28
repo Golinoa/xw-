@@ -1,0 +1,1147 @@
+{
+  "url": "https://trip.lipseo.com/orders",
+  "title": "飞途旅游订单系统",
+  "heading": "",
+  "meta": {
+    "csrf": true
+  },
+  "text": "飞途旅游订单系统\n导航菜单\n仪表盘\n新建订单\n订单管理\n收款管理\n付款管理\n批量结算\n账户余额\n审核工作台\n经营分析\n业绩统计\nCRM管理\n基础数据\n地区管理\n供应商管理\n线路管理\n客户管理\n操作日志\n系统设置\n系统设置\n用户管理\n角色权限\n飞途OMS v3.7 © 2026\n今天的努力，是明天成功的基石。\n有效期至 2026-10-05\n标签\n马总\n管理员\n订单管理\n列表\n日历\n回收站\n导出\n汇总\n全部\n0\n预订单\n0\n进行中\n0\n已锁团\n0\n已取消\n0\n待锁团\n0\n出团日期\n创建时间\n回团日期\n修改时间\n全部状态\n预订单\n进行中\n已锁团\n已取消\n待锁团\n更多筛选 ▼\n筛选\n重置\n\t订单号\n\t客户\n\t客户来源\n\t产品 / 地区\n\t出发日期\n\t供应商\n\t订单金额\n\t未收款\n\t应付款\n\t未付款\n\t预估利润\n\t收/付款进度\n\t状态\n\t创建人\n\t创建/修改时间\n\t操作\n\n\n\n暂无订单\n\n创建第一个订单\n显示第 0 到 0 条，共 0 条记录\n10条/页\n13条/页\n15条/页\n20条/页\n30条/页\n50条/页\n100条/页",
+  "forms": [
+    {
+      "action": "https://trip.lipseo.com/logout",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "退出登录",
+          "type": "submit",
+          "cls": "dropdown-item"
+        }
+      ]
+    },
+    {
+      "action": "",
+      "method": "GET",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "keyword",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "订单号/客户/团号/金额",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "date_type",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "departure_date",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "departure_date",
+              "t": "出团日期"
+            },
+            {
+              "v": "created_at",
+              "t": "创建时间"
+            },
+            {
+              "v": "return_date",
+              "t": "回团日期"
+            },
+            {
+              "v": "updated_at",
+              "t": "修改时间"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "date_from",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "开始日期",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "date_to",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "结束日期",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "status",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "全部状态"
+            },
+            {
+              "v": "booking",
+              "t": "预订单"
+            },
+            {
+              "v": "active",
+              "t": "进行中"
+            },
+            {
+              "v": "completed",
+              "t": "已锁团"
+            },
+            {
+              "v": "cancelled",
+              "t": "已取消"
+            },
+            {
+              "v": "to_lock",
+              "t": "待锁团"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "supplier_id",
+          "type": "hidden",
+          "id": "ovSupFilter_value",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "搜索...",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "creator_id",
+          "type": "hidden",
+          "id": "ovCreatorFilter_value",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "搜索...",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "customer_source_id",
+          "type": "hidden",
+          "id": "ovSourceFilter_value",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "搜索...",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "region_id",
+          "type": "hidden",
+          "id": "ovRegionFilter_value",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "搜索...",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "route_type_id",
+          "type": "hidden",
+          "id": "ovRouteTypeFilter_value",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "搜索...",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "reconciled",
+          "type": "hidden",
+          "id": "ovReconciledFilter_value",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "搜索...",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "更多筛选 ▼",
+          "type": "button",
+          "cls": "btn btn-sm ov-filter-more"
+        },
+        {
+          "t": "筛选",
+          "type": "submit",
+          "cls": "btn btn-primary btn-sm ov-search-btn"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/orders/batch",
+      "method": "POST",
+      "enctype": "",
+      "id": "batchForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "batch_action",
+          "type": "hidden",
+          "id": "batchActionInput",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": []
+    },
+    {
+      "action": "https://trip.lipseo.com/orders/batch-lock",
+      "method": "POST",
+      "enctype": "",
+      "id": "batchLockForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": []
+    },
+    {
+      "action": "https://trip.lipseo.com/orders/batch-unlock",
+      "method": "POST",
+      "enctype": "",
+      "id": "batchUnlockForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": []
+    },
+    {
+      "action": "https://trip.lipseo.com/orders/batch-reconcile",
+      "method": "POST",
+      "enctype": "",
+      "id": "batchReconcileForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": []
+    },
+    {
+      "action": "https://trip.lipseo.com/orders/batch-unreconcile",
+      "method": "POST",
+      "enctype": "",
+      "id": "batchUnreconcileForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": []
+    },
+    {
+      "action": "",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "TEXTAREA",
+          "name": "",
+          "type": "textarea",
+          "id": "batchReason",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "请填写解锁原因，以便追溯订单变更...",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "确认解锁",
+          "type": "submit",
+          "cls": "btn btn-sm btn-warning"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/password/update",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "current_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password_confirmation",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "修改密码",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "headers": [
+        "",
+        "订单号",
+        "客户",
+        "客户来源",
+        "产品 / 地区",
+        "出发日期",
+        "供应商",
+        "订单金额",
+        "未收款",
+        "应付款",
+        "未付款",
+        "预估利润",
+        "收/付款进度",
+        "状态",
+        "创建人",
+        "创建/修改时间",
+        "操作"
+      ],
+      "rows": 1,
+      "sample": [
+        [
+          "暂无订单创建第一个订单"
+        ]
+      ]
+    }
+  ],
+  "buttons": [
+    {
+      "tag": "BUTTON",
+      "t": "0",
+      "cls": "btn btn-sm position-relative d-flex align-items-center",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "标签",
+      "cls": "btn btn-sm d-flex align-items-center oms-tab-toggle",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "马总 管理员",
+      "cls": "btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-1",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "修改密码",
+      "cls": "dropdown-item",
+      "href": "#",
+      "toggle": "modal",
+      "target": "#changePasswordModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "退出登录",
+      "cls": "dropdown-item",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "列表",
+      "cls": "btn btn-sm border-0 view-toggle-btn active ov-btn-toggle",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "日历",
+      "cls": "btn btn-sm border-0 view-toggle-btn ov-btn-toggle",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "回收站",
+      "cls": "btn btn-outline-secondary btn-sm tx-sm",
+      "href": "https://trip.lipseo.com/orders/trash",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "导出",
+      "cls": "btn btn-sm btn-ogreen tx-sm",
+      "href": "https://trip.lipseo.com/orders/export",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "汇总",
+      "cls": "btn btn-sm btn-outline-info tx-sm",
+      "href": "javascript:void(0)",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "全部 0",
+      "cls": "btn btn-sm tab-btn-sm btn-primary",
+      "href": "https://trip.lipseo.com/orders",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "预订单 0",
+      "cls": "btn btn-sm tab-btn-sm btn-light",
+      "href": "https://trip.lipseo.com/orders?status=booking",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "进行中 0",
+      "cls": "btn btn-sm tab-btn-sm btn-light",
+      "href": "https://trip.lipseo.com/orders?status=active",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "已锁团 0",
+      "cls": "btn btn-sm tab-btn-sm btn-light",
+      "href": "https://trip.lipseo.com/orders?status=completed",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "已取消 0",
+      "cls": "btn btn-sm tab-btn-sm btn-light",
+      "href": "https://trip.lipseo.com/orders?status=cancelled",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "待锁团 0",
+      "cls": "btn btn-sm tab-btn-sm btn-light",
+      "href": "https://trip.lipseo.com/orders?status=to_lock",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "更多筛选 ▼",
+      "cls": "btn btn-sm ov-filter-more",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "筛选",
+      "cls": "btn btn-primary btn-sm ov-search-btn",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "重置",
+      "cls": "btn btn-outline-secondary btn-sm ov-search-btn",
+      "href": "https://trip.lipseo.com/orders",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认对账",
+      "cls": "btn btn-sm btn-outline-success",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消对账",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "批量锁团",
+      "cls": "btn btn-sm btn-outline-success",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "批量删除",
+      "cls": "btn btn-sm btn-outline-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消选择",
+      "cls": "btn btn-sm btn-outline-secondary ms-auto",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "创建第一个订单",
+      "cls": "btn btn-primary btn-sm mt-2",
+      "href": "https://trip.lipseo.com/orders/create",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认解锁",
+      "cls": "btn btn-sm btn-warning",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "×",
+      "cls": "lightbox-close",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认删除",
+      "cls": "btn btn-sm btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn px-4 py-2 confirm-btn-cancel",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认",
+      "cls": "btn px-4 py-2 confirm-btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "修改密码",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "«",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "‹",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "›",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "»",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "清除",
+      "cls": "",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "今天",
+      "cls": "dtp-today",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "«",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "‹",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "›",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "»",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "清除",
+      "cls": "",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "今天",
+      "cls": "dtp-today",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    }
+  ],
+  "modals": [
+    {
+      "id": "batchUnlockModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "",
+          "type": "textarea",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "lightboxModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "opPasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "",
+          "type": "password",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "confirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "changePasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "current_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password_confirmation",
+          "type": "password",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "nav": [
+    {
+      "t": "仪表盘",
+      "href": "https://trip.lipseo.com"
+    },
+    {
+      "t": "新建订单",
+      "href": "https://trip.lipseo.com/orders/create"
+    },
+    {
+      "t": "订单管理",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "收款管理",
+      "href": "https://trip.lipseo.com/customer-payments"
+    },
+    {
+      "t": "付款管理",
+      "href": "https://trip.lipseo.com/supplier-payments"
+    },
+    {
+      "t": "批量结算",
+      "href": "https://trip.lipseo.com/supplier-payments/batch-settle"
+    },
+    {
+      "t": "账户余额",
+      "href": "https://trip.lipseo.com/account-balances"
+    },
+    {
+      "t": "审核工作台",
+      "href": "https://trip.lipseo.com/review"
+    },
+    {
+      "t": "经营分析",
+      "href": "https://trip.lipseo.com/reports"
+    },
+    {
+      "t": "业绩统计",
+      "href": "https://trip.lipseo.com/statistics"
+    },
+    {
+      "t": "CRM管理",
+      "href": "https://trip.lipseo.com/leads"
+    },
+    {
+      "t": "地区管理",
+      "href": "https://trip.lipseo.com/regions"
+    },
+    {
+      "t": "供应商管理",
+      "href": "https://trip.lipseo.com/suppliers"
+    },
+    {
+      "t": "线路管理",
+      "href": "https://trip.lipseo.com/routes"
+    },
+    {
+      "t": "客户管理",
+      "href": "https://trip.lipseo.com/customers"
+    },
+    {
+      "t": "操作日志",
+      "href": "https://trip.lipseo.com/audit-logs"
+    },
+    {
+      "t": "系统设置",
+      "href": "https://trip.lipseo.com/settings/company"
+    },
+    {
+      "t": "用户管理",
+      "href": "https://trip.lipseo.com/users"
+    },
+    {
+      "t": "角色权限",
+      "href": "https://trip.lipseo.com/roles"
+    },
+    {
+      "t": "帮助文档",
+      "href": "/docs"
+    },
+    {
+      "t": "更新记录",
+      "href": "/docs/changelog"
+    },
+    {
+      "t": "回收站",
+      "href": "https://trip.lipseo.com/orders/trash"
+    },
+    {
+      "t": "导出",
+      "href": "https://trip.lipseo.com/orders/export"
+    },
+    {
+      "t": "全部 0",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "预订单 0",
+      "href": "https://trip.lipseo.com/orders?status=booking"
+    },
+    {
+      "t": "进行中 0",
+      "href": "https://trip.lipseo.com/orders?status=active"
+    },
+    {
+      "t": "已锁团 0",
+      "href": "https://trip.lipseo.com/orders?status=completed"
+    },
+    {
+      "t": "已取消 0",
+      "href": "https://trip.lipseo.com/orders?status=cancelled"
+    },
+    {
+      "t": "待锁团 0",
+      "href": "https://trip.lipseo.com/orders?status=to_lock"
+    },
+    {
+      "t": "重置",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "出发日期",
+      "href": "https://trip.lipseo.com/orders?sort=departure_date&dir=desc"
+    },
+    {
+      "t": "创建/修改时间",
+      "href": "https://trip.lipseo.com/orders?sort=updated_at&dir=desc"
+    },
+    {
+      "t": "创建第一个订单",
+      "href": "https://trip.lipseo.com/orders/create"
+    }
+  ],
+  "pills": [
+    "仪表盘",
+    "新建订单",
+    "订单管理",
+    "收款管理",
+    "付款管理",
+    "批量结算",
+    "账户余额",
+    "审核工作台",
+    "经营分析",
+    "业绩统计",
+    "CRM管理",
+    "地区管理",
+    "供应商管理",
+    "线路管理",
+    "客户管理",
+    "操作日志",
+    "系统设置",
+    "用户管理",
+    "角色权限"
+  ]
+}

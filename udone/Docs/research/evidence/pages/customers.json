@@ -1,0 +1,1441 @@
+{
+  "url": "https://trip.lipseo.com/customers",
+  "title": "飞途旅游订单系统",
+  "heading": "",
+  "meta": {
+    "csrf": true
+  },
+  "text": "飞途旅游订单系统\n导航菜单\n仪表盘\n新建订单\n订单管理\n收款管理\n付款管理\n批量结算\n账户余额\n审核工作台\n经营分析\n业绩统计\nCRM管理\n基础数据\n地区管理\n供应商管理\n线路管理\n客户管理\n操作日志\n系统设置\n系统设置\n用户管理\n角色权限\n飞途OMS v3.7 © 2026\n今天的努力，是明天成功的基石。\n有效期至 2026-10-05\n标签\n马总\n管理员\n客户管理\n\n管理客户信息，包括名称、联系方式、证件号码等\n\n客户标签\n回收站\n导出全部\n添加客户\n关键词\n标签\n全部\n生日\n全部\n本月生日客户\n30天内生日客户\n搜索\n重置\n\t客户名称\t电话\t证件号\t性别\t年龄\t生日\t渠道来源\t备注\t标签\t附件\t添加人\t订单数\t总消费\t操作\n\n\n暂无客户",
+  "forms": [
+    {
+      "action": "https://trip.lipseo.com/logout",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "退出登录",
+          "type": "submit",
+          "cls": "dropdown-item"
+        }
+      ]
+    },
+    {
+      "action": "",
+      "method": "GET",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "keyword",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "搜索客户名称/电话/邮箱",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "tag_id",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "全部"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "birthday",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "全部"
+            },
+            {
+              "v": "month",
+              "t": "本月生日客户"
+            },
+            {
+              "v": "30days",
+              "t": "30天内生日客户"
+            }
+          ],
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "搜索",
+          "type": "submit",
+          "cls": "btn btn-primary btn-sm oms-filter-btn"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/customers/batch",
+      "method": "POST",
+      "enctype": "",
+      "id": "batchForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "batch_action",
+          "type": "hidden",
+          "id": "batchActionInput",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": []
+    },
+    {
+      "action": "https://trip.lipseo.com/customers",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "name",
+          "type": "text",
+          "id": "addCustomerName",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "姓名/公司名",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "phone",
+          "type": "text",
+          "id": "addCustomerPhone",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "手机号",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "email",
+          "type": "email",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "e***@example.com",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "id_number",
+          "type": "text",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "身份证号（自动解析生日）",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "customer_source_id",
+          "type": "select-one",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "请选择"
+            },
+            {
+              "v": "1580",
+              "t": "老客户转介绍"
+            },
+            {
+              "v": "1581",
+              "t": "└ 老客户推荐"
+            },
+            {
+              "v": "1582",
+              "t": "└ VIP/高净值客户推荐"
+            },
+            {
+              "v": "1567",
+              "t": "实体门店与地推"
+            },
+            {
+              "v": "1568",
+              "t": "└ 线下门店自然到访"
+            },
+            {
+              "v": "1569",
+              "t": "└ 社区推广活动"
+            },
+            {
+              "v": "1542",
+              "t": "旅游平台 (OTA)"
+            },
+            {
+              "v": "1543",
+              "t": "└ 携程"
+            },
+            {
+              "v": "1544",
+              "t": "└ 去哪儿"
+            },
+            {
+              "v": "1545",
+              "t": "└ 飞猪"
+            },
+            {
+              "v": "1546",
+              "t": "└ 同程旅行"
+            },
+            {
+              "v": "1547",
+              "t": "└ 美团酒旅"
+            },
+            {
+              "v": "1548",
+              "t": "└ Booking/Agoda（境外）"
+            },
+            {
+              "v": "1583",
+              "t": "达人与KOL/KOC"
+            },
+            {
+              "v": "1584",
+              "t": "└ 旅游博主"
+            },
+            {
+              "v": "1585",
+              "t": "└ 媒体/记者采风"
+            },
+            {
+              "v": "1570",
+              "t": "异业联盟合作"
+            },
+            {
+              "v": "1571",
+              "t": "└ 银行/金融机构"
+            },
+            {
+              "v": "1572",
+              "t": "└ 航空公司/航司会员"
+            },
+            {
+              "v": "1573",
+              "t": "└ 高端车友会"
+            },
+            {
+              "v": "1574",
+              "t": "└ 婚纱摄影机构"
+            },
+            {
+              "v": "1575",
+              "t": "└ 教育/研学机构"
+            },
+            {
+              "v": "1549",
+              "t": "新媒体与短视频"
+            },
+            {
+              "v": "1550",
+              "t": "└ 抖音"
+            },
+            {
+              "v": "1551",
+              "t": "└ 快手"
+            },
+            {
+              "v": "1552",
+              "t": "└ 视频号"
+            },
+            {
+              "v": "1553",
+              "t": "内容种草社区"
+            },
+            {
+              "v": "1554",
+              "t": "└ 小红书"
+            },
+            {
+              "v": "1555",
+              "t": "└ 马蜂窝"
+            },
+            {
+              "v": "1556",
+              "t": "└ 大众点评"
+            },
+            {
+              "v": "1576",
+              "t": "企业与团队业务 (B2B)"
+            },
+            {
+              "v": "1577",
+              "t": "└ 企业团建/拓展"
+            },
+            {
+              "v": "1578",
+              "t": "└ 政府/事业单位采购"
+            },
+            {
+              "v": "1579",
+              "t": "└ 旅行社同业切位/包房"
+            },
+            {
+              "v": "1557",
+              "t": "搜索引擎营销"
+            },
+            {
+              "v": "1558",
+              "t": "└ 百度搜索（竞价/SEO）"
+            },
+            {
+              "v": "1559",
+              "t": "└ 搜狗搜索"
+            },
+            {
+              "v": "1560",
+              "t": "社交与信息流广告"
+            },
+            {
+              "v": "1561",
+              "t": "└ 微信朋友圈广告"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "birthday",
+          "type": "text",
+          "id": "addBirthday",
+          "required": false,
+          "disabled": false,
+          "readonly": true,
+          "value": "",
+          "placeholder": "yyyy-mm-dd",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "birthday_calendar",
+          "type": "select-one",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "solar",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "solar",
+              "t": "公历"
+            },
+            {
+              "v": "lunar",
+              "t": "农历"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "remark",
+          "type": "textarea",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-muted"
+        },
+        {
+          "t": "保存",
+          "type": "submit",
+          "cls": "btn btn-primary"
+        }
+      ]
+    },
+    {
+      "action": "",
+      "method": "POST",
+      "enctype": "",
+      "id": "editForm",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "_method",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "name",
+          "type": "text",
+          "id": "eName",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "phone",
+          "type": "text",
+          "id": "ePhone",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "email",
+          "type": "email",
+          "id": "eEmail",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "id_number",
+          "type": "text",
+          "id": "eIdNumber",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "customer_source_id",
+          "type": "select-one",
+          "id": "eSourceId",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "",
+              "t": "请选择"
+            },
+            {
+              "v": "1580",
+              "t": "老客户转介绍"
+            },
+            {
+              "v": "1581",
+              "t": "└ 老客户推荐"
+            },
+            {
+              "v": "1582",
+              "t": "└ VIP/高净值客户推荐"
+            },
+            {
+              "v": "1567",
+              "t": "实体门店与地推"
+            },
+            {
+              "v": "1568",
+              "t": "└ 线下门店自然到访"
+            },
+            {
+              "v": "1569",
+              "t": "└ 社区推广活动"
+            },
+            {
+              "v": "1542",
+              "t": "旅游平台 (OTA)"
+            },
+            {
+              "v": "1543",
+              "t": "└ 携程"
+            },
+            {
+              "v": "1544",
+              "t": "└ 去哪儿"
+            },
+            {
+              "v": "1545",
+              "t": "└ 飞猪"
+            },
+            {
+              "v": "1546",
+              "t": "└ 同程旅行"
+            },
+            {
+              "v": "1547",
+              "t": "└ 美团酒旅"
+            },
+            {
+              "v": "1548",
+              "t": "└ Booking/Agoda（境外）"
+            },
+            {
+              "v": "1583",
+              "t": "达人与KOL/KOC"
+            },
+            {
+              "v": "1584",
+              "t": "└ 旅游博主"
+            },
+            {
+              "v": "1585",
+              "t": "└ 媒体/记者采风"
+            },
+            {
+              "v": "1570",
+              "t": "异业联盟合作"
+            },
+            {
+              "v": "1571",
+              "t": "└ 银行/金融机构"
+            },
+            {
+              "v": "1572",
+              "t": "└ 航空公司/航司会员"
+            },
+            {
+              "v": "1573",
+              "t": "└ 高端车友会"
+            },
+            {
+              "v": "1574",
+              "t": "└ 婚纱摄影机构"
+            },
+            {
+              "v": "1575",
+              "t": "└ 教育/研学机构"
+            },
+            {
+              "v": "1549",
+              "t": "新媒体与短视频"
+            },
+            {
+              "v": "1550",
+              "t": "└ 抖音"
+            },
+            {
+              "v": "1551",
+              "t": "└ 快手"
+            },
+            {
+              "v": "1552",
+              "t": "└ 视频号"
+            },
+            {
+              "v": "1553",
+              "t": "内容种草社区"
+            },
+            {
+              "v": "1554",
+              "t": "└ 小红书"
+            },
+            {
+              "v": "1555",
+              "t": "└ 马蜂窝"
+            },
+            {
+              "v": "1556",
+              "t": "└ 大众点评"
+            },
+            {
+              "v": "1576",
+              "t": "企业与团队业务 (B2B)"
+            },
+            {
+              "v": "1577",
+              "t": "└ 企业团建/拓展"
+            },
+            {
+              "v": "1578",
+              "t": "└ 政府/事业单位采购"
+            },
+            {
+              "v": "1579",
+              "t": "└ 旅行社同业切位/包房"
+            },
+            {
+              "v": "1557",
+              "t": "搜索引擎营销"
+            },
+            {
+              "v": "1558",
+              "t": "└ 百度搜索（竞价/SEO）"
+            },
+            {
+              "v": "1559",
+              "t": "└ 搜狗搜索"
+            },
+            {
+              "v": "1560",
+              "t": "社交与信息流广告"
+            },
+            {
+              "v": "1561",
+              "t": "└ 微信朋友圈广告"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "birthday",
+          "type": "text",
+          "id": "eBirthday",
+          "required": false,
+          "disabled": false,
+          "readonly": true,
+          "value": "",
+          "placeholder": "yyyy-mm-dd",
+          "label": ""
+        },
+        {
+          "tag": "SELECT",
+          "name": "birthday_calendar",
+          "type": "select-one",
+          "id": "eBirthdayCal",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "solar",
+          "placeholder": "",
+          "options": [
+            {
+              "v": "solar",
+              "t": "公历"
+            },
+            {
+              "v": "lunar",
+              "t": "农历"
+            }
+          ],
+          "label": ""
+        },
+        {
+          "tag": "TEXTAREA",
+          "name": "remark",
+          "type": "textarea",
+          "id": "eRemark",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-muted"
+        },
+        {
+          "t": "保存",
+          "type": "submit",
+          "cls": "btn btn-primary"
+        }
+      ]
+    },
+    {
+      "action": "https://trip.lipseo.com/password/update",
+      "method": "POST",
+      "enctype": "",
+      "id": "",
+      "fields": [
+        {
+          "tag": "INPUT",
+          "name": "_token",
+          "type": "hidden",
+          "id": "",
+          "required": false,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "current_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        },
+        {
+          "tag": "INPUT",
+          "name": "new_password_confirmation",
+          "type": "password",
+          "id": "",
+          "required": true,
+          "disabled": false,
+          "readonly": false,
+          "value": "[REDACTED]",
+          "placeholder": "",
+          "label": ""
+        }
+      ],
+      "buttons": [
+        {
+          "t": "",
+          "type": "button",
+          "cls": "btn-close"
+        },
+        {
+          "t": "取消",
+          "type": "button",
+          "cls": "btn btn-sm btn-muted"
+        },
+        {
+          "t": "修改密码",
+          "type": "submit",
+          "cls": "btn btn-sm btn-primary"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "headers": [
+        "",
+        "客户名称",
+        "电话",
+        "证件号",
+        "性别",
+        "年龄",
+        "生日",
+        "渠道来源",
+        "备注",
+        "标签",
+        "附件",
+        "添加人",
+        "订单数",
+        "总消费",
+        "操作"
+      ],
+      "rows": 1,
+      "sample": [
+        [
+          "暂无客户"
+        ]
+      ]
+    }
+  ],
+  "buttons": [
+    {
+      "tag": "BUTTON",
+      "t": "0",
+      "cls": "btn btn-sm position-relative d-flex align-items-center",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "标签",
+      "cls": "btn btn-sm d-flex align-items-center oms-tab-toggle",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "马总 管理员",
+      "cls": "btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-1",
+      "href": "",
+      "toggle": "dropdown",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "修改密码",
+      "cls": "dropdown-item",
+      "href": "#",
+      "toggle": "modal",
+      "target": "#changePasswordModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "退出登录",
+      "cls": "dropdown-item",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "客户标签",
+      "cls": "btn btn-sm btn-blue",
+      "href": "https://trip.lipseo.com/customers/tags",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "回收站",
+      "cls": "btn btn-sm btn-ored",
+      "href": "https://trip.lipseo.com/customers/trash",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "导出全部",
+      "cls": "btn btn-sm btn-ogreen",
+      "href": "https://trip.lipseo.com/customers/export",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "添加客户",
+      "cls": "btn btn-sm btn-blue px-3",
+      "href": "",
+      "toggle": "modal",
+      "target": "#addModal"
+    },
+    {
+      "tag": "BUTTON",
+      "t": "搜索",
+      "cls": "btn btn-primary btn-sm oms-filter-btn",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "A",
+      "t": "重置",
+      "cls": "btn btn-sm btn-muted oms-filter-btn",
+      "href": "https://trip.lipseo.com/customers",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "导出所选",
+      "cls": "btn btn-sm btn-ogreen",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "批量删除",
+      "cls": "btn btn-sm btn-ored",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消选择",
+      "cls": "btn btn-sm btn-outline-secondary ms-auto oms-batch-cancel",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "保存",
+      "cls": "btn btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "保存",
+      "cls": "btn btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "×",
+      "cls": "lightbox-close",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-outline-secondary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认删除",
+      "cls": "btn btn-sm btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn px-4 py-2 confirm-btn-cancel",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "确认",
+      "cls": "btn px-4 py-2 confirm-btn-danger",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "取消",
+      "cls": "btn btn-sm btn-muted",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "修改密码",
+      "cls": "btn btn-sm btn-primary",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "«",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "‹",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "›",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "»",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "清除",
+      "cls": "",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "今天",
+      "cls": "dtp-today",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "«",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "‹",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "›",
+      "cls": "dtp-arrow",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "»",
+      "cls": "dtp-arrow dtp-double",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "清除",
+      "cls": "",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    },
+    {
+      "tag": "BUTTON",
+      "t": "今天",
+      "cls": "dtp-today",
+      "href": "",
+      "toggle": "",
+      "target": ""
+    }
+  ],
+  "modals": [
+    {
+      "id": "addModal",
+      "title": "添加客户",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "phone",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "email",
+          "type": "email",
+          "required": false
+        },
+        {
+          "name": "id_number",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "customer_source_id",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "birthday",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "birthday_calendar",
+          "type": "select-one",
+          "required": false
+        },
+        {
+          "name": "remark",
+          "type": "textarea",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "editModal",
+      "title": "编辑客户",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "_method",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "phone",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "email",
+          "type": "email",
+          "required": false
+        },
+        {
+          "name": "id_number",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "customer_source_id",
+          "type": "select-one",
+          "required": true
+        },
+        {
+          "name": "birthday",
+          "type": "text",
+          "required": false
+        },
+        {
+          "name": "birthday_calendar",
+          "type": "select-one",
+          "required": false
+        },
+        {
+          "name": "remark",
+          "type": "textarea",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "lightboxModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "opPasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "",
+          "type": "password",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "confirmModal",
+      "title": "",
+      "fields": []
+    },
+    {
+      "id": "changePasswordModal",
+      "title": "",
+      "fields": [
+        {
+          "name": "_token",
+          "type": "hidden",
+          "required": false
+        },
+        {
+          "name": "current_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password",
+          "type": "password",
+          "required": true
+        },
+        {
+          "name": "new_password_confirmation",
+          "type": "password",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "nav": [
+    {
+      "t": "仪表盘",
+      "href": "https://trip.lipseo.com"
+    },
+    {
+      "t": "新建订单",
+      "href": "https://trip.lipseo.com/orders/create"
+    },
+    {
+      "t": "订单管理",
+      "href": "https://trip.lipseo.com/orders"
+    },
+    {
+      "t": "收款管理",
+      "href": "https://trip.lipseo.com/customer-payments"
+    },
+    {
+      "t": "付款管理",
+      "href": "https://trip.lipseo.com/supplier-payments"
+    },
+    {
+      "t": "批量结算",
+      "href": "https://trip.lipseo.com/supplier-payments/batch-settle"
+    },
+    {
+      "t": "账户余额",
+      "href": "https://trip.lipseo.com/account-balances"
+    },
+    {
+      "t": "审核工作台",
+      "href": "https://trip.lipseo.com/review"
+    },
+    {
+      "t": "经营分析",
+      "href": "https://trip.lipseo.com/reports"
+    },
+    {
+      "t": "业绩统计",
+      "href": "https://trip.lipseo.com/statistics"
+    },
+    {
+      "t": "CRM管理",
+      "href": "https://trip.lipseo.com/leads"
+    },
+    {
+      "t": "地区管理",
+      "href": "https://trip.lipseo.com/regions"
+    },
+    {
+      "t": "供应商管理",
+      "href": "https://trip.lipseo.com/suppliers"
+    },
+    {
+      "t": "线路管理",
+      "href": "https://trip.lipseo.com/routes"
+    },
+    {
+      "t": "客户管理",
+      "href": "https://trip.lipseo.com/customers"
+    },
+    {
+      "t": "操作日志",
+      "href": "https://trip.lipseo.com/audit-logs"
+    },
+    {
+      "t": "系统设置",
+      "href": "https://trip.lipseo.com/settings/company"
+    },
+    {
+      "t": "用户管理",
+      "href": "https://trip.lipseo.com/users"
+    },
+    {
+      "t": "角色权限",
+      "href": "https://trip.lipseo.com/roles"
+    },
+    {
+      "t": "帮助文档",
+      "href": "/docs"
+    },
+    {
+      "t": "更新记录",
+      "href": "/docs/changelog"
+    },
+    {
+      "t": "客户标签",
+      "href": "https://trip.lipseo.com/customers/tags"
+    },
+    {
+      "t": "回收站",
+      "href": "https://trip.lipseo.com/customers/trash"
+    },
+    {
+      "t": "导出全部",
+      "href": "https://trip.lipseo.com/customers/export"
+    },
+    {
+      "t": "重置",
+      "href": "https://trip.lipseo.com/customers"
+    }
+  ],
+  "pills": [
+    "仪表盘",
+    "新建订单",
+    "订单管理",
+    "收款管理",
+    "付款管理",
+    "批量结算",
+    "账户余额",
+    "审核工作台",
+    "经营分析",
+    "业绩统计",
+    "CRM管理",
+    "地区管理",
+    "供应商管理",
+    "线路管理",
+    "客户管理",
+    "操作日志",
+    "系统设置",
+    "用户管理",
+    "角色权限"
+  ]
+}

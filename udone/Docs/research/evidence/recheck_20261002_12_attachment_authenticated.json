@@ -1,0 +1,68 @@
+{
+  "session": "oms-recheck",
+  "requests": {
+    "success": true,
+    "data": {
+      "requests": [
+        {
+          "headers": {
+            "Referer": "https://trip.lipseo.com/orders/1073",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+            "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\""
+          },
+          "method": "GET",
+          "mimeType": "application/pdf",
+          "requestId": "14440.182",
+          "resourceType": "Fetch",
+          "responseHeaders": {
+            "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+            "cache-control": "max-age=3600, private",
+            "content-length": "607",
+            "content-type": "application/pdf",
+            "date": "Fri, 02 Oct 2026 08:21:42 GMT",
+            "server": "nginx",
+            "strict-transport-security": "max-age=31536000"
+          },
+          "status": 200,
+          "timestamp": 1790929302670,
+          "url": "https://trip.lipseo.com/files/32/2026-10/contracts/ORD2026100200004_01.pdf"
+        }
+      ]
+    },
+    "error": null
+  },
+  "details": [
+    {
+      "success": true,
+      "data": {
+        "headers": {
+          "Referer": "https://trip.lipseo.com/orders/1073",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.***.*** Safari/537.36",
+          "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Google Chrome\";v=\"151\", \"Chromium\";v=\"151\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\""
+        },
+        "method": "GET",
+        "mimeType": "application/pdf",
+        "requestId": "14440.182",
+        "resourceType": "Fetch",
+        "responseBody": "[base64, 812 chars]",
+        "responseHeaders": {
+          "alt-svc": "quic=\":443\"; h3=\":443\"; h3-29=\":443\"; h3-27=\":443\";h3-25=\":443\"; h3-T050=\":443\"; h3-Q050=\":443\";h3-Q049=\":443\";h3-Q048=\":443\"; h3-Q046=\":443\"; h3-Q043=\":443\"",
+          "cache-control": "max-age=3600, private",
+          "content-length": "607",
+          "content-type": "application/pdf",
+          "date": "Fri, 02 Oct 2026 08:21:42 GMT",
+          "server": "nginx",
+          "strict-transport-security": "max-age=31536000"
+        },
+        "status": 200,
+        "timestamp": 1790929302670,
+        "url": "https://trip.lipseo.com/files/32/2026-10/contracts/ORD2026100200004_01.pdf"
+      },
+      "error": null
+    }
+  ]
+}

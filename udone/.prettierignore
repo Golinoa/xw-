@@ -1,0 +1,16 @@
+node_modules/
+**/node_modules/**
+coverage/
+**/coverage/**
+dist/
+**/dist/**
+test-results/
+**/test-results/**
+.wrangler/
+**/.wrangler/**
+.worktrees/
+**/.worktrees/**
+supabase/.temp/
+pnpm-lock.yaml
+Docs/research/evidence/
+.harness/docs/generated/

@@ -1,0 +1,8 @@
+# 研究证据索引
+
+- 当前唯一规格与缺口清单：[Docs/REPLICATION_SPEC.md](../../../Docs/REPLICATION_SPEC.md)。
+- 原始脱敏请求/页面证据：[Docs/research/evidence/](../../../Docs/research/evidence/)。
+- 采集与脱敏脚本：[Docs/research/scripts/](../../../Docs/research/scripts/)。
+- `.harness/docs/generated/db-schema.md` 当前标记待补；请勿从目标站 UI 或 API 字段猜测物理 schema。
+
+历史 Markdown 报告及重复阶段材料已清理。剩余 `Docs/archive/research/*.json` 是旧机器可读目录/探针数据，不作为当前验收口径。
