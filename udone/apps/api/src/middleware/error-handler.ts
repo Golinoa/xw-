@@ -1,7 +1,7 @@
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { ErrorHandler } from 'hono';
-import type { ApiErrorBody, ErrorCode } from '../../../../packages/contracts/src';
-import { ERROR_CODES } from '../../../../packages/contracts/src';
+import type { ApiErrorBody, ErrorCode } from '@erp/contracts';
+import { ERROR_CODES } from '@erp/contracts';
 import type { ApiEnvironment } from './auth';
 
 export class ApiHttpError extends Error {

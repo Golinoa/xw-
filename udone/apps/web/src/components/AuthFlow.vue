@@ -25,7 +25,8 @@ async function submit() {
   const token = captchaToken.value;
   captchaToken.value = '';
   if (await auth.signIn(email.value, password.value, token || undefined)) {
-    const invitationId = typeof route.query.invitationId === 'string' ? route.query.invitationId : '';
+    const invitationId =
+      typeof route.query.invitationId === 'string' ? route.query.invitationId : '';
     if (invitationId && !(await auth.acceptInvitation(invitationId))) return;
     await router.replace(redirectTarget());
   }
@@ -65,19 +66,46 @@ onMounted(async () => {
       <h1>{{ auth.recoveryMode.value ? '设置新密码' : resetMode ? '重置密码' : '登录' }}</h1>
       <template v-if="auth.recoveryMode.value">
         <label for="new-password">新密码</label>
-        <input id="new-password" v-model="newPassword" aria-label="新密码" type="password" autocomplete="new-password" required />
+        <input
+          id="new-password"
+          v-model="newPassword"
+          aria-label="新密码"
+          type="password"
+          autocomplete="new-password"
+          required
+        />
         <label for="confirm-password">确认新密码</label>
-        <input id="confirm-password" v-model="confirmPassword" aria-label="确认新密码" type="password" autocomplete="new-password" required />
+        <input
+          id="confirm-password"
+          v-model="confirmPassword"
+          aria-label="确认新密码"
+          type="password"
+          autocomplete="new-password"
+          required
+        />
         <p v-if="invitationError" role="alert">{{ invitationError }}</p>
-        <button type="button" :disabled="auth.loading.value" @click="submitNewPassword">更新密码</button>
+        <button type="button" :disabled="auth.loading.value" @click="submitNewPassword">
+          更新密码
+        </button>
       </template>
       <template v-else-if="resetMode">
         <label for="recovery-email">邮箱</label>
-        <input id="recovery-email" v-model.trim="email" aria-label="邮箱" type="email" autocomplete="email" required />
+        <input
+          id="recovery-email"
+          v-model.trim="email"
+          aria-label="邮箱"
+          type="email"
+          autocomplete="email"
+          required
+        />
         <AuthCaptcha :site-key="captchaSiteKey" @token="captchaToken = $event" />
         <p v-if="auth.recoveryMessage.value" role="status">{{ auth.recoveryMessage.value }}</p>
         <p v-if="auth.error.value" role="alert">{{ auth.error.value }}</p>
-        <button type="button" :disabled="auth.loading.value || Boolean(captchaSiteKey && !captchaToken)" @click="submitPasswordRecovery">
+        <button
+          type="button"
+          :disabled="auth.loading.value || Boolean(captchaSiteKey && !captchaToken)"
+          @click="submitPasswordRecovery"
+        >
           发送重置邮件
         </button>
         <button type="button" @click="resetMode = false">返回登录</button>
@@ -86,11 +114,20 @@ onMounted(async () => {
         <label for="email">邮箱</label>
         <input id="email" v-model.trim="email" type="email" autocomplete="username" required />
         <label for="password">密码</label>
-        <input id="password" v-model="password" type="password" autocomplete="current-password" required />
+        <input
+          id="password"
+          v-model="password"
+          type="password"
+          autocomplete="current-password"
+          required
+        />
         <AuthCaptcha :site-key="captchaSiteKey" @token="captchaToken = $event" />
         <p v-if="auth.error.value" role="alert">{{ auth.error.value }}</p>
         <p v-if="invitationError" role="alert">{{ invitationError }}</p>
-        <button type="submit" :disabled="auth.loading.value || Boolean(captchaSiteKey && !captchaToken)">
+        <button
+          type="submit"
+          :disabled="auth.loading.value || Boolean(captchaSiteKey && !captchaToken)"
+        >
           {{ auth.loading.value ? '正在登录…' : '登录' }}
         </button>
         <button type="button" @click="resetMode = true">忘记密码？</button>
@@ -105,15 +142,15 @@ onMounted(async () => {
   min-height: 100vh;
   place-items: center;
   padding: 1rem;
-  background: #f5f7fa;
+  background: var(--color-canvas);
 }
 .login-card {
   display: grid;
   width: min(24rem, 100%);
   gap: 0.8rem;
   padding: 2rem;
-  background: white;
-  border: 1px solid #e5eaf0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 0.6rem;
 }
 .login-card h1 {

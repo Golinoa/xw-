@@ -1,45 +1,39 @@
 import { Hono } from 'hono';
-import { ERROR_CODES, PERMISSIONS } from '../../../../packages/contracts/src';
+import {
+  createOrganizationRequestSchema,
+  ERROR_CODES,
+  organizationParamsSchema,
+  PERMISSIONS,
+  ROUTES,
+} from '@erp/contracts';
+import { parseJson, parseParams, respond } from '../lib/contract';
 import { authVerifier, requireAuth } from '../middleware/auth';
-import { ApiHttpError } from '../middleware/error-handler';
 import type { ApiEnvironment } from '../middleware/auth';
+import { ApiHttpError } from '../middleware/error-handler';
 import {
   OrganizationConflictError,
   organizationRepository,
 } from '../services/organization-service';
 
 export const organizationRoutes = new Hono<ApiEnvironment>();
-organizationRoutes.use('/api/me', requireAuth());
+organizationRoutes.use(ROUTES.me.path, requireAuth());
 organizationRoutes.use('/api/organizations/*', requireAuth());
 
-organizationRoutes.get('/api/me', async (context) => {
+organizationRoutes.get(ROUTES.me.path, async (context) => {
   const auth = context.get('auth');
   const repository = organizationRepository(context.env, context.get('authToken'));
   const memberships = await repository.getMemberships(auth.userId);
-  return context.json({ userId: auth.userId, memberships });
+  return respond(context, 'me', { userId: auth.userId, memberships });
 });
 
-organizationRoutes.post('/api/organizations', async (context) => {
-  let body: unknown;
-  try {
-    body = await context.req.json();
-  } catch {
-    throw new ApiHttpError(400, ERROR_CODES.VALIDATION_ERROR, 'A valid JSON body is required');
-  }
-
-  const name =
-    typeof body === 'object' && body !== null && 'name' in body
-      ? (body as { name?: unknown }).name
-      : undefined;
-  if (typeof name !== 'string' || !name.trim()) {
-    throw new ApiHttpError(400, ERROR_CODES.VALIDATION_ERROR, 'Organization name is required');
-  }
+organizationRoutes.post(ROUTES.createOrganization.path, async (context) => {
+  const { name } = await parseJson(context, createOrganizationRequestSchema);
 
   const auth = context.get('auth');
   const repository = organizationRepository(context.env, context.get('authToken'));
   try {
-    const created = await repository.createWithOwner({ name: name.trim(), ownerId: auth.userId });
-    return context.json(created, 201);
+    const created = await repository.createWithOwner({ name, ownerId: auth.userId });
+    return respond(context, 'createOrganization', created, 201);
   } catch (error) {
     if (error instanceof OrganizationConflictError) {
       throw new ApiHttpError(409, ERROR_CODES.CONFLICT, 'Organization membership already exists');
@@ -48,20 +42,20 @@ organizationRoutes.post('/api/organizations', async (context) => {
   }
 });
 
-organizationRoutes.post('/api/organizations/:id/switch', async (context) => {
+organizationRoutes.post(ROUTES.switchOrganization.path, async (context) => {
   const auth = context.get('auth');
-  const organizationId = context.req.param('id');
+  const { id: organizationId } = parseParams(context, organizationParamsSchema);
   const selected = await authVerifier(context.env).verify(context.get('authToken'), organizationId);
   if (!selected || selected.userId !== auth.userId || selected.organizationId !== organizationId) {
     throw new ApiHttpError(403, ERROR_CODES.FORBIDDEN, 'You are not a member of this organization');
   }
 
-  return context.json(selected);
+  return respond(context, 'switchOrganization', selected);
 });
 
-organizationRoutes.get('/api/organizations/:id/members', async (context) => {
+organizationRoutes.get(ROUTES.listMembers.path, async (context) => {
   const auth = context.get('auth');
-  const organizationId = context.req.param('id');
+  const { id: organizationId } = parseParams(context, organizationParamsSchema);
   const selectedOrganizationId = context.req.header('X-Organization-ID');
   if (
     !selectedOrganizationId ||
@@ -83,5 +77,6 @@ organizationRoutes.get('/api/organizations/:id/members', async (context) => {
   }
 
   const repository = organizationRepository(context.env, context.get('authToken'));
-  return context.json({ members: await repository.listMembers(organizationId) });
+  const members = await repository.listMembers(organizationId);
+  return respond(context, 'listMembers', { members });
 });

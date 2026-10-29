@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PERMISSIONS } from '../../../../packages/contracts/src';
+import { PERMISSIONS } from '@erp/contracts';
 import { createSupabaseAuthVerifier } from './supabase-auth-verifier';
 
 function tokenFor(claims: Record<string, unknown>) {
@@ -23,7 +23,16 @@ describe('SupabaseAuthVerifier', () => {
     const fetcher = vi
       .fn()
       .mockResolvedValueOnce(response({ id: 'user-fixture' }))
-      .mockResolvedValueOnce(response([{ organization_id: 'org-beta', role: 'operator', permissions: ['organization.read'], data_scope: 'own' }]));
+      .mockResolvedValueOnce(
+        response([
+          {
+            organization_id: 'org-beta',
+            role: 'operator',
+            permissions: ['organization.read'],
+            data_scope: 'own',
+          },
+        ]),
+      );
     const verifier = createSupabaseAuthVerifier(
       {
         SUPABASE_URL: 'https://fixture.supabase.co',
@@ -51,7 +60,9 @@ describe('SupabaseAuthVerifier', () => {
       'org-beta',
     );
     expect(String(fetcher.mock.calls[1][0])).toContain('/rpc/get_current_auth_context');
-    expect(JSON.parse(String(fetcher.mock.calls[1][1]?.body))).toEqual({ requested_organization_id: 'org-beta' });
+    expect(JSON.parse(String(fetcher.mock.calls[1][1]?.body))).toEqual({
+      requested_organization_id: 'org-beta',
+    });
   });
 
   it('rejects invalid users, malformed tokens, and nonmember organization contexts', async () => {
@@ -104,7 +115,14 @@ describe('SupabaseAuthVerifier', () => {
       },
       vi.fn(),
     );
-    const context = { userId: 'u', organizationId: 'o', role: 'operator' as const, sessionId: 's', permissions: ['organization.read'] as const, dataScope: 'own' as const };
+    const context = {
+      userId: 'u',
+      organizationId: 'o',
+      role: 'operator' as const,
+      sessionId: 's',
+      permissions: ['organization.read'] as const,
+      dataScope: 'own' as const,
+    };
 
     await expect(verifier.hasPermission(context, PERMISSIONS.ORGANIZATION_READ)).resolves.toBe(
       true,

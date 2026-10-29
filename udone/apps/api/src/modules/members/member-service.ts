@@ -1,5 +1,5 @@
-import type { AuthRole } from '../../../../../packages/contracts/src';
-import { ERROR_CODES } from '../../../../../packages/contracts/src';
+import type { AuthRole } from '@erp/contracts';
+import { ERROR_CODES } from '@erp/contracts';
 import type { ApiEnvironment } from '../../middleware/auth';
 import { ApiHttpError } from '../../middleware/error-handler';
 
@@ -11,7 +11,10 @@ function config(environment: ApiEnvironment['Bindings']) {
   if (!environment.SUPABASE_URL || !environment.SUPABASE_PUBLISHABLE_KEY) {
     throw new ApiHttpError(503, ERROR_CODES.INTERNAL_ERROR, 'Membership service is not configured');
   }
-  return { baseUrl: environment.SUPABASE_URL.replace(/\/$/, ''), key: environment.SUPABASE_PUBLISHABLE_KEY };
+  return {
+    baseUrl: environment.SUPABASE_URL.replace(/\/$/, ''),
+    key: environment.SUPABASE_PUBLISHABLE_KEY,
+  };
 }
 
 async function rpc<T>(
@@ -33,13 +36,21 @@ async function rpc<T>(
     body: JSON.stringify(payload),
   });
   if (response.status === 409) {
-    throw new ApiHttpError(409, ERROR_CODES.CONFLICT, 'An invitation already exists for this email');
+    throw new ApiHttpError(
+      409,
+      ERROR_CODES.CONFLICT,
+      'An invitation already exists for this email',
+    );
   }
   if (response.status === 400 || response.status === 422) {
     throw new ApiHttpError(400, ERROR_CODES.VALIDATION_ERROR, 'The membership request is invalid');
   }
   if (!response.ok) {
-    throw new ApiHttpError(500, ERROR_CODES.INTERNAL_ERROR, 'Membership change could not be completed');
+    throw new ApiHttpError(
+      500,
+      ERROR_CODES.INTERNAL_ERROR,
+      'Membership change could not be completed',
+    );
   }
   return response.json() as Promise<T>;
 }
@@ -52,7 +63,11 @@ async function sendInvitationEmail(
   const { baseUrl, key } = config(environment);
   const serviceKey = environment.SUPABASE_SERVICE_ROLE_KEY;
   if (!serviceKey) {
-    throw new ApiHttpError(503, ERROR_CODES.INTERNAL_ERROR, 'Invitation delivery is not configured');
+    throw new ApiHttpError(
+      503,
+      ERROR_CODES.INTERNAL_ERROR,
+      'Invitation delivery is not configured',
+    );
   }
   const redirect = environment.APP_BASE_URL
     ? `${environment.APP_BASE_URL.replace(/\/$/, '')}/login?invitationId=${encodeURIComponent(invitationId)}`
@@ -60,7 +75,11 @@ async function sendInvitationEmail(
   const redirectQuery = redirect ? `?redirect_to=${encodeURIComponent(redirect)}` : '';
   const adminResponse = await fetch(`${baseUrl}/auth/v1/invite${redirectQuery}`, {
     method: 'POST',
-    headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({ email }),
   });
   if (adminResponse.ok) return;
@@ -86,20 +105,33 @@ export async function createInvitation(
   role: MemberRole,
 ): Promise<Invitation> {
   if (!environment.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new ApiHttpError(503, ERROR_CODES.INTERNAL_ERROR, 'Invitation delivery is not configured');
+    throw new ApiHttpError(
+      503,
+      ERROR_CODES.INTERNAL_ERROR,
+      'Invitation delivery is not configured',
+    );
   }
-  const rows = await rpc<Array<{
-    invitation_id: string;
-    invitation_status: 'pending';
-    invitation_expires_at: string;
-    invitation_created: boolean;
-  }>>(environment, token, 'create_organization_invitation', {
-    requested_organization_id: organizationId,
-    requested_email: email,
-    requested_role: role,
-  }, organizationId);
+  const rows = await rpc<
+    Array<{
+      invitation_id: string;
+      invitation_status: 'pending';
+      invitation_expires_at: string;
+      invitation_created: boolean;
+    }>
+  >(
+    environment,
+    token,
+    'create_organization_invitation',
+    {
+      requested_organization_id: organizationId,
+      requested_email: email,
+      requested_role: role,
+    },
+    organizationId,
+  );
   const row = rows[0];
-  if (!row) throw new ApiHttpError(500, ERROR_CODES.INTERNAL_ERROR, 'Invitation could not be created');
+  if (!row)
+    throw new ApiHttpError(500, ERROR_CODES.INTERNAL_ERROR, 'Invitation could not be created');
   if (row.invitation_created) await sendInvitationEmail(environment, email, row.invitation_id);
   return {
     id: row.invitation_id,
@@ -117,7 +149,9 @@ export async function updateMember(
   role: AuthRole,
   status: MemberStatus,
 ) {
-  const rows = await rpc<Array<{ user_id: string; member_role: AuthRole; member_status: MemberStatus }>>(
+  const rows = await rpc<
+    Array<{ user_id: string; member_role: AuthRole; member_status: MemberStatus }>
+  >(
     environment,
     token,
     'update_organization_member',
@@ -143,8 +177,13 @@ export async function acceptInvitation(
   const userResponse = await fetch(`${baseUrl}/auth/v1/user`, {
     headers: { apikey: key, Authorization: `Bearer ${token}` },
   });
-  if (!userResponse.ok) throw new ApiHttpError(401, ERROR_CODES.AUTH_REQUIRED, 'Authentication is required');
-  const user = (await userResponse.json()) as { id?: unknown; email_confirmed_at?: unknown; confirmed_at?: unknown };
+  if (!userResponse.ok)
+    throw new ApiHttpError(401, ERROR_CODES.AUTH_REQUIRED, 'Authentication is required');
+  const user = (await userResponse.json()) as {
+    id?: unknown;
+    email_confirmed_at?: unknown;
+    confirmed_at?: unknown;
+  };
   if (typeof user.id !== 'string' || (!user.email_confirmed_at && !user.confirmed_at)) {
     throw new ApiHttpError(403, ERROR_CODES.FORBIDDEN, 'A verified email is required');
   }

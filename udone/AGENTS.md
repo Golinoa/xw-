@@ -12,7 +12,7 @@ Work on **有单·旅游管理系统** and its replication research. Distinguish
 
 1. Read this guide and root `ARCHITECTURE.md` before code or architecture changes.
 2. Read `.harness/PROJECT_STRUCTURE.md` for directory ownership and `.harness/DOCUMENT_MAP.md` for document sources/lifecycle.
-3. Read applicable `.harness` rules: `ENGINEERING_DESIGN.md`, `CODE_STANDARDS.md`, `API_STANDARDS.md`, `DATABASE_STANDARDS.md`, `TESTING_STANDARDS.md`, `ENGINEERING_STANDARDS.md`, `FRONTEND.md`, `SECURITY.md`, `RELIABILITY.md`, `QUALITY_SCORE.md`. For visual work, also read root `DESIGN.md` and finalized rules it links to.
+3. Read applicable `.harness` rules: `CONTRACTS.md`, `ENGINEERING_DESIGN.md`, `CODE_STANDARDS.md`, `API_STANDARDS.md`, `DATABASE_STANDARDS.md`, `TESTING_STANDARDS.md`, `ENGINEERING_STANDARDS.md`, `FRONTEND.md`, `SECURITY.md`, `RELIABILITY.md`, `QUALITY_SCORE.md`. For visual work, also read root `DESIGN.md` and finalized rules it links to.
 4. Read relevant product/design indexes and active plans. For research, use `.harness/docs/references/research-index-llms.txt` then verify cited originals.
 5. `.harness/docs/generated/db-schema.md` is generated: edit migration sources, never hand-edit the report. The current inventory is stale until reproducibly regenerated from `supabase/migrations/`.
 

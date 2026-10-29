@@ -33,5 +33,35 @@ export default tseslint.config(
       parserOptions: { parser: tseslint.parser },
     },
   },
+  {
+    // 契约只能从包入口导入；禁止绕过 exports 直接摸源码文件。
+    files: ['apps/**/*.{ts,vue}', 'packages/**/*.ts', 'tests/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/packages/contracts/src', '**/packages/contracts/src/*'],
+              message: "从 '@erp/contracts' 导入，禁止深路径引用契约源码。",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // 路由与领域模块一律用 respond() 返回，禁止裸 json，否则出站契约校验会被绕过。
+    files: ['apps/api/src/routes/**/*.ts', 'apps/api/src/modules/**/*.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "CallExpression[callee.name=/^(c|context)$/][callee.property.name='json']",
+          message: '请使用 lib/contract 的 respond() 返回，禁止直接 context.json()。',
+        },
+      ],
+    },
+  },
   prettier,
 );

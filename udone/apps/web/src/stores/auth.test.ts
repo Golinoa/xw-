@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createMemoryHistory } from 'vue-router';
-import type { AuthContext, AuthRole } from '../../../../packages/contracts/src';
+import type { AuthContext, AuthRole } from '@erp/contracts';
 import { createAppRouter } from '../router';
 import { createAuthStore, type AuthSession, type Membership } from './auth';
 
@@ -112,7 +112,9 @@ describe('frontend auth store', () => {
     const client = createClient();
     const store = createAuthStore({ client, fetcher: vi.fn() });
 
-    await expect(store.signIn('staff@example.test', 'fixture-password', 'one-time-captcha')).resolves.toBe(true);
+    await expect(
+      store.signIn('staff@example.test', 'fixture-password', 'one-time-captcha'),
+    ).resolves.toBe(true);
 
     expect(client.auth.signInWithPassword).toHaveBeenCalledWith({
       email: 'staff@example.test',
@@ -127,21 +129,32 @@ describe('frontend auth store', () => {
     const fetcher = vi
       .fn()
       .mockResolvedValueOnce(jsonResponse({ userId: 'user-fixture', memberships }))
-      .mockResolvedValueOnce(jsonResponse({ invitation: { id: 'invite-1', status: 'pending', expiresAt: '2026-10-12T00:00:00Z' } }, 201));
+      .mockResolvedValueOnce(
+        jsonResponse(
+          { invitation: { id: 'invite-1', status: 'pending', expiresAt: '2026-10-12T00:00:00Z' } },
+          201,
+        ),
+      );
     const store = createAuthStore({ client, fetcher });
     await store.initialize();
 
     await expect(store.createInvitation('staff2@example.test', 'operator')).resolves.toEqual({
-      id: 'invite-1', status: 'pending', expiresAt: '2026-10-12T00:00:00Z',
+      id: 'invite-1',
+      status: 'pending',
+      expiresAt: '2026-10-12T00:00:00Z',
     });
-    expect(fetcher).toHaveBeenNthCalledWith(2, '/api/organizations/org-alpha/invitations', expect.objectContaining({
-      method: 'POST',
-      body: JSON.stringify({ email: 'staff2@example.test', role: 'operator' }),
-      headers: expect.objectContaining({
-        Authorization: 'Bearer fixture-access-token',
-        'X-Organization-ID': 'org-alpha',
+    expect(fetcher).toHaveBeenNthCalledWith(
+      2,
+      '/api/organizations/org-alpha/invitations',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ email: 'staff2@example.test', role: 'operator' }),
+        headers: expect.objectContaining({
+          Authorization: 'Bearer fixture-access-token',
+          'X-Organization-ID': 'org-alpha',
+        }),
       }),
-    }));
+    );
   });
 
   it('clears the session and membership state after sign-out', async () => {

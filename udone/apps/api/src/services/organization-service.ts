@@ -1,7 +1,7 @@
-import type { AuthRole } from '../../../../packages/contracts/src';
+import type { AuthRole } from '@erp/contracts';
 import { ApiHttpError } from '../middleware/error-handler';
 import type { ApiEnvironment } from '../middleware/auth';
-import { ERROR_CODES } from '../../../../packages/contracts/src';
+import { ERROR_CODES } from '@erp/contracts';
 
 export interface OrganizationMembership {
   organizationId: string;
@@ -138,7 +138,9 @@ export function createSupabaseOrganizationRepository(
     },
 
     async listMembers(organizationId) {
-      const rows = await supabaseRequest<Array<{ user_id: string; role: AuthRole; status: 'active' | 'disabled' }>>(
+      const rows = await supabaseRequest<
+        Array<{ user_id: string; role: AuthRole; status: 'active' | 'disabled' }>
+      >(
         environment,
         token,
         `organization_members?organization_id=eq.${encodeURIComponent(organizationId)}&select=user_id,role,status`,

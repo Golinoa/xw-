@@ -27,27 +27,43 @@ test('shows a non-enumerating result when requesting password recovery', async (
   await expect(page.getByText('如果该邮箱已注册，我们会发送密码重置邮件。')).toBeVisible();
 });
 
-test('accepts a valid invitation after the first sign-in has no active membership', async ({ page }) => {
-  await page.route('**/auth/v1/token*', (route) => route.fulfill({
-    status: 200,
-    contentType: 'application/json',
-    body: JSON.stringify(invitedSession),
-  }));
+test('accepts a valid invitation after the first sign-in has no active membership', async ({
+  page,
+}) => {
+  await page.route('**/auth/v1/token*', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(invitedSession),
+    }),
+  );
   let membershipRequests = 0;
   await page.route('**/api/me', (route) => {
     membershipRequests += 1;
-    if (membershipRequests === 1) return route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ error: { message: 'Authentication is required' } }) });
+    if (membershipRequests === 1)
+      return route.fulfill({
+        status: 401,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: { message: 'Authentication is required' } }),
+      });
     return route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ userId: 'invited-user', memberships: [{ organizationId: 'org-accepted', organizationName: 'Accepted Org', role: 'operator' }] }),
+      body: JSON.stringify({
+        userId: 'invited-user',
+        memberships: [
+          { organizationId: 'org-accepted', organizationName: 'Accepted Org', role: 'operator' },
+        ],
+      }),
     });
   });
-  await page.route('**/api/invitations/invite-accepted/accept', (route) => route.fulfill({
-    status: 201,
-    contentType: 'application/json',
-    body: JSON.stringify({ membership: { organizationId: 'org-accepted', role: 'operator' } }),
-  }));
+  await page.route('**/api/invitations/invite-accepted/accept', (route) =>
+    route.fulfill({
+      status: 201,
+      contentType: 'application/json',
+      body: JSON.stringify({ membership: { organizationId: 'org-accepted', role: 'operator' } }),
+    }),
+  );
 
   await page.goto('/login?invitationId=invite-accepted');
   await page.getByLabel('邮箱').fill('invitee@example.test');
@@ -59,22 +75,44 @@ test('accepts a valid invitation after the first sign-in has no active membershi
   await expect.poll(() => membershipRequests).toBeGreaterThanOrEqual(2);
 });
 
-test('lets an organization admin create an invitation and shows its pending expiry', async ({ page }) => {
-  await page.route('**/auth/v1/token*', (route) => route.fulfill({
-    status: 200,
-    contentType: 'application/json',
-    body: JSON.stringify({ ...invitedSession, user: { ...invitedSession.user, email: 'admin@example.test' } }),
-  }));
-  await page.route('**/api/me', (route) => route.fulfill({
-    status: 200,
-    contentType: 'application/json',
-    body: JSON.stringify({ userId: 'invited-user', memberships: [{ organizationId: 'org-alpha', organizationName: 'Alpha Travel', role: 'admin' }] }),
-  }));
-  await page.route('**/api/organizations/org-alpha/invitations', (route) => route.fulfill({
-    status: 201,
-    contentType: 'application/json',
-    body: JSON.stringify({ invitation: { id: 'invite-pending', status: 'pending', expiresAt: '2026-10-12T00:00:00.000Z' } }),
-  }));
+test('lets an organization admin create an invitation and shows its pending expiry', async ({
+  page,
+}) => {
+  await page.route('**/auth/v1/token*', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ...invitedSession,
+        user: { ...invitedSession.user, email: 'admin@example.test' },
+      }),
+    }),
+  );
+  await page.route('**/api/me', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        userId: 'invited-user',
+        memberships: [
+          { organizationId: 'org-alpha', organizationName: 'Alpha Travel', role: 'admin' },
+        ],
+      }),
+    }),
+  );
+  await page.route('**/api/organizations/org-alpha/invitations', (route) =>
+    route.fulfill({
+      status: 201,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        invitation: {
+          id: 'invite-pending',
+          status: 'pending',
+          expiresAt: '2026-10-12T00:00:00.000Z',
+        },
+      }),
+    }),
+  );
 
   await page.goto('/login');
   await page.getByLabel('邮箱').fill('admin@example.test');

@@ -20,7 +20,7 @@
 |---|---|
 | [`PROJECT_STRUCTURE.md`](PROJECT_STRUCTURE.md) | 当前目录图、文件归属和新增目录规则。 |
 | [`ENGINEERING_DESIGN.md`](ENGINEERING_DESIGN.md)、[`CODE_STANDARDS.md`](CODE_STANDARDS.md) | 架构和代码约束。 |
-| [`API_STANDARDS.md`](API_STANDARDS.md)、[`DATABASE_STANDARDS.md`](DATABASE_STANDARDS.md) | API、权限、迁移、RLS 与数据库访问约束。 |
+| [`CONTRACTS.md`](CONTRACTS.md)、[`API_STANDARDS.md`](API_STANDARDS.md)、[`DATABASE_STANDARDS.md`](DATABASE_STANDARDS.md) | 跨端契约与类型一致性、API、权限、迁移、RLS 与数据库访问约束。 |
 | [`TESTING_STANDARDS.md`](TESTING_STANDARDS.md)、[`ENGINEERING_STANDARDS.md`](ENGINEERING_STANDARDS.md) | 测试策略与工具链/依赖/CI/发布门禁。 |
 | [`FRONTEND.md`](FRONTEND.md)、[`SECURITY.md`](SECURITY.md)、[`RELIABILITY.md`](RELIABILITY.md)、[`QUALITY_SCORE.md`](QUALITY_SCORE.md) | 前端、安全、可靠性和质量评审补充规则。 |
 | [`docs/product-specs/`](docs/product-specs/) | 产品规格检索索引；需求真源仍在 `Docs/REQUIREMENTS.md`。 |

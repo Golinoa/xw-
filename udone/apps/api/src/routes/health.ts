@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
+import { ROUTES } from '@erp/contracts';
+import type { DependencyStatus } from '@erp/contracts';
+import { respond } from '../lib/contract';
 import type { ApiEnvironment } from '../middleware/auth';
-
-type DependencyStatus = 'available' | 'unavailable' | 'missing_configuration';
 
 async function checkSupabase(environment: ApiEnvironment['Bindings']): Promise<DependencyStatus> {
   if (!environment.SUPABASE_URL || !environment.SUPABASE_PUBLISHABLE_KEY)
@@ -18,11 +19,13 @@ async function checkSupabase(environment: ApiEnvironment['Bindings']): Promise<D
   }
 }
 
-export const healthRoutes = new Hono<ApiEnvironment>().get('/api/health', async (context) => {
+export const healthRoutes = new Hono<ApiEnvironment>().get(ROUTES.health.path, async (context) => {
   const supabase = await checkSupabase(context.env);
   const ready = supabase === 'available';
 
-  return context.json(
+  return respond(
+    context,
+    'health',
     {
       status: ready ? 'ok' : 'degraded',
       version: context.env.CF_VERSION_METADATA?.id ?? context.env.APP_VERSION ?? 'development',

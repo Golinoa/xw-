@@ -18,6 +18,28 @@
 - 外部服务通过明确的适配边界接入；密钥只能保存在 Worker secrets，不得进入前端构建产物。
 - 避免循环依赖、跨层直连和未经需求证明的微服务拆分。
 
+## 契约与类型一致性
+
+跨端字段的唯一真源是 `packages/contracts` 里的 zod schema。同一份 schema 同时承担四种职责，
+不允许任何一端另写一份字段定义：
+
+```text
+packages/contracts/src/<domain>.ts   zod schema
+        ├─ z.infer                        → TS 类型（两端共用）
+        ├─ ROUTES.request                 → API 入站校验（parseJson/parseParams/parseQuery）
+        ├─ ROUTES.response                → API 出站校验（respond()）
+        └─ ROUTES.response                → 浏览器解析（api-client）
+```
+
+- `ROUTES`（`packages/contracts/src/routes.ts`）是端点清单；路由路径引用 `ROUTES.x.path`，不重复手写字符串。
+- 成功响应返回资源体本身，失败响应返回扁平 `{ code, message, requestId, details? }`；不使用 `success/data` 信封。
+- 服务端出站数据与 schema 不符时 fail closed（`500 INTERNAL_ERROR` + `response_contract_violation` 日志），
+  多出的字段被剥离，不会泄漏内部字段；浏览器侧解析失败抛 `ContractViolationError` 并带字段路径。
+- `ROUTES` 与 Hono 实际路由做双向对账，任一端多出条目即测试失败。
+- 前端只能通过 `apps/web/src/lib/api-client.ts` 调后端；组件内禁止裸 `fetch`。
+
+完整约束、字段约定与方案评估见 [`.harness/CONTRACTS.md`](.harness/CONTRACTS.md)。
+
 ## 信息来源
 
 技术细节、部署和测试策略见 `Docs/TECH_SELECTION.md`；产品行为和目标站证据见 `Docs/REPLICATION_SPEC.md`。

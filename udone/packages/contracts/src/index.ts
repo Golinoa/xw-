@@ -1,5 +1,14 @@
+/**
+ * 统一从这里取 zod 实例：保证全仓只有一份 zod（`packages/contracts` 的 pinned 版本），
+ * 避免 apps 各自安装导致 schema 类型不互相兼容。
+ */
+export { z } from 'zod';
+
 export * from './auth';
 export * from './errors';
+export * from './health';
 export * from './http';
 export * from './members';
+export * from './organizations';
 export * from './permissions';
+export * from './routes';

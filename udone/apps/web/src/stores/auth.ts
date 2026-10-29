@@ -1,5 +1,11 @@
 import { computed, ref } from 'vue';
-import type { AuthContext, AuthRole } from '../../../../packages/contracts/src';
+import type {
+  AuthContext,
+  AuthRole,
+  OrganizationInvitation,
+  OrganizationMembership,
+} from '@erp/contracts';
+import { createApiClient } from '../lib/api-client';
 import { supabase } from '../lib/supabase';
 
 export interface AuthUser {
@@ -13,16 +19,8 @@ export interface AuthSession {
   refresh_token?: string;
   user: AuthUser;
 }
-export interface Membership {
-  organizationId: string;
-  organizationName: string;
-  role: AuthRole;
-}
-export interface OrganizationInvitation {
-  id: string;
-  status: 'pending';
-  expiresAt: string;
-}
+export type Membership = OrganizationMembership;
+export type { OrganizationInvitation } from '@erp/contracts';
 interface AuthClient {
   auth: {
     getSession(): Promise<{ data: { session: AuthSession | null }; error: Error | null }>;
@@ -34,7 +32,10 @@ interface AuthClient {
       password: string;
       options?: { captchaToken: string };
     }): Promise<{ data: { session: AuthSession | null }; error: Error | null }>;
-    resetPasswordForEmail(email: string, options?: { captchaToken?: string; redirectTo?: string }): Promise<{ data: unknown; error: Error | null }>;
+    resetPasswordForEmail(
+      email: string,
+      options?: { captchaToken?: string; redirectTo?: string },
+    ): Promise<{ data: unknown; error: Error | null }>;
     updateUser(input: { password: string }): Promise<{ data: unknown; error: Error | null }>;
     signOut(): Promise<{ error: Error | null }>;
   };
@@ -56,6 +57,13 @@ export function createAuthStore(options: { client?: AuthClient | null; fetcher?:
   const recoveryMode = ref(false);
   let subscription: { unsubscribe(): void } | undefined;
 
+  const api = createApiClient({
+    baseUrl: import.meta.env.VITE_API_BASE_URL ?? '',
+    getAccessToken: () => session.value?.access_token ?? null,
+    getOrganizationId: () => currentOrganization.value?.organizationId ?? null,
+    fetcher,
+  });
+
   function clearIdentity() {
     session.value = null;
     user.value = null;
@@ -63,32 +71,8 @@ export function createAuthStore(options: { client?: AuthClient | null; fetcher?:
     currentOrganization.value = null;
   }
 
-  async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
-    if (!session.value) throw new Error('请先登录');
-    const headers: Record<string, string> = {};
-    new Headers(init.headers).forEach((value, name) => {
-      headers[name] = value;
-    });
-    headers.Authorization = `Bearer ${session.value.access_token}`;
-    if (currentOrganization.value)
-      headers['X-Organization-ID'] = currentOrganization.value.organizationId;
-    if (init.body && !headers['content-type']) headers['Content-Type'] = 'application/json';
-    const response = await fetcher(path, { ...init, headers });
-    if (!response.ok) {
-      let message = `请求失败 (${response.status})`;
-      try {
-        const body = (await response.json()) as { error?: { message?: string } };
-        message = body.error?.message ?? message;
-      } catch {
-        /* Keep the status-based message for non-JSON errors. */
-      }
-      throw new Error(message);
-    }
-    return response.status === 204 ? (undefined as T) : ((await response.json()) as T);
-  }
-
   async function loadMemberships() {
-    const result = await request<{ userId: string; memberships: Membership[] }>('/api/me');
+    const result = await api.call('me');
     if (result.userId !== session.value?.user.id) throw new Error('登录用户与成员信息不一致');
     memberships.value = result.memberships;
     if (
@@ -164,7 +148,7 @@ export function createAuthStore(options: { client?: AuthClient | null; fetcher?:
       if (!result.data.session) throw new Error('登录服务未返回会话');
       await applySession(result.data.session);
       return true;
-    } catch (cause) {
+    } catch {
       clearIdentity();
       error.value = '邮箱或密码错误，或账号暂不可用';
       return false;
@@ -185,7 +169,14 @@ export function createAuthStore(options: { client?: AuthClient | null; fetcher?:
       await client.auth.resetPasswordForEmail(
         email.trim().toLowerCase(),
         ...(captchaToken || typeof window !== 'undefined'
-          ? [{ ...(captchaToken ? { captchaToken } : {}), ...(typeof window !== 'undefined' ? { redirectTo: `${window.location.origin}/login` } : {}) }]
+          ? [
+              {
+                ...(captchaToken ? { captchaToken } : {}),
+                ...(typeof window !== 'undefined'
+                  ? { redirectTo: `${window.location.origin}/login` }
+                  : {}),
+              },
+            ]
           : []),
       );
     } catch {
@@ -224,7 +215,7 @@ export function createAuthStore(options: { client?: AuthClient | null; fetcher?:
   async function acceptInvitation(invitationId: string) {
     error.value = '';
     try {
-      await request(`/api/invitations/${encodeURIComponent(invitationId)}/accept`, { method: 'POST' });
+      await api.call('acceptInvitation', { params: { invitationId } });
       await loadMemberships();
       error.value = '';
       return true;
@@ -234,7 +225,10 @@ export function createAuthStore(options: { client?: AuthClient | null; fetcher?:
     }
   }
 
-  async function createInvitation(email: string, role: AuthRole): Promise<OrganizationInvitation | null> {
+  async function createInvitation(
+    email: string,
+    role: AuthRole,
+  ): Promise<OrganizationInvitation | null> {
     const organizationId = currentOrganization.value?.organizationId;
     if (!organizationId) {
       error.value = '请先选择公司';
@@ -242,10 +236,10 @@ export function createAuthStore(options: { client?: AuthClient | null; fetcher?:
     }
     error.value = '';
     try {
-      const result = await request<{ invitation: OrganizationInvitation }>(
-        `/api/organizations/${encodeURIComponent(organizationId)}/invitations`,
-        { method: 'POST', body: JSON.stringify({ email, role }) },
-      );
+      const result = await api.call('inviteMember', {
+        params: { id: organizationId },
+        body: { email, role },
+      });
       return result.invitation;
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : '邀请发送失败';
@@ -261,8 +255,9 @@ export function createAuthStore(options: { client?: AuthClient | null; fetcher?:
     }
     error.value = '';
     try {
-      await request(`/api/organizations/${encodeURIComponent(organizationId)}/members/${encodeURIComponent(userId)}`, {
-        method: 'PATCH', body: JSON.stringify({ role, status }),
+      await api.call('updateMember', {
+        params: { id: organizationId, userId },
+        body: { role, status },
       });
       return true;
     } catch (cause) {
@@ -297,10 +292,9 @@ export function createAuthStore(options: { client?: AuthClient | null; fetcher?:
     loading.value = true;
     error.value = '';
     try {
-      const context = await request<AuthContext>(
-        `/api/organizations/${encodeURIComponent(organizationId)}/switch`,
-        { method: 'POST' },
-      );
+      const context: AuthContext = await api.call('switchOrganization', {
+        params: { id: organizationId },
+      });
       if (
         context.userId !== user.value?.id ||
         context.organizationId !== target.organizationId ||

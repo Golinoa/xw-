@@ -10,7 +10,15 @@ let script: HTMLScriptElement | undefined;
 declare global {
   interface Window {
     turnstile?: {
-      render(element: HTMLElement, options: { sitekey: string; callback(token: string): void; 'expired-callback'(): void; 'error-callback'(): void }): string | number;
+      render(
+        element: HTMLElement,
+        options: {
+          sitekey: string;
+          callback(token: string): void;
+          'expired-callback'(): void;
+          'error-callback'(): void;
+        },
+      ): string | number;
       remove(id: string | number): void;
     };
   }
@@ -40,11 +48,14 @@ onMounted(() => {
   document.head.append(script);
 });
 
-watch(() => props.siteKey, () => {
-  if (widgetId !== undefined) window.turnstile?.remove(widgetId);
-  widgetId = undefined;
-  render();
-});
+watch(
+  () => props.siteKey,
+  () => {
+    if (widgetId !== undefined) window.turnstile?.remove(widgetId);
+    widgetId = undefined;
+    render();
+  },
+);
 
 onBeforeUnmount(() => {
   if (widgetId !== undefined) window.turnstile?.remove(widgetId);

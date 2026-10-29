@@ -25,7 +25,8 @@ async function submit() {
   const token = captchaToken.value;
   captchaToken.value = '';
   if (await auth.signIn(email.value, password.value, token || undefined)) {
-    const invitationId = typeof route.query.invitationId === 'string' ? route.query.invitationId : '';
+    const invitationId =
+      typeof route.query.invitationId === 'string' ? route.query.invitationId : '';
     if (invitationId && !(await auth.acceptInvitation(invitationId))) return;
     await router.replace(redirectTarget());
   }
@@ -68,11 +69,23 @@ onMounted(async () => {
       <template v-if="auth.recoveryMode.value">
         <a-form-item>
           <label for="new-password">新密码</label>
-          <a-input-password id="new-password" v-model:value="newPassword" aria-label="新密码" autocomplete="new-password" required />
+          <a-input-password
+            id="new-password"
+            v-model:value="newPassword"
+            aria-label="新密码"
+            autocomplete="new-password"
+            required
+          />
         </a-form-item>
         <a-form-item>
           <label for="confirm-password">确认新密码</label>
-          <a-input-password id="confirm-password" v-model:value="confirmPassword" aria-label="确认新密码" autocomplete="new-password" required />
+          <a-input-password
+            id="confirm-password"
+            v-model:value="confirmPassword"
+            aria-label="确认新密码"
+            autocomplete="new-password"
+            required
+          />
         </a-form-item>
         <a-alert v-if="invitationError" type="error" :message="invitationError" show-icon />
         <a-button type="primary" :loading="auth.loading.value" block @click="submitNewPassword">
@@ -82,45 +95,69 @@ onMounted(async () => {
       <template v-else-if="resetMode">
         <a-form-item>
           <label for="recovery-email">邮箱</label>
-          <a-input id="recovery-email" v-model:value.trim="email" aria-label="邮箱" type="email" autocomplete="email" required />
+          <a-input
+            id="recovery-email"
+            v-model:value.trim="email"
+            aria-label="邮箱"
+            type="email"
+            autocomplete="email"
+            required
+          />
         </a-form-item>
         <AuthCaptcha :site-key="captchaSiteKey" @token="captchaToken = $event" />
-        <a-alert v-if="auth.recoveryMessage.value" type="success" :message="auth.recoveryMessage.value" show-icon />
+        <a-alert
+          v-if="auth.recoveryMessage.value"
+          type="success"
+          :message="auth.recoveryMessage.value"
+          show-icon
+        />
         <a-alert v-if="auth.error.value" type="error" :message="auth.error.value" show-icon />
-        <a-button type="primary" :loading="auth.loading.value" :disabled="Boolean(captchaSiteKey && !captchaToken)" block @click="submitPasswordRecovery">
+        <a-button
+          type="primary"
+          :loading="auth.loading.value"
+          :disabled="Boolean(captchaSiteKey && !captchaToken)"
+          block
+          @click="submitPasswordRecovery"
+        >
           发送重置邮件
         </a-button>
         <a-button type="link" block @click="resetMode = false">返回登录</a-button>
       </template>
       <template v-else>
-      <a-form-item>
-        <label for="email">邮箱</label>
-        <a-input
-          id="email"
-          aria-label="邮箱"
-          v-model:value.trim="email"
-          type="email"
-          autocomplete="username"
-          required
-        />
-      </a-form-item>
-      <a-form-item>
-        <label for="password">密码</label>
-        <a-input-password
-          id="password"
-          aria-label="密码"
-          v-model:value="password"
-          autocomplete="current-password"
-          required
-        />
-      </a-form-item>
-      <AuthCaptcha :site-key="captchaSiteKey" @token="captchaToken = $event" />
-      <a-alert v-if="auth.error.value" type="error" :message="auth.error.value" show-icon />
-      <a-alert v-if="invitationError" type="error" :message="invitationError" show-icon />
-      <a-button html-type="submit" type="primary" :loading="auth.loading.value" :disabled="Boolean(captchaSiteKey && !captchaToken)" block>
-        {{ auth.loading.value ? '正在登录…' : '登录' }}
-      </a-button>
-      <a-button type="link" block @click="resetMode = true">忘记密码？</a-button>
+        <a-form-item>
+          <label for="email">邮箱</label>
+          <a-input
+            id="email"
+            v-model:value.trim="email"
+            aria-label="邮箱"
+            type="email"
+            autocomplete="username"
+            required
+          />
+        </a-form-item>
+        <a-form-item>
+          <label for="password">密码</label>
+          <a-input-password
+            id="password"
+            v-model:value="password"
+            aria-label="密码"
+            autocomplete="current-password"
+            required
+          />
+        </a-form-item>
+        <AuthCaptcha :site-key="captchaSiteKey" @token="captchaToken = $event" />
+        <a-alert v-if="auth.error.value" type="error" :message="auth.error.value" show-icon />
+        <a-alert v-if="invitationError" type="error" :message="invitationError" show-icon />
+        <a-button
+          html-type="submit"
+          type="primary"
+          :loading="auth.loading.value"
+          :disabled="Boolean(captchaSiteKey && !captchaToken)"
+          block
+        >
+          {{ auth.loading.value ? '正在登录…' : '登录' }}
+        </a-button>
+        <a-button type="link" block @click="resetMode = true">忘记密码？</a-button>
       </template>
     </form>
   </main>

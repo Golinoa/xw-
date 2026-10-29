@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { describe, expect, it, vi } from 'vitest';
-import { PERMISSIONS, type AuthContext } from '../../../../packages/contracts/src';
+import { PERMISSIONS, type AuthContext } from '@erp/contracts';
 import { app } from '../index';
 import type { ApiEnvironment } from '../middleware/auth';
 import {

@@ -30,7 +30,8 @@ export function createAppRouter(
       to.meta.public &&
       auth.isAuthenticated.value &&
       !(to.name === 'login' && typeof to.query.invitationId === 'string')
-    ) return { name: 'home' };
+    )
+      return { name: 'home' };
     if (!to.meta.public && !auth.isAuthenticated.value)
       return { name: 'login', query: { redirect: to.fullPath } };
   });

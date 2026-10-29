@@ -1,10 +1,6 @@
 import { Hono } from 'hono';
 import { describe, expect, it, vi } from 'vitest';
-import {
-  PERMISSIONS,
-  type AuthContext,
-  type ApiErrorBody,
-} from '../../../../packages/contracts/src';
+import { PERMISSIONS, type AuthContext, type ApiErrorBody } from '@erp/contracts';
 import { requireAuth, requirePermission, type ApiEnvironment } from './auth';
 import { errorHandler } from './error-handler';
 import { requestId } from './request-id';

@@ -2,9 +2,11 @@ import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
   ERROR_CODES,
   PERMISSIONS,
-  type ApiResponse,
+  ROUTES,
   type AuthContext,
+  type PathParamNames,
   type Permission,
+  type RouteResponse,
 } from './index';
 
 describe('contracts package entrypoint', () => {
@@ -15,8 +17,30 @@ describe('contracts package entrypoint', () => {
     expectTypeOf<Permission>().toEqualTypeOf<
       'organization.read' | 'member.manage' | 'settings.manage' | 'audit.read'
     >();
-    expectTypeOf<
-      Extract<ApiResponse<string>, { success: false }>['error']['code']
-    >().toEqualTypeOf<string>();
+  });
+
+  it('derives response types from the route registry instead of hand-written interfaces', () => {
+    expectTypeOf<RouteResponse<'me'>>().toEqualTypeOf<{
+      userId: string;
+      memberships: {
+        organizationId: string;
+        organizationName: string;
+        role: 'admin' | 'operator' | 'finance';
+      }[];
+    }>();
+    expect(ROUTES.me.method).toBe('GET');
+    expect(ROUTES.me.path).toBe('/api/me');
+  });
+
+  it('extracts path parameters from route templates', () => {
+    expectTypeOf<PathParamNames<'/api/organizations/:id/members/:userId'>>().toEqualTypeOf<
+      'id' | 'userId'
+    >();
+    expectTypeOf<PathParamNames<'/api/me'>>().toEqualTypeOf<never>();
+  });
+
+  it('registers every route with a unique method and path pair', () => {
+    const pairs = Object.values(ROUTES).map((route) => `${route.method} ${route.path}`);
+    expect(new Set(pairs).size).toBe(pairs.length);
   });
 });

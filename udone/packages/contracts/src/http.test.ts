@@ -1,33 +1,35 @@
-import { describe, expect, expectTypeOf, it } from 'vitest';
-import type { ApiErrorBody } from './errors';
-import type { ApiResponse } from './http';
+import { describe, expect, it } from 'vitest';
+import { apiErrorBodySchema, ERROR_CODES } from './errors';
+import { JSON_MEDIA_TYPE, ORGANIZATION_HEADER, REQUEST_ID_HEADER } from './http';
 
-describe('ApiResponse', () => {
-  it('discriminates success data from the shared error body', () => {
-    const success: ApiResponse<{ id: string }> = {
-      success: true,
-      data: { id: 'item-1' },
-    };
-    const failure: ApiResponse<{ id: string }> = {
-      success: false,
-      error: {
-        code: 'AUTH_REQUIRED',
-        message: 'Authentication required',
-        requestId: 'request-1',
-      },
-    };
+describe('HTTP transport contract', () => {
+  it('keeps header and media-type names in one place', () => {
+    expect(ORGANIZATION_HEADER).toBe('X-Organization-ID');
+    expect(REQUEST_ID_HEADER).toBe('X-Request-Id');
+    expect(JSON_MEDIA_TYPE).toBe('application/json');
+  });
 
-    expect(success).toEqual({ success: true, data: { id: 'item-1' } });
-    expect(failure).toEqual({
+  it('accepts the flat error body and rejects the abandoned envelope shape', () => {
+    const flat = {
+      code: ERROR_CODES.VALIDATION_ERROR,
+      message: 'The request body is invalid',
+      requestId: 'request-1',
+    };
+    expect(apiErrorBodySchema.parse(flat)).toEqual(flat);
+
+    const abandonedEnvelope = {
       success: false,
-      error: {
-        code: 'AUTH_REQUIRED',
-        message: 'Authentication required',
-        requestId: 'request-1',
-      },
+      error: flat,
+    };
+    expect(apiErrorBodySchema.safeParse(abandonedEnvelope).success).toBe(false);
+  });
+
+  it('rejects unknown error codes so new codes must be declared first', () => {
+    const result = apiErrorBodySchema.safeParse({
+      code: 'SOMETHING_NEW',
+      message: 'x',
+      requestId: 'request-1',
     });
-    expectTypeOf<
-      Extract<ApiResponse<{ id: string }>, { success: false }>['error']
-    >().toEqualTypeOf<ApiErrorBody>();
+    expect(result.success).toBe(false);
   });
 });

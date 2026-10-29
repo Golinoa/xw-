@@ -26,7 +26,11 @@ async function invite() {
 
 async function saveMember() {
   actionError.value = '';
-  const saved = await auth.updateMember(memberId.value.trim(), memberRole.value, memberStatus.value);
+  const saved = await auth.updateMember(
+    memberId.value.trim(),
+    memberRole.value,
+    memberStatus.value,
+  );
   if (!saved) actionError.value = auth.error.value;
   else actionError.value = '成员权限已更新';
 }
@@ -46,10 +50,10 @@ async function saveMember() {
       </select>
       <button type="submit" :disabled="auth.loading.value">发送邀请</button>
     </form>
-    <p
-      v-if="invitationStatus"
-      role="status"
-    >邀请状态：{{ invitationStatus }}，有效期至 {{ new Date(invitationExpiresAt).toLocaleString() }}</p>
+    <p v-if="invitationStatus" role="status">
+      邀请状态：{{ invitationStatus }}，有效期至
+      {{ new Date(invitationExpiresAt).toLocaleString() }}
+    </p>
     <form class="member-update" @submit.prevent="saveMember">
       <label for="member-id">成员用户 ID</label>
       <input id="member-id" v-model.trim="memberId" required />
@@ -66,7 +70,9 @@ async function saveMember() {
       </select>
       <button type="submit">更新成员</button>
     </form>
-    <p v-if="actionError" :role="actionError.includes('已更新') ? 'status' : 'alert'">{{ actionError }}</p>
+    <p v-if="actionError" :role="actionError.includes('已更新') ? 'status' : 'alert'">
+      {{ actionError }}
+    </p>
   </section>
 </template>
 

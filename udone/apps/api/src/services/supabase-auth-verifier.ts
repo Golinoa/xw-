@@ -1,4 +1,4 @@
-import type { AuthContext, AuthRole, DataScope, Permission } from '../../../../packages/contracts/src';
+import type { AuthContext, AuthRole, DataScope, Permission } from '@erp/contracts';
 import type { ApiEnvironment, AuthVerifier } from '../middleware/auth';
 
 type AuthorizationRow = {
@@ -59,14 +59,19 @@ export function createSupabaseAuthVerifier(
         'Content-Type': 'application/json',
         ...(organizationId ? { 'X-Organization-ID': organizationId } : {}),
       };
-      const authorizationResponse = await fetcher(`${baseUrl}/rest/v1/rpc/get_current_auth_context`, {
-        method: 'POST',
-        headers: membershipHeaders,
-        body: JSON.stringify({ requested_organization_id: organizationId ?? null }),
-        signal: AbortSignal.timeout(5_000),
-      });
+      const authorizationResponse = await fetcher(
+        `${baseUrl}/rest/v1/rpc/get_current_auth_context`,
+        {
+          method: 'POST',
+          headers: membershipHeaders,
+          body: JSON.stringify({ requested_organization_id: organizationId ?? null }),
+          signal: AbortSignal.timeout(5_000),
+        },
+      );
       if (!authorizationResponse.ok) {
-        throw new Error(`Authorization context verification failed (${authorizationResponse.status})`);
+        throw new Error(
+          `Authorization context verification failed (${authorizationResponse.status})`,
+        );
       }
       const rows = (await authorizationResponse.json()) as AuthorizationRow[];
       const authorization = rows[0];
@@ -76,7 +81,8 @@ export function createSupabaseAuthVerifier(
         !Array.isArray(authorization.permissions) ||
         (authorization.data_scope !== 'own' && authorization.data_scope !== 'all') ||
         (organizationId && authorization.organization_id !== organizationId)
-      ) return null;
+      )
+        return null;
 
       return {
         userId: claims.sub,

@@ -1,6 +1,6 @@
 import type { MiddlewareHandler } from 'hono';
-import type { AuthContext, Permission } from '../../../../packages/contracts/src';
-import { ERROR_CODES } from '../../../../packages/contracts/src';
+import type { AuthContext, Permission } from '@erp/contracts';
+import { ERROR_CODES } from '@erp/contracts';
 import type { OrganizationRepository } from '../services/organization-service';
 import { ApiHttpError } from './error-handler';
 import { createSupabaseAuthVerifier } from '../services/supabase-auth-verifier';

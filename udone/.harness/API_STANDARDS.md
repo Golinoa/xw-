@@ -7,11 +7,14 @@
 - Stable request, response, permission and error types belong in `packages/contracts`; API route and frontend code consume that public contract.
 - JSON uses the existing lower-camel-case field convention. Do not invent target-site fields, routes, status values or permissions without a confirmed product requirement.
 - Keep current route paths compatible unless a feature explicitly approves a versioned migration. There is no global `/api/v1` prefix today; do not imply that it exists.
-- The shared `ApiResponse<T>` contract defines `{ success: true, data }` and `{ success: false, error }`. Current routes return raw resource bodies on success, so preserve those existing responses unless a coordinated compatibility change is approved; use the shared envelope for new endpoints once client integration is aligned, and do not introduce ad hoc shapes.
+- The shared `ApiResponse<T>` envelope has been **removed**. Success responses return the resource body directly; failures return the flat `{ code, message, requestId, details? }` body from `apiErrorBodySchema`. Do not reintroduce an envelope without an explicit coordinated migration (it would require changing every existing endpoint, its tests and the browser client in one batch).
+- Every endpoint must be registered in the shared `ROUTES` registry with request/response zod schemas, and the route handler must use `respond()`. Full rules and rationale: [contract standards](CONTRACTS.md).
 
 ## 2. Input and response behavior
 
 - Parse and validate path parameters, query values, headers and JSON bodies at the HTTP boundary. TypeScript annotations alone do not validate runtime input.
+- Use `parseJson`, `parseParams` and `parseQuery` from `apps/api/src/lib/contract.ts`. Direct `context.req.json()` calls bypass the shared validation error shape and are not allowed in route handlers.
+- Return responses through `respond(context, routeKey, data, status?)` so the outbound payload is checked against the same schema the browser client uses. A mismatch fails closed with `500 INTERNAL_ERROR` and a `response_contract_violation` log entry instead of silently shipping a drifted shape.
 - Define reusable runtime schemas with the workspace-pinned Zod dependency in `packages/contracts` when the request/response contract is shared; route handlers parse untrusted input before use. Cover valid and rejected inputs with `pnpm test`, then run `pnpm lint` and `pnpm typecheck`.
 - Reject malformed or out-of-range input with a stable validation error. Normalize only documented values; do not silently coerce identifiers, money, dates or status values.
 - Use HTTP methods and status codes according to operation semantics. Create operations return a creation status where appropriate; authorization, validation and conflict cases use their corresponding stable contract errors.
@@ -41,6 +44,7 @@
 
 ## Related standards
 
+- [Contract and type consistency](CONTRACTS.md)
 - [Code writing standards](CODE_STANDARDS.md)
 - [Database standards](DATABASE_STANDARDS.md)
 - [Security rules](SECURITY.md)
