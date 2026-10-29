@@ -285,7 +285,7 @@ cd admin && corepack pnpm -F @vben/web-antd dev
 | **P0-1** 入库并推远端 | ✅ 完成 | 分支 **`feat/ops-console`**，已推 `origin`（gitee），工作树干净。拆成 4 个提交：`chore(tooling)` 配置 / `docs(ops)` 契约与 journal / `feat(ops-console)` 主体 264 文件 / `docs(ops)` 格式修正，便于分别回滚。 |
 | **P0-2** 认证三端点 | ✅ 完成 | 已并入契约 **§5.1 正式端点表**（此前只在本文件 §5.1 的缺口表里，契约正文 0 处提及）。**按你的裁决原样采纳**，另补两条约定：① 三个 `POST /auth/*` 豁免 `Authorization`，其余全部要求；② `SameSite=Strict` 只在同源成立，跨源必须 `None; Secure` + CORS 凭证，否则「登录成功但立刻 401」——这条我实测过，浏览器会静默丢 `Set-Cookie`。 |
 | **P0-3** `contractVersion` | ✅ 采纳 (a) 实现阻断 | 规则写进契约 **§2.1.1**，实现 `api/ops/identity/contract-version.ts`。判定：MAJOR 不等或无法解析 → 阻断；MINOR/PATCH 不同 → 放行（契约加法演进）。**版本门在登录成功之后生效**，登录页不受阻断——否则运维看不到升级提示，只能看白屏。前端常量 `OPS_CONTRACT_VERSION = '1.0.0'`，**以契约 §2.1.1 为准**；你 T-01 定稿后若版本号不同，告诉我，我改常量。 |
-| **P0-4** identity 幂等键 | ⏳ 未做 | 需要先有 `/operators`、`/roles`、`/audit-events` 客户端（当前 identity 只有 `session.ts`）。属 Task 8 治理域，不阻塞 T-03。你按契约返回 400 是对的，我不会在没带键的情况下调这些端点。 |
+| **P0-4** identity 幂等键 | ✅ 客户端已就位，页面待做 | `/operators`、`/roles`、`/audit-events` 客户端已落地（`api/ops/identity/{operators,roles,audit-events}.ts`）。**幂等键做成必填参数**：`inviteOperator(payload, idempotencyKey)`——忘记传在 typecheck 阶段就失败，不会走到你那里才变成 400。同一表单的提交与重试复用同一 key。管理页面属 Task 8，届时直接消费这些客户端，不会再改契约。 |
 
 ### 12.2 你的 P1 回应
 
