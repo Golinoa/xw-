@@ -1,0 +1,90 @@
+# ============================================================
+# admin 发布流水线（Gitee Go）— 由 tag 触发
+#
+# 触发条件：推送 admin-v* 形式的 tag，例如 admin-v1.0.0。
+# 与 release-udone.yml 完全独立：两条流水线的前缀不重叠，
+# 发前端不会构建运营后台，反之亦然。
+#
+# 工具链必须精确到 patch：admin 的 preinstall 钩子
+# （scripts/quality/check-toolchain.mjs）对 Node 与 pnpm 做字符串相等比较，
+# 24 与 24.20.0 都会判为不匹配，所以这里写死 24.20.0 / 10.33.4。
+# 若平台镜像无该 Node 版本，需先调整 .node-version 与 package.json engines，
+# 不要在这里放宽校验。
+# ============================================================
+version: "1.0"
+name: release-admin
+displayName: "admin 发布（tag: admin-v*）"
+
+triggers:
+  push:
+    tags:
+      prefix:
+        - admin-v
+
+stages:
+  - stage: release
+    displayName: 校验 → 门禁 → 构建 → 归档
+    strategy: fast
+    trigger: auto
+    steps:
+      - step: npmbuild@1
+        name: release_admin
+        displayName: admin 发布
+        inputs:
+          nodeVersion: "24.20.0"
+          goals: |
+            set -euo pipefail
+            node -v
+            npm -v
+            npm install -g pnpm@10.33.4
+            pnpm -v
+
+            # 精确版本预检：先给出可读诊断，而不是让 preinstall 抛一句英文。
+            EXPECTED_NODE=24.20.0
+            if [ "$(node -v)" != "v$EXPECTED_NODE" ]; then
+              echo "Node 版本不符：需要 $EXPECTED_NODE，实际 $(node -v)" >&2
+              echo "Gitee Go 镜像若无该版本，请先同步 .node-version 与 package.json engines" >&2
+              exit 1
+            fi
+
+            TAG=$(git tag --points-at HEAD --list 'admin-v*' | head -n 1)
+            if [ -z "$TAG" ]; then
+              echo "当前提交上没有 admin-v* 标签，拒绝发布" >&2
+              exit 1
+            fi
+            echo "发布标签：$TAG"
+
+            RESOLVED=$(node scripts/release/verify.mjs "$TAG")
+            VERSION=$(printf '%s\n' "$RESOLVED" | awk -F= '$1=="version"{print $2}')
+            echo "发布版本：$VERSION"
+
+            cd admin
+            pnpm install --frozen-lockfile
+            # 复用已通过的门禁子集；刻意不跑 quality:check：
+            # 它内含 quality:dependencies，而依赖基线仍有无补丁的高危 advisory，
+            # 一跑必红，会把发布链路卡死。
+            pnpm format:check
+            pnpm lint:check
+            pnpm check:type
+            pnpm test:unit
+            pnpm build:antd
+            cd ..
+
+            mkdir -p artifacts
+            ARCHIVE="artifacts/admin-$VERSION.tar.gz"
+            tar -czf "$ARCHIVE" -C admin/apps/web-antd dist
+            SHA=$(sha256sum "$ARCHIVE" | cut -d' ' -f1)
+            printf '%s  %s\n' "$SHA" "$ARCHIVE" > "$ARCHIVE.sha256"
+
+            printf '{\n' > "artifacts/admin-$VERSION.json"
+            printf '  "component": "admin",\n' >> "artifacts/admin-$VERSION.json"
+            printf '  "version": "%s",\n' "$VERSION" >> "artifacts/admin-$VERSION.json"
+            printf '  "tag": "%s",\n' "$TAG" >> "artifacts/admin-$VERSION.json"
+            printf '  "commit": "%s",\n' "$(git rev-parse HEAD)" >> "artifacts/admin-$VERSION.json"
+            printf '  "builtAt": "%s",\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "artifacts/admin-$VERSION.json"
+            printf '  "archive": "%s",\n' "$ARCHIVE" >> "artifacts/admin-$VERSION.json"
+            printf '  "sha256": "%s"\n' "$SHA" >> "artifacts/admin-$VERSION.json"
+            printf '}\n' >> "artifacts/admin-$VERSION.json"
+
+            ls -lh artifacts
+            cat "artifacts/admin-$VERSION.json"

@@ -8,3 +8,7 @@ node_modules/
 dist/
 *.log
 .DS_Store
+
+# 发布产物：由流水线在构建时生成，不入库
+/artifacts/
+.release/resolved.json

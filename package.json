@@ -1,0 +1,15 @@
+{
+  "name": "erp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "单仓双子系统：udone（旅行社 OMS）+ admin（SaaS 运营后台）。本身不装依赖，只做跨组件的发布编排。",
+  "scripts": {
+    "release:verify": "node scripts/release/verify.mjs",
+    "release:bump": "node scripts/release/bump.mjs",
+    "release:test": "node --test scripts/release/lib.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

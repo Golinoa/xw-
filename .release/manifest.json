@@ -1,0 +1,17 @@
+{
+  "$comment": "两个子系统的版本唯一真源。改版本只能通过 scripts/release/bump.mjs，不要手改。",
+  "components": {
+    "udone": {
+      "displayName": "旅行社 OMS 前端 + Worker",
+      "path": "udone",
+      "tagPrefix": "udone-v",
+      "version": "0.1.0"
+    },
+    "admin": {
+      "displayName": "SaaS 运营后台",
+      "path": "admin",
+      "tagPrefix": "admin-v",
+      "version": "0.1.0"
+    }
+  }
+}

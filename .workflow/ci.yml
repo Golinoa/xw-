@@ -1,0 +1,60 @@
+# ============================================================
+# udone OMS 日常质量门禁（Gitee Go）
+#
+# 位置约束：Gitee Go 只读取【仓库根目录】的 .workflow/，放在子目录里
+# 等于没有流水线。本文件必须留在仓库根，不可移回 udone/。
+#
+# 职责边界：本流水线只负责「分支日常门禁」。发布走 tag 触发，
+# 见同目录 release-udone.yml / release-admin.yml。三条流水线互不重叠：
+# 本文件只配 branches，发布文件只配 tags。Gitee Go 的
+# branches / tags / commitMessages 是【交集】关系，同时配置会互相拖累。
+#
+# 刻意不纳入的门禁及原因：
+#   - deps:audit / licenses:check：需要稳定访问 npm registry 与许可证清单。
+#   - db:test（pgTAP）：需要本地 PostgreSQL 或 service 容器，Gitee Go 侧尚未验证。
+# ============================================================
+version: "1.0"
+name: udone-ci
+displayName: udone 质量门禁
+
+triggers:
+  push:
+    branches:
+      precise:
+        - main
+  pr:
+    branches:
+      precise:
+        - main
+
+stages:
+  - stage: quality
+    displayName: 质量门禁
+    # 任一 step 失败立即结束，避免后续步骤在残缺产物上继续跑。
+    strategy: fast
+    trigger: auto
+    steps:
+      - step: npmbuild@1
+        name: quality_gate
+        displayName: 格式/静态检查/类型/测试/构建
+        inputs:
+          nodeVersion: "24"
+          # 版本写死而不用 variables：Gitee Go 对 goals 内的变量展开行为
+          # 未经验证，宁可重复一处常量，也不要让门禁依赖不确定的插值。
+          # 与 udone/package.json 的 packageManager 保持一致。
+          goals: |
+            set -euo pipefail
+            node -v
+            npm -v
+            npm install -g pnpm@11.24.0
+            pnpm -v
+
+            cd udone
+            pnpm install --frozen-lockfile
+            pnpm format:check
+            pnpm lint
+            pnpm typecheck
+            pnpm test
+            pnpm build
+            pnpm schema:check
+            pnpm check:deploy
