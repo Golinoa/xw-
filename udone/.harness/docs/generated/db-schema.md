@@ -3,12 +3,12 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 8
+- Migration sources scanned: 10
 - Tables discovered: 15
-- Functions discovered: 17
+- Functions discovered: 18
 - Indexes discovered: 20
-- RLS policies discovered: 45
-- Triggers discovered: 0
+- RLS policies discovered: 47
+- Triggers discovered: 2
 
 | Migration | Tables | Functions | Indexes | Policies | Triggers |
 |---|---|---|---|---|---|
@@ -20,3 +20,5 @@
 | `20261029000001_customer_domain.sql` | `public.customer_sources`, `public.customer_tags`, `public.customers`, `public.customer_tag_links` | `public.create_customer_with_tags` | `customer_sources_root_name_idx`, `customer_sources_child_name_idx`, `customer_sources_organization_idx`, `customers_organization_created_idx`, `customers_organization_phone_idx`, `customers_organization_source_idx`, `customers_organization_creator_idx`, `customer_tag_links_tag_idx` | `customers_select_scoped`, `customers_insert_writer`, `customers_update_writer`, `customer_sources_select_reader`, `customer_sources_insert_writer`, `customer_sources_update_writer`, `customer_tags_select_reader`, `customer_tags_insert_writer`, `customer_tag_links_select_reader`, `customer_tag_links_insert_writer`, `customer_tag_links_delete_writer` | — |
 | `20261029000002_order_domain.sql` | `public.suppliers`, `public.orders`, `public.order_receivables`, `public.order_payables` | `public.recalculate_order_totals`, `public.create_order_with_items`, `public.update_order_with_items`, `public.transition_order_status` | `suppliers_organization_idx`, `orders_organization_created_idx`, `orders_organization_status_idx`, `orders_organization_customer_idx`, `orders_organization_departure_idx`, `order_receivables_order_idx`, `order_payables_order_idx`, `order_payables_supplier_idx` | `suppliers_select_reader`, `suppliers_insert_writer`, `suppliers_update_writer`, `orders_select_scoped`, `orders_insert_writer`, `orders_update_writer`, `order_receivables_select_reader`, `order_receivables_write_writer`, `order_payables_select_reader`, `order_payables_write_writer` | — |
 | `20261029000003_finance_scope.sql` | — | — | — | `order_receivables_select_scoped`, `order_receivables_insert_writer`, `order_receivables_update_writer`, `order_receivables_delete_writer`, `order_payables_select_scoped`, `order_payables_insert_writer`, `order_payables_update_writer`, `order_payables_delete_writer` | — |
+| `20261029000004_soft_delete_visibility.sql` | — | — | — | `customers_select_scoped`, `orders_select_scoped` | — |
+| `20261029000005_order_write_grants.sql` | — | `public.sync_order_totals` | — | — | `order_receivables_sync_totals`, `order_payables_sync_totals` |

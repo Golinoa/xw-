@@ -427,20 +427,29 @@ export function createSupabaseCustomerRepository(
     customerId: string,
     actorId: string,
   ): Promise<boolean> {
-    const rows = await client.rest<Array<{ id: string }>>(
-      `customers?organization_id=eq.${encodeURIComponent(organizationId)}&id=eq.${encodeURIComponent(customerId)}&deleted_at=is.null&select=id`,
-      {
-        method: 'PATCH',
-        organizationId,
-        headers: { Prefer: 'return=representation' },
-        body: {
-          deleted_at: new Date().toISOString(),
-          deleted_by: actorId,
-          updated_at: new Date().toISOString(),
-        },
+    const target = `customers?organization_id=eq.${encodeURIComponent(organizationId)}&id=eq.${encodeURIComponent(customerId)}&deleted_at=is.null`;
+
+    // 先确认存在，再提交删除。
+    // 不能用 `Prefer: return=representation` 的返回行数判断成功：SELECT 策略会隐藏
+    // 已软删除的行，于是 UPDATE 把 deleted_at 置上之后，RETURNING 拿到 0 行，
+    // 删除明明成功却会被当成「客户不存在」而回 404。
+    const existing = await client.rest<Array<{ id: string }>>(`${target}&select=id&limit=1`, {
+      organizationId,
+    });
+    if (existing.length === 0) return false;
+
+    await client.rest(`${target}`, {
+      method: 'PATCH',
+      organizationId,
+      // 显式 return=minimal：不依赖 PostgREST 的返回体，也就不受读策略影响。
+      headers: { Prefer: 'return=minimal' },
+      body: {
+        deleted_at: new Date().toISOString(),
+        deleted_by: actorId,
+        updated_at: new Date().toISOString(),
       },
-    );
-    return rows.length > 0;
+    });
+    return true;
   }
 
   async function assertTagsBelongToOrganization(
