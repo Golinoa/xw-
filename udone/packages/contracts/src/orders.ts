@@ -166,6 +166,12 @@ export const orderListItemSchema = z.object({
   receivableTotal: z.number(),
   payableTotal: z.number(),
   profit: z.number(),
+  /**
+   * 未收 / 未付金额（R-ORDER-03 要求列表直接展示）。由明细行算出，
+   * 不是订单表上的列——订单表只有合计，`合计 − 已确认` 必须在算完之后才知道。
+   */
+  uncollectedAmount: z.number(),
+  unpaidAmount: z.number(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

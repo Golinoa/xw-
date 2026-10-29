@@ -15,6 +15,13 @@ import {
 } from './customers';
 import type { HttpMethod } from './http';
 import {
+  financeListQuerySchema,
+  orderFinanceResponseSchema,
+  payableListQuerySchema,
+  payableListResponseSchema,
+  receivableListResponseSchema,
+} from './finance';
+import {
   createOrderRequestSchema,
   orderListQuerySchema,
   orderListResponseSchema,
@@ -192,6 +199,24 @@ export const ROUTES = {
     path: '/api/suppliers',
     request: createSupplierRequestSchema,
     response: supplierResponseSchema,
+  }),
+  getOrderFinance: defineRoute({
+    method: 'GET',
+    path: '/api/orders/:orderId/finance',
+    request: orderParamsSchema,
+    response: orderFinanceResponseSchema,
+  }),
+  listReceivables: defineRoute({
+    method: 'GET',
+    path: '/api/receivables',
+    request: financeListQuerySchema,
+    response: receivableListResponseSchema,
+  }),
+  listPayables: defineRoute({
+    method: 'GET',
+    path: '/api/payables',
+    request: payableListQuerySchema,
+    response: payableListResponseSchema,
   }),
 } as const;
 
