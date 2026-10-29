@@ -1,6 +1,7 @@
 import type { OrderAction, OrderStatus, OrderType, SortOrder } from '@erp/contracts';
 import type { ApiEnvironment } from '../../middleware/auth';
 import { createRestClient } from '../../lib/rest-client';
+import { inList, sanitizeKeyword } from '../../lib/postgrest';
 
 /**
  * 订单域服务与仓储（R-ORDER-01/02/03）。
@@ -190,17 +191,6 @@ function toOptional(value: string | null): string | undefined {
   return value === null || value === '' ? undefined : value;
 }
 
-function inList(values: string[]): string {
-  return `in.(${values.map((value) => encodeURIComponent(value)).join(',')})`;
-}
-
-function sanitizeKeyword(keyword: string): string {
-  return keyword
-    .replace(/[,()*%\\]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
 export function createSupabaseOrderRepository(
   environment: ApiEnvironment['Bindings'],
   token: string,
@@ -272,11 +262,7 @@ export function createSupabaseOrderRepository(
     return { receivables, payables };
   }
 
-  async function decorate(
-    organizationId: string,
-    rows: OrderRow[],
-    withLines: boolean,
-  ): Promise<OrderRecord[]> {
+  async function decorate(organizationId: string, rows: OrderRow[]): Promise<OrderRecord[]> {
     if (rows.length === 0) return [];
     const orderIds = rows.map((row) => row.id);
     const [customerNames, lines] = await Promise.all([
@@ -284,12 +270,7 @@ export function createSupabaseOrderRepository(
         organizationId,
         rows.map((row) => row.customer_id),
       ),
-      withLines
-        ? loadLines(organizationId, orderIds)
-        : Promise.resolve({
-            receivables: new Map<string, OrderReceivableRecord[]>(),
-            payables: new Map<string, OrderPayableRecord[]>(),
-          }),
+      loadLines(organizationId, orderIds),
     ]);
 
     return rows.map((row) => ({
@@ -327,7 +308,7 @@ export function createSupabaseOrderRepository(
     );
     const row = rows[0];
     if (!row) return null;
-    const [decorated] = await decorate(organizationId, [row], true);
+    const [decorated] = await decorate(organizationId, [row]);
     return decorated ?? null;
   }
 
@@ -395,7 +376,9 @@ export function createSupabaseOrderRepository(
       const page = await client.restPage<OrderRow>(`orders?${query.toString()}`, {
         organizationId: filter.organizationId,
       });
-      return { items: await decorate(filter.organizationId, page.rows, false), total: page.total };
+      // 列表要展示「未收 / 未付」（R-ORDER-03），这两个数只能从明细行算出来。
+      // 明细按当前页订单批量取一次，不会退化成 N+1。
+      return { items: await decorate(filter.organizationId, page.rows), total: page.total };
     },
 
     findById,

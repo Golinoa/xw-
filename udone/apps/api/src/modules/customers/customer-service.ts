@@ -1,6 +1,7 @@
 import type { CustomerIdType, CustomerTag, SortOrder } from '@erp/contracts';
 import type { ApiEnvironment } from '../../middleware/auth';
 import { RestConflictError, createRestClient } from '../../lib/rest-client';
+import { sanitizeKeyword } from '../../lib/postgrest';
 
 /**
  * 客户域服务与仓储（R-CUSTOMER-01）。
@@ -176,15 +177,10 @@ export function maskIdNumber(value: string): string {
 }
 
 /**
- * 关键字进 PostgREST 的 `or=(...)` 时，逗号与括号参与语法、星号是通配符，
- * 必须清洗成空格，否则用户输入会改变整个过滤表达式。
+ * 关键字清洗见 `lib/postgrest`。这里保留同名导出，是因为本模块的单元测试
+ * 直接引用它；实现只有一份，行为不会分叉。
  */
-export function sanitizeKeyword(keyword: string): string {
-  return keyword
-    .replace(/[,()*%\\]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+export { sanitizeKeyword } from '../../lib/postgrest';
 
 /* -------------------------------------------------------------- 行映射 */
 

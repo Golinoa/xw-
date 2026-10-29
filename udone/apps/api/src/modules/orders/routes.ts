@@ -7,6 +7,7 @@ import {
   createOrderRequestSchema,
   orderListQuerySchema,
   orderParamsSchema,
+  summarizeAmountLines,
   transitionOrderRequestSchema,
   updateOrderRequestSchema,
 } from '@erp/contracts';
@@ -27,6 +28,10 @@ function repository(context: ApiContext): OrderRepository {
 }
 
 function toListItem(record: OrderRecord): OrderListItem {
+  // 未收/未付从明细算，不拿「合计 − 已确认」再减一遍：明细是唯一真源，
+  // 而且两侧的算法与财务摘要保持同一份实现（`summarizeAmountLines`）。
+  const receivable = summarizeAmountLines(record.receivables);
+  const payable = summarizeAmountLines(record.payables);
   return {
     id: record.id,
     orderNumber: record.orderNumber,
@@ -43,6 +48,8 @@ function toListItem(record: OrderRecord): OrderListItem {
     receivableTotal: record.receivableTotal,
     payableTotal: record.payableTotal,
     profit: record.profit,
+    uncollectedAmount: receivable.outstanding,
+    unpaidAmount: payable.outstanding,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
   };
