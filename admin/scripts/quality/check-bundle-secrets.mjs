@@ -6,13 +6,13 @@ const dist = fileURLToPath(
   new URL('../../apps/web-antd/dist/', import.meta.url),
 );
 const textExtensions = new Set([
+  '.css',
   '.html',
   '.js',
-  '.css',
   '.json',
   '.map',
-  '.txt',
   '.svg',
+  '.txt',
 ]);
 const forbidden = [
   /\bSUPABASE_SERVICE_ROLE_KEY\b/i,
@@ -45,7 +45,7 @@ try {
   process.exitCode = 1;
 }
 
-if (matches.length) {
+if (matches.length > 0) {
   console.error(
     `Server credential markers found in build output:\n${matches.join('\n')}`,
   );

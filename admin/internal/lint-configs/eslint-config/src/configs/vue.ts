@@ -85,7 +85,12 @@ export async function vue(): Promise<Linter.Config[]> {
         'vue/dot-location': ['error', 'property'],
         'vue/dot-notation': ['error', { allowKeywords: true }],
         'vue/eqeqeq': ['error', 'smart'],
-        'vue/html-closing-bracket-newline': 'error',
+        // 关闭：与 oxfmt 不可调和，非风格偏好问题。
+        // 该规则的判定是「最后一个属性与标签起始同行 → 视为单行 → 要求 `>` 不换行」；
+        // 而 oxfmt 只要标签折行就把 `>` 断到下一行。两者对同一段代码给出相反结论，
+        // `eslint --fix` 与 `oxfmt` 会无限互相覆盖（已实测 3 个文件 6 处）。
+        // 格式的唯一裁决者是 `format:check`（oxfmt），因此这里关闭该重复规则。
+        'vue/html-closing-bracket-newline': 'off',
         'vue/html-indent': 'off',
         // 'vue/html-indent': ['error', 2],
         'vue/html-quotes': ['error', 'double'],

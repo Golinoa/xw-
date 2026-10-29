@@ -5,7 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { toolchainMismatches } from './toolchain-policy.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const nodeExpected = (await readFile(`${root}/.node-version`, 'utf8')).trim();
+const nodeVersionFile = await readFile(`${root}/.node-version`, 'utf8');
+const nodeExpected = nodeVersionFile.trim();
 const packageJson = JSON.parse(await readFile(`${root}/package.json`, 'utf8'));
 const pnpmExpected = packageJson.packageManager?.match(/^pnpm@(.+)$/)?.[1];
 const userAgent = process.env.npm_config_user_agent;
@@ -30,7 +31,7 @@ const errors = pnpmExpected
     )
   : ['package.json must pin packageManager to an exact pnpm version.'];
 
-if (errors.length) {
+if (errors.length > 0) {
   console.error(errors.join('\n'));
   process.exitCode = 1;
 } else {

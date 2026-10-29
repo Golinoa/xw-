@@ -34,7 +34,11 @@
       "dependsOn": ["^build"],
       "outputs": [".nitro/**", ".output/**"]
     },
-    "test:e2e": {},
+    "test:e2e": {
+      "cache": false,
+      "env": ["CI", "PLAYWRIGHT_CHANNEL"],
+      "outputs": ["playwright-report/**", "test-results/**"]
+    },
     "dev": {
       "dependsOn": [],
       "outputs": [],

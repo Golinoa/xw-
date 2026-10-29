@@ -26,14 +26,14 @@ try {
   );
   const result = evaluateLicenseReport(report, policy);
 
-  if (!result.ok) {
-    console.error('License policy failed:');
-    for (const error of result.errors) console.error(`- ${error}`);
-    process.exitCode = 1;
-  } else {
+  if (result.ok) {
     console.log(
       `License policy passed for ${Object.keys(report).length} installed packages; ${Object.keys(policy.exceptions).length} exact-version exceptions.`,
     );
+  } else {
+    console.error('License policy failed:');
+    for (const error of result.errors) console.error(`- ${error}`);
+    process.exitCode = 1;
   }
 } finally {
   await rm(tempDir, { recursive: true, force: true });
