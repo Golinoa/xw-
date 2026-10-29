@@ -21,6 +21,8 @@
     "schema:generate": "node scripts/generate-db-schema.mjs --write",
     "schema:check": "node scripts/generate-db-schema.mjs --check",
     "db:test": "supabase test db --local",
+    "db:local:setup": "node scripts/db/local-db.mjs setup",
+    "db:local:verify": "node scripts/db/local-db.mjs verify",
     "smoke": "playwright test --config playwright.smoke.config.ts",
     "wrangler": "pnpm --filter @erp/api exec wrangler --config ../../wrangler.toml"
   },
