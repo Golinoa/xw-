@@ -118,6 +118,11 @@ export interface OrderListFilter {
 }
 
 export interface OrderLineInput {
+  /**
+   * 已有明细行的 id。带 id 表示更新这一行，不带表示新增；
+   * 服务端据此做增量合并，避免整表替换把已确认金额清零。
+   */
+  id?: string;
   name: string;
   amount: number;
 }
@@ -140,9 +145,21 @@ export interface OrderWriteInput {
 }
 
 /** 乐观结果：要么拿回订单，要么拿回一个稳定的失败原因。 */
+export type OrderMutationError =
+  | 'NOT_FOUND'
+  | 'VERSION_CONFLICT'
+  | 'ORDER_STATE_CONFLICT'
+  /** 请求里的行 id 不属于这张订单（或已被别处删除）。 */
+  | 'LINE_NOT_FOUND'
+  /** 同一行 id 在一份请求里出现两次。 */
+  | 'LINE_DUPLICATE'
+  /** 行上已有确认/在途金额，不能删除。 */
+  | 'LINE_HAS_PAYMENTS'
+  /** 新金额低于已确认 + 在途。 */
+  | 'LINE_AMOUNT_CONFLICT';
+
 export type OrderMutationResult =
-  | { ok: true; order: OrderRecord }
-  | { ok: false; errorCode: 'NOT_FOUND' | 'VERSION_CONFLICT' | 'ORDER_STATE_CONFLICT' };
+  { ok: true; order: OrderRecord } | { ok: false; errorCode: OrderMutationError };
 
 interface RpcOutcome {
   result_order_id: string | null;
@@ -316,11 +333,14 @@ export function createSupabaseOrderRepository(
     return {
       requested_customer_id: input.customerId,
       requested_order_type: input.orderType,
+      // 只有更新会带 id；创建时传 null 让函数走「纯新增」分支。
       requested_receivables: input.receivables.map((line) => ({
+        ...(line.id ? { id: line.id } : {}),
         name: line.name,
         amount: line.amount,
       })),
       requested_payables: input.payables.map((line) => ({
+        ...(line.id ? { id: line.id } : {}),
         name: line.name,
         amount: line.amount,
         supplierId: line.supplierId,
@@ -335,10 +355,18 @@ export function createSupabaseOrderRepository(
   }
 
   function mutationFailure(errorCode: string | null): OrderMutationResult {
-    if (errorCode === 'VERSION_CONFLICT' || errorCode === 'ORDER_STATE_CONFLICT') {
-      return { ok: false, errorCode };
-    }
-    return { ok: false, errorCode: 'NOT_FOUND' };
+    // 白名单而不是黑名单：函数新增错误码时，这里必须显式加一行，
+    // 否则会被当成「订单不存在」返回 404，掩盖真正的原因。
+    const known: OrderMutationError[] = [
+      'VERSION_CONFLICT',
+      'ORDER_STATE_CONFLICT',
+      'LINE_NOT_FOUND',
+      'LINE_DUPLICATE',
+      'LINE_HAS_PAYMENTS',
+      'LINE_AMOUNT_CONFLICT',
+    ];
+    const matched = known.find((code) => code === errorCode);
+    return { ok: false, errorCode: matched ?? 'NOT_FOUND' };
   }
 
   return {

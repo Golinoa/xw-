@@ -16,7 +16,7 @@ import { parseJson, parseParams, parseQuery, respond } from '../../lib/contract'
 import type { ApiEnvironment } from '../../middleware/auth';
 import { requireAuth, requirePermission } from '../../middleware/auth';
 import { ApiHttpError } from '../../middleware/error-handler';
-import type { OrderRecord, OrderRepository } from './order-service';
+import type { OrderMutationError, OrderRecord, OrderRepository } from './order-service';
 import { OrderCustomerInvalidError, orderRepository } from './order-service';
 
 export const orderRoutes = new Hono<ApiEnvironment>();
@@ -68,7 +68,7 @@ function toDetail(record: OrderRecord): OrderDetail {
 }
 
 /** 乐观结果 → HTTP。状态冲突与版本冲突都是 409，但错误码必须区分，前端处理方式不同。 */
-function mutationError(errorCode: 'NOT_FOUND' | 'VERSION_CONFLICT' | 'ORDER_STATE_CONFLICT') {
+function mutationError(errorCode: OrderMutationError) {
   if (errorCode === 'ORDER_STATE_CONFLICT') {
     return new ApiHttpError(
       409,
@@ -78,6 +78,30 @@ function mutationError(errorCode: 'NOT_FOUND' | 'VERSION_CONFLICT' | 'ORDER_STAT
   }
   if (errorCode === 'VERSION_CONFLICT') {
     return new ApiHttpError(409, ERROR_CODES.CONFLICT, 'The order was modified by another user');
+  }
+  if (errorCode === 'LINE_HAS_PAYMENTS') {
+    return new ApiHttpError(
+      409,
+      ERROR_CODES.ORDER_LINE_HAS_PAYMENTS,
+      'The amount line already has confirmed or pending payments and cannot be removed',
+    );
+  }
+  if (errorCode === 'LINE_AMOUNT_CONFLICT') {
+    return new ApiHttpError(
+      409,
+      ERROR_CODES.ORDER_LINE_AMOUNT_CONFLICT,
+      'The amount cannot be lower than the confirmed and pending payments on this line',
+    );
+  }
+  // 行 id 对不上是调用方的问题（表单拿了过期数据或拼错了 id），不是服务端状态冲突。
+  if (errorCode === 'LINE_NOT_FOUND' || errorCode === 'LINE_DUPLICATE') {
+    return new ApiHttpError(
+      400,
+      ERROR_CODES.VALIDATION_ERROR,
+      errorCode === 'LINE_DUPLICATE'
+        ? 'The same amount line appears twice in the request'
+        : 'One of the amount lines does not belong to this order',
+    );
   }
   return new ApiHttpError(404, ERROR_CODES.NOT_FOUND, 'Order not found');
 }

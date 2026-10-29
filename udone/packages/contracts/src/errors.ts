@@ -16,6 +16,10 @@ export const ERROR_CODES = {
   OBJECT_REFERENCED: 'OBJECT_REFERENCED',
   /** 订单当前状态不允许该动作，例如对已锁团订单执行确认出团。 */
   ORDER_STATE_CONFLICT: 'ORDER_STATE_CONFLICT',
+  /** 订单金额行已经发生收付款，不能从编辑请求里删除。 */
+  ORDER_LINE_HAS_PAYMENTS: 'ORDER_LINE_HAS_PAYMENTS',
+  /** 金额行的新金额低于已确认 + 在途，会让可申请余额变成负数。 */
+  ORDER_LINE_AMOUNT_CONFLICT: 'ORDER_LINE_AMOUNT_CONFLICT',
   RATE_LIMITED: 'RATE_LIMITED',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;

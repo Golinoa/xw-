@@ -285,6 +285,129 @@ describe('order routes', () => {
     expect(body.code).toBe('CONFLICT');
   });
 
+  it('keeps line ids so confirmed payments survive an edit', async () => {
+    const update = vi.fn().mockResolvedValue({ ok: true, order: order({ version: 3 }) });
+    const { testApp, env } = setup(repositoryStub({ update }));
+
+    const response = await testApp.request(
+      '/api/orders/order-1',
+      {
+        method: 'PATCH',
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...createBody,
+          version: 2,
+          receivables: [{ id: 'rec-1', name: '团费（改名）', amount: 12000 }],
+        }),
+      },
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    // id 必须原样传到仓储：服务端只有靠它才知道「这是原来那行」，
+    // 否则只能删掉重建，行上的已确认金额就没了。
+    expect(update).toHaveBeenCalledWith(
+      'org-alpha',
+      'order-1',
+      2,
+      expect.objectContaining({
+        receivables: [expect.objectContaining({ id: 'rec-1', name: '团费（改名）' })],
+      }),
+    );
+  });
+
+  it('drops line ids from a create request', async () => {
+    const create = vi.fn().mockResolvedValue(order());
+    const { testApp, env } = setup(repositoryStub({ create }));
+
+    await testApp.request(
+      '/api/orders',
+      {
+        method: 'POST',
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...createBody,
+          receivables: [{ id: 'rec-1', name: '团费', amount: 12000 }],
+        }),
+      },
+      env,
+    );
+
+    const [, input] = create.mock.calls[0] as [string, { receivables: { id?: string }[] }];
+    // 新建时行还不存在，传进来的 id 只会变成一次被忽略的空操作。
+    expect(input.receivables[0]?.id).toBeUndefined();
+  });
+
+  it('rejects the same line id appearing twice', async () => {
+    const { testApp, env } = setup(repositoryStub());
+
+    const response = await testApp.request(
+      '/api/orders/order-1',
+      {
+        method: 'PATCH',
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...createBody,
+          version: 2,
+          receivables: [
+            { id: 'rec-1', name: '团费', amount: 12000 },
+            { id: 'rec-1', name: '团费重复', amount: 100 },
+          ],
+        }),
+      },
+      env,
+    );
+
+    expect(response.status).toBe(400);
+  });
+
+  it('refuses to remove a line that already has payments', async () => {
+    const repository = repositoryStub({
+      update: vi.fn().mockResolvedValue({ ok: false, errorCode: 'LINE_HAS_PAYMENTS' }),
+    });
+    const { testApp, env } = setup(repository);
+
+    const response = await testApp.request(
+      '/api/orders/order-1',
+      {
+        method: 'PATCH',
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...createBody, version: 2, receivables: [] }),
+      },
+      env,
+    );
+
+    expect(response.status).toBe(409);
+    const body = (await response.json()) as { code: string };
+    // 不能用通用的 CONFLICT 糊过去：前端要靠这个码告诉用户「先把款项处理掉」。
+    expect(body.code).toBe('ORDER_LINE_HAS_PAYMENTS');
+  });
+
+  it('refuses an amount below the confirmed payments', async () => {
+    const repository = repositoryStub({
+      update: vi.fn().mockResolvedValue({ ok: false, errorCode: 'LINE_AMOUNT_CONFLICT' }),
+    });
+    const { testApp, env } = setup(repository);
+
+    const response = await testApp.request(
+      '/api/orders/order-1',
+      {
+        method: 'PATCH',
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...createBody,
+          version: 2,
+          receivables: [{ id: 'rec-1', name: '团费', amount: 100 }],
+        }),
+      },
+      env,
+    );
+
+    expect(response.status).toBe(409);
+    const body = (await response.json()) as { code: string };
+    expect(body.code).toBe('ORDER_LINE_AMOUNT_CONFLICT');
+  });
+
   it('refuses a write for the finance role', async () => {
     const { testApp, env } = setup(repositoryStub(), financeIdentity);
 

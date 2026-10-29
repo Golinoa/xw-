@@ -61,6 +61,26 @@ export const payableLineInputSchema = z.object({
 });
 export type PayableLineInput = z.infer<typeof payableLineInputSchema>;
 
+/**
+ * 更新请求里的金额行：`id` 是「这一行本来就存在」的凭据。
+ *
+ * 带 id 的行按 id 原地更新，不带 id 的行新增，数据库里有、请求里没有的行才删除。
+ * 这不是为了省事：早先的「整表删掉再插入」会把 `confirmed_amount` /
+ * `pending_amount` 一起清零——改一下线路名，客户已确认的收款就没了。
+ *
+ * id 只在这里出现，创建请求的 schema 不含 id：新建时行还不存在，
+ * 允许传 id 只会得到一次「看起来生效、实际被忽略」的空操作。
+ */
+export const updateReceivableLineInputSchema = receivableLineInputSchema.extend({
+  id: z.string().min(1).max(64).optional(),
+});
+export type UpdateReceivableLineInput = z.infer<typeof updateReceivableLineInputSchema>;
+
+export const updatePayableLineInputSchema = payableLineInputSchema.extend({
+  id: z.string().min(1).max(64).optional(),
+});
+export type UpdatePayableLineInput = z.infer<typeof updatePayableLineInputSchema>;
+
 const orderFieldsShape = {
   customerId: z.string().min(1).max(64),
   orderType: orderTypeSchema,
@@ -91,20 +111,41 @@ export const createOrderRequestSchema = z
   })
   .refine(dateOrderValid, dateOrderIssue);
 
+/** 同一条明细在一份请求里出现两次，更新时会写两次，最后哪个值生效取决于执行顺序。 */
+function duplicateLineIds(lines: { id?: string }[]): string | null {
+  const seen = new Set<string>();
+  for (const line of lines) {
+    if (!line.id) continue;
+    if (seen.has(line.id)) return line.id;
+    seen.add(line.id);
+  }
+  return null;
+}
+
 /**
- * 更新订单：金额行整体替换。
+ * 更新订单：金额行按 id 增量合并。
  *
- * 不提供「按行增量合并」——金额行的增删改在业务上是一次完整的重新定价，
- * 增量合并会让「删掉一行」和「把金额改成 0」变得无法区分。
+ * 语义是「请求即最终状态」——请求里没有的行会被删除，但只允许删除尚未发生
+ * 收付款的行（有确认/在途金额时服务端返回 `ORDER_LINE_LOCKED`，而不是默默清零）。
+ * 想彻底删除一条已经收过款的行，得先把款项处理掉，这是业务流程，不该由一次
+ * 表单提交顺手完成。
  */
 export const updateOrderRequestSchema = z
   .object({
     ...orderFieldsShape,
-    receivables: z.array(receivableLineInputSchema).max(50),
-    payables: z.array(payableLineInputSchema).max(50),
+    receivables: z.array(updateReceivableLineInputSchema).max(50),
+    payables: z.array(updatePayableLineInputSchema).max(50),
     version: z.number().int().min(1),
   })
-  .refine(dateOrderValid, dateOrderIssue);
+  .refine(dateOrderValid, dateOrderIssue)
+  .refine((value) => duplicateLineIds(value.receivables) === null, {
+    message: 'the same receivable line id must not appear twice',
+    path: ['receivables'],
+  })
+  .refine((value) => duplicateLineIds(value.payables) === null, {
+    message: 'the same payable line id must not appear twice',
+    path: ['payables'],
+  });
 
 export const transitionOrderRequestSchema = z
   .object({
