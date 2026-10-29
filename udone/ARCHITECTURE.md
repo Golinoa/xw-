@@ -40,6 +40,21 @@ packages/contracts/src/<domain>.ts   zod schema
 
 完整约束、字段约定与方案评估见 [`.harness/CONTRACTS.md`](.harness/CONTRACTS.md)。
 
+## 发布与版本
+
+本仓库是单仓双组件（`udone` + `admin`），两者独立发版，由 git tag 触发。
+
+- tag 必须带组件前缀：`udone-v1.0.0`、`admin-v1.0.0`。纯 `v1.0.0` 会被拒绝——
+  git tag 在仓库内全局唯一，单仓无法用它区分两个子系统。
+- 版本唯一真源是仓库根的 `.release/manifest.json`，只能通过
+  `scripts/release/bump.mjs` 修改，`udone/package.json` 刻意不设 `version`。
+- 流水线在仓库根的 `.workflow/`（Gitee Go 只读该位置）：
+  `ci.yml` 跑分支门禁，`release-udone.yml` / `release-admin.yml` 各自响应自己的 tag 前缀，
+  且都只配 `tags` 不配 `branches`——Gitee Go 的这两类是交集关系。
+
+完整流程、admin 的精确工具链约束、以及尚需人工在 Gitee 侧完成的验证见
+[`Docs/RELEASING.md`](../Docs/RELEASING.md)。
+
 ## 信息来源
 
 技术细节、部署和测试策略见 `Docs/TECH_SELECTION.md`；产品行为和目标站证据见 `Docs/REPLICATION_SPEC.md`。
