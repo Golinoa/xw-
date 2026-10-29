@@ -5,9 +5,9 @@ import {
   type CreateOrderRequest,
   type OrderDetail,
   type OrderType,
-  type PayableLineInput,
-  type ReceivableLineInput,
   type UpdateOrderRequest,
+  type UpdatePayableLineInput,
+  type UpdateReceivableLineInput,
 } from '@erp/contracts';
 import { ApiClientError } from '../../lib/api-client';
 import { formatMoney } from '../../lib/format';
@@ -30,8 +30,15 @@ const emit = defineEmits<{
 
 interface ReceivableRow {
   key: number;
+  /** 已有明细行的服务端 id；为空表示这次保存是新增行。 */
+  id?: string;
   name: string;
   amount: number | null;
+  /**
+   * 已确认 + 在途金额。既用于禁掉删除按钮，也用于提交前挡住「金额改到低于已收款」，
+   * 免得用户填完才被服务端 409 打回来。
+   */
+  paidAmount?: number;
 }
 
 interface PayableRow extends ReceivableRow {
@@ -126,15 +133,19 @@ watch(
      */
     baseReceivables.value = (order?.receivables ?? []).map((line) => ({
       key: ++rowSeq,
+      id: line.id,
       name: line.name,
       amount: line.amount,
+      paidAmount: line.confirmedAmount + line.pendingAmount || undefined,
     }));
     otherReceivables.value = [];
     basePayables.value = (order?.payables ?? []).map((line) => ({
       key: ++rowSeq,
+      id: line.id,
       name: line.name,
       amount: line.amount,
       supplierId: line.supplierId,
+      paidAmount: line.confirmedAmount + line.pendingAmount || undefined,
     }));
     otherPayables.value = [];
 
@@ -145,8 +156,8 @@ watch(
   { immediate: true },
 );
 
-function buildReceivables(): ReceivableLineInput[] | null {
-  const lines: ReceivableLineInput[] = [];
+function buildReceivables(): UpdateReceivableLineInput[] | null {
+  const lines: UpdateReceivableLineInput[] = [];
   const groups = [
     { label: '基础应收', rows: baseReceivables.value },
     { label: '其他应收', rows: otherReceivables.value },
@@ -158,14 +169,22 @@ function buildReceivables(): ReceivableLineInput[] | null {
         formError.value = `${group.label}第 ${index + 1} 行需要填写名称`;
         return null;
       }
-      lines.push({ name, amount: row.amount ?? 0 });
+      const amount = row.amount ?? 0;
+      // 服务端也会拒绝，这里提前拦是为了让用户在还看着这张表的时候就知道原因。
+      if (row.paidAmount && amount < row.paidAmount) {
+        formError.value = `${group.label}第 ${index + 1} 行金额不能低于已收付的 ${formatMoney(row.paidAmount)}`;
+        return null;
+      }
+      // id 只在编辑已有行时存在：缺了它，服务端会把这一行当成新增，
+      // 原行的已确认金额也就跟丢了。
+      lines.push({ ...(row.id ? { id: row.id } : {}), name, amount });
     }
   }
   return lines;
 }
 
-function buildPayables(): PayableLineInput[] | null {
-  const lines: PayableLineInput[] = [];
+function buildPayables(): UpdatePayableLineInput[] | null {
+  const lines: UpdatePayableLineInput[] = [];
   const groups = [
     { label: '基础应付', rows: basePayables.value },
     { label: '其他应付', rows: otherPayables.value },
@@ -181,7 +200,12 @@ function buildPayables(): PayableLineInput[] | null {
         formError.value = `${group.label}第 ${index + 1} 行需要选择供应商`;
         return null;
       }
-      lines.push({ name, amount: row.amount ?? 0, supplierId: row.supplierId });
+      const amount = row.amount ?? 0;
+      if (row.paidAmount && amount < row.paidAmount) {
+        formError.value = `${group.label}第 ${index + 1} 行金额不能低于已收付的 ${formatMoney(row.paidAmount)}`;
+        return null;
+      }
+      lines.push({ ...(row.id ? { id: row.id } : {}), name, amount, supplierId: row.supplierId });
     }
   }
   return lines;
@@ -404,7 +428,14 @@ function onSupplierSaved(supplier: { id: string; name: string }) {
             :precision="2"
             placeholder="金额"
           />
-          <a-button type="text" danger @click="baseReceivables.splice(index, 1)">删除</a-button>
+          <a-button
+            type="text"
+            danger
+            :disabled="Boolean(row.paidAmount)"
+            :title="row.paidAmount ? '这一行已有确认或在途金额，不能删除' : undefined"
+            @click="baseReceivables.splice(index, 1)"
+            >删除</a-button
+          >
         </div>
       </div>
 
@@ -433,7 +464,14 @@ function onSupplierSaved(supplier: { id: string; name: string }) {
             :precision="2"
             placeholder="金额"
           />
-          <a-button type="text" danger @click="otherReceivables.splice(index, 1)">删除</a-button>
+          <a-button
+            type="text"
+            danger
+            :disabled="Boolean(row.paidAmount)"
+            :title="row.paidAmount ? '这一行已有确认或在途金额，不能删除' : undefined"
+            @click="otherReceivables.splice(index, 1)"
+            >删除</a-button
+          >
         </div>
       </div>
 
@@ -474,7 +512,14 @@ function onSupplierSaved(supplier: { id: string; name: string }) {
             placeholder="金额"
           />
           <a-button type="link" size="small" @click="openSupplierModal(row)">新建</a-button>
-          <a-button type="text" danger @click="basePayables.splice(index, 1)">删除</a-button>
+          <a-button
+            type="text"
+            danger
+            :disabled="Boolean(row.paidAmount)"
+            :title="row.paidAmount ? '这一行已有确认或在途金额，不能删除' : undefined"
+            @click="basePayables.splice(index, 1)"
+            >删除</a-button
+          >
         </div>
       </div>
 
@@ -514,7 +559,14 @@ function onSupplierSaved(supplier: { id: string; name: string }) {
             placeholder="金额"
           />
           <a-button type="link" size="small" @click="openSupplierModal(row)">新建</a-button>
-          <a-button type="text" danger @click="otherPayables.splice(index, 1)">删除</a-button>
+          <a-button
+            type="text"
+            danger
+            :disabled="Boolean(row.paidAmount)"
+            :title="row.paidAmount ? '这一行已有确认或在途金额，不能删除' : undefined"
+            @click="otherPayables.splice(index, 1)"
+            >删除</a-button
+          >
         </div>
       </div>
       <p v-if="suppliersError" class="field-error">

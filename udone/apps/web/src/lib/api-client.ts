@@ -20,6 +20,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   CONFLICT: '数据已存在或状态冲突，请刷新后重试',
   OBJECT_REFERENCED: '该记录仍被其他单据引用，不能删除',
   ORDER_STATE_CONFLICT: '当前订单状态不允许该操作，请刷新后重试',
+  ORDER_LINE_HAS_PAYMENTS: '该金额行已有确认或在途款项，不能删除',
+  ORDER_LINE_AMOUNT_CONFLICT: '金额不能低于该行已确认与在途的款项',
   RATE_LIMITED: '操作过于频繁，请稍后再试',
   INTERNAL_ERROR: '服务暂时不可用，请稍后重试',
 };
