@@ -417,6 +417,20 @@ const columns = computed(() => [
   },
   { title: '利润', dataIndex: 'profit', key: 'profit', width: 140, align: 'right' },
   {
+    title: '未收',
+    dataIndex: 'uncollectedAmount',
+    key: 'uncollectedAmount',
+    width: 130,
+    align: 'right',
+  },
+  {
+    title: '未付',
+    dataIndex: 'unpaidAmount',
+    key: 'unpaidAmount',
+    width: 130,
+    align: 'right',
+  },
+  {
     title: '创建时间',
     dataIndex: 'createdAt',
     key: 'createdAt',
@@ -615,7 +629,9 @@ async function onChanged() {
               v-else-if="
                 column.key === 'receivableTotal' ||
                 column.key === 'payableTotal' ||
-                column.key === 'profit'
+                column.key === 'profit' ||
+                column.key === 'uncollectedAmount' ||
+                column.key === 'unpaidAmount'
               "
             >
               <span

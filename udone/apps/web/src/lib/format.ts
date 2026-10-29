@@ -20,6 +20,15 @@ export function formatMoney(value: number | null | undefined): string {
   return `${sign}¥${amountFormatter.format(Math.abs(value))}`;
 }
 
+/**
+ * 比率：服务端返回的是比值（`0.36`），展示时乘 100 并保留一位小数。
+ * `null` 表示分母为 0、算不出来，显示为 `—` 而不是 `0.0%`。
+ */
+export function formatRatio(value: number | null | undefined): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) return '—';
+  return `${(value * 100).toFixed(1)}%`;
+}
+
 /** 时间按本地时区展示；服务端返回的是 ISO 字符串，非法值原样回显而不是显示 Invalid Date。 */
 export function formatDateTime(value: string): string {
   const date = new Date(value);

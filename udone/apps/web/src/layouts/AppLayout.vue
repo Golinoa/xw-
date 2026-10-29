@@ -44,6 +44,13 @@ async function logout() {
           >
             供应商
           </RouterLink>
+          <RouterLink
+            to="/finance"
+            class="nav-link"
+            :class="{ 'nav-link-active': route.name === 'finance' }"
+          >
+            财务
+          </RouterLink>
         </nav>
       </div>
       <div class="account-tools">

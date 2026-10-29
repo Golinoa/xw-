@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { message } from 'ant-design-vue';
-import type { OrderAction, OrderDetail } from '@erp/contracts';
+import type { OrderAction, OrderDetail, OrderFinanceSummary } from '@erp/contracts';
 import { ApiClientError } from '../../lib/api-client';
-import { formatDateTime, formatMoney } from '../../lib/format';
+import { formatDateTime, formatMoney, formatRatio } from '../../lib/format';
 import { useAuthStore } from '../../stores/auth';
 import {
   ORDER_ACTION_EFFECTS,
@@ -33,6 +33,8 @@ const emit = defineEmits<{
 
 const auth = useAuthStore();
 const detail = ref<OrderDetail | null>(null);
+/** 财务摘要由服务端算（口径见真源第 4 节），前端只负责展示，不自己再除一遍。 */
+const finance = ref<OrderFinanceSummary | null>(null);
 const loading = ref(false);
 const error = ref('');
 
@@ -42,6 +44,20 @@ const transitionError = ref('');
 const transitioning = ref(false);
 
 let requestSeq = 0;
+
+/**
+ * 财务摘要单独取一次。它失败不该拖垮订单主体：用户至少要能看到订单内容和状态，
+ * 所以这里静默降级为「不显示」而不是把整页变成错误态。
+ */
+async function loadFinance(orderId: string, seq: number) {
+  try {
+    const result = await auth.api.call('getOrderFinance', { params: { orderId } });
+    if (seq !== requestSeq) return;
+    finance.value = result.finance;
+  } catch {
+    if (seq === requestSeq) finance.value = null;
+  }
+}
 
 async function load(orderId: string) {
   const seq = ++requestSeq;
@@ -53,6 +69,8 @@ async function load(orderId: string) {
     // 快速切换订单时丢弃过期响应，避免详情串号。
     if (seq !== requestSeq) return;
     detail.value = result.order;
+    finance.value = null;
+    void loadFinance(orderId, seq);
   } catch (cause) {
     if (seq !== requestSeq) return;
     const text = cause instanceof ApiClientError ? cause.message : '订单详情加载失败，请稍后重试';
@@ -72,6 +90,7 @@ watch(
   ([open, orderId]) => {
     if (!open) {
       detail.value = null;
+      finance.value = null;
       error.value = '';
       pendingAction.value = null;
       transitionError.value = '';
@@ -277,6 +296,53 @@ async function confirmAction() {
         </a-descriptions-item>
         <a-descriptions-item label="版本">{{ detail.version }}</a-descriptions-item>
       </a-descriptions>
+
+      <h4 class="section-title">收款与付款</h4>
+      <!-- 全部数字来自服务端财务摘要，前端不参与任何除法，避免与列表口径分叉。 -->
+      <a-descriptions v-if="finance" :column="2" size="small" bordered>
+        <a-descriptions-item label="已收 / 未收">
+          {{ formatMoney(finance.confirmedReceivable) }} /
+          {{ formatMoney(finance.uncollectedAmount) }}
+        </a-descriptions-item>
+        <a-descriptions-item label="已付 / 未付">
+          {{ formatMoney(finance.confirmedPayable) }} / {{ formatMoney(finance.unpaidAmount) }}
+        </a-descriptions-item>
+        <a-descriptions-item label="收款进度">
+          {{ formatRatio(finance.collectionProgress) }}
+        </a-descriptions-item>
+        <a-descriptions-item label="付款进度">
+          {{ formatRatio(finance.paymentProgress) }}
+        </a-descriptions-item>
+        <a-descriptions-item label="在途收款">
+          {{ formatMoney(finance.pendingReceivable) }}
+        </a-descriptions-item>
+        <a-descriptions-item label="在途付款">
+          {{ formatMoney(finance.pendingPayable) }}
+        </a-descriptions-item>
+        <a-descriptions-item label="可申请应收余额">
+          {{ formatMoney(finance.applicableReceivable) }}
+        </a-descriptions-item>
+        <a-descriptions-item label="可申请应付余额">
+          {{ formatMoney(finance.applicablePayable) }}
+        </a-descriptions-item>
+        <a-descriptions-item label="毛利率">
+          <span :class="(finance.grossMargin ?? 0) < 0 ? 'profit-neg' : 'profit-pos'">
+            {{ formatRatio(finance.grossMargin) }}
+          </span>
+        </a-descriptions-item>
+        <a-descriptions-item label="客单价">
+          {{ formatMoney(finance.revenuePerPerson) }}
+        </a-descriptions-item>
+        <a-descriptions-item label="净现金流">
+          <span :class="finance.netCashflow < 0 ? 'profit-neg' : 'profit-pos'">
+            {{ formatMoney(finance.netCashflow) }}
+          </span>
+        </a-descriptions-item>
+        <a-descriptions-item label="人数（客单价分母）">{{
+          finance.personCount
+        }}</a-descriptions-item>
+      </a-descriptions>
+      <a-skeleton v-else active :paragraph="{ rows: 2 }" />
 
       <h4 class="section-title">应收明细</h4>
       <a-table

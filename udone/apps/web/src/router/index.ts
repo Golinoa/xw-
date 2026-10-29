@@ -36,6 +36,11 @@ export function createAppRouter(
             name: 'suppliers',
             component: () => import('../views/suppliers/SupplierListView.vue'),
           },
+          {
+            path: 'finance',
+            name: 'finance',
+            component: () => import('../views/finance/FinanceListView.vue'),
+          },
         ],
       },
       { path: '/:pathMatch(.*)*', redirect: '/' },
