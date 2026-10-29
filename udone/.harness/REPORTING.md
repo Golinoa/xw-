@@ -28,6 +28,18 @@ Applies whenever development status, progress, or completion is reported to the 
 - If one run disagreed with later runs — an intermittent failure — say so, with both counts. Smoothing it into "all green" destroys the only evidence that it happened.
 - Known defects that were deliberately left unfixed belong on the diagram as unresolved, not omitted. The operator needs to see the outstanding risk where the progress is shown, not only at the end of a paragraph.
 
+## The task board is the single ledger for work items
+
+The HTML board at `D:/MYC/Coding/XW-ERP/dev-board.html` (outside this repository, not version-controlled) is the authoritative list of work items for both ends. The conversation summarises; the board records.
+
+- **Register before starting.** A task that is not on the board does not get worked on. Adding it means: id, title, one-line description carrying the current evidence, `versionId`, priority, tags.
+- **Move the state in the same step.** `todo` → `in_progress` when the first line of code is written, `done` only after the commit exists and the named gate was actually run. On `done`, put the commit hash and the measured numbers into `desc`.
+- **Bump `SEED_VERSION` with every edit.** The board keeps a copy in `localStorage` and only replaces it when the seeded version is newer. Editing the seed without bumping the version means the operator keeps looking at stale data while the file looks correct.
+- **Do not invent dates.** Tasks without a committed schedule keep empty `start`/`end`; the Gantt is not a forecast.
+- **Blocked is a state, not a footnote.** Use `blocked` and write the unlocking condition in `desc`, so the dependency is visible where the status is.
+
+A "done" claim in the conversation that the board does not show is a reporting defect; fix the board first, then speak.
+
 ## Prohibited
 
 - A status report with text only, when the report has more than one work item.
