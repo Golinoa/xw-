@@ -1,7 +1,7 @@
 # 文档地图
 
 | 文档 | 真源范围 |
-|---|---|
+| --- | --- |
 | [PRD.md](PRD.md) | 软件提供方运营后台的业务范围、规则和验收 |
 | [TECH_SELECTION.md](TECH_SELECTION.md) | 前端模板、共享后端/数据库及部署选型 |
 | [../ARCHITECTURE.md](../ARCHITECTURE.md) | 运行路径、模块依赖、安全和一致性边界 |

@@ -22,7 +22,7 @@
 ## 阶段一：基础任务历史记录（已完成；仅作背景）
 
 | 会话 | 仓库与唯一责任 | 立即执行 | 完成后交付 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | A：运营后台前端底座 | `D:/Coding/ERP/~admin` | 按运营后台计划 Task 1 导入完整 Vben workspace，核对并锁定上游 commit、Node/pnpm、MIT 许可和 lockfile；仅启用 `apps/web-antd`。随后按 Task 2 建立前端自动质量门与 PR CI。 | 可重复安装和构建的前端 workspace；门禁命令、CI 成功/负向失败证据；Vben 实际目录图、技术选型和 journal 更新。不得实现后端、迁移或猜测 API 字段。 |
 | B：ERP 后端平台底座 | `D:/Coding/ERP/udone` | 先完成 ERP 计划 Task 1：组织上下文真实到达 PostgreSQL RLS；再完成 Task 2：统一格式/lint/typecheck/test/build、依赖/许可证/secret/schema 检查与 CI。Task 1/2 串行，不启动 ERP Task 3–8 业务功能。 | 本地 DB/RLS 与 Worker 上下文测试证据；可重现的本地/CI 质量门及负向阻断证据；更新架构、规范、计划和 journal。远端 staging 验证依授权环境单独安排。 |
 
@@ -49,7 +49,7 @@
 ## 文件所有权与并发规则
 
 | 文件/领域 | 唯一写入方 | 另一端处理方式 |
-|---|---|---|
+| --- | --- | --- |
 | Vben workspace、前端页面/client/路由、前端 CI/部署 | `~admin` | `udone` 不复制前端代码或 workspace 配置。 |
 | Hono 路由/服务、运营 API 真源与共享后端契约 | `udone` | `~admin` 只消费已发布契约/client。 |
 | Supabase migration、运营 schema/RLS/RPC、pgTAP、生成 schema 报告 | `udone` | `~admin` 不建影子 schema、不直接访问受保护表。 |
