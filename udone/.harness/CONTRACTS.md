@@ -58,7 +58,8 @@
 
 9. **前端只能通过 `createApiClient`（`apps/web/src/lib/api-client.ts`）调后端**，
    组件与 store 内禁止裸 `fetch`。客户端负责：附加 `Authorization`、
-   `X-Organization-ID`、请求前 schema 自检、响应 schema 解析、错误码映射中文、
+   `X-Organization-ID`、写请求的 `Idempotency-Key`（单次调用生成一次、重试复用）、
+   请求前 schema 自检、响应 schema 解析、错误码映射中文、
    4xx 不重试 / 5xx 最多重试 3 次、401 换一次令牌后重试。
 10. 业务代码**不解析后端 `message`**，只按 `code` 映射文案（`ERROR_MESSAGES`）。
     服务端 message 是给运维看的，不是给用户看的。
@@ -72,7 +73,43 @@
 13. 新增端点必须同时给出：契约、至少一个正向用例、至少一个拒绝用例
     （越权/跨租户/非法输入任选其一）。
 
-## 7. 四层守卫（现状）
+## 7. 请求管线（顺序不可调换）
+
+`apps/api/src/index.ts` 的注册顺序就是执行顺序，改动前先想清楚为什么：
+
+```
+requestId → cors → rateLimit → idempotency → 路由（含 requireAuth）
+```
+
+| 位置 | 为什么不能挪 | 守卫 |
+|---|---|---|
+| `requestId` 第一 | 后面任何环节出错都要能带上 `requestId` 定位 | `middleware/error-handler.test.ts` |
+| `cors` 第二、早于鉴权 | 预检（`OPTIONS`）不带 `Authorization`；放到鉴权之后就永远过不了预检 | `middleware/cors.test.ts` |
+| `rateLimit` 早于业务 | 限流要挡住计算，而不是在算完之后才拒绝 | `middleware/rate-limit.test.ts` |
+| `idempotency` 只在 2xx 落库 | 4xx/5xx 必须保持可重试，回放错误会掩盖真实失败 | `middleware/idempotency.test.ts` |
+
+### 7.1 跨域白名单
+
+- 白名单只来自 `ALLOWED_ORIGINS`（逗号分隔、精确匹配）。
+- **未配置 = 不放行任何跨域来源**，同源 SPA 不受影响。默认拒绝是刻意的。
+- **`*` 会被 `parseAllowedOrigins` 过滤掉**，不存在通配放行；令牌是 Bearer，
+  一旦允许任意来源，等于把 API 交给任何页面。
+- 新增前端域名（如 `admin` 的正式域名）必须同步改 `ALLOWED_ORIGINS`，
+  否则浏览器会在预检阶段就失败。部署门禁 `pnpm check:deploy` 会拒绝
+  `.env.example` 里的通配值。
+
+### 7.2 幂等与限流的边界（不要对外宣称更强的保证）
+
+- 两者都是**进程内内存实现**，作用域是**单个 Worker isolate**。
+- 同一逻辑写操作重试时前端复用同一个 `Idempotency-Key`（`api-client` 单次 `call`
+  内生成一次），服务端据此回放首个 2xx 响应并加 `Idempotent-Replay: true`。
+- **跨 isolate 不保证去重**：Cloudflare 可能为同一 Worker 起多个 isolate，
+  重试落到另一个 isolate 就会重复执行。涉及资金（Task 5/6）前必须换成
+  KV 或 Durable Object，这是明确的技术债，不是「已经搞定」。
+- 限流同理，只挡单点滥用，不挡分布式攻击。`Retry-After` 与
+  `429 RATE_LIMITED` 是客户端可见契约，前端文案已映射。
+
+## 8. 四层守卫（现状）
 
 | 层 | 机制 | 失败表现 | 入口 |
 |---|---|---|---|
@@ -81,7 +118,7 @@
 | 入站 | `api client` 用 response schema 解析 | `ContractViolationError`（含字段路径） | `apps/web/src/lib/api-client.test.ts` |
 | 清单 | `ROUTES` ↔ Hono 实际路由双向对账 | 测试失败并列出缺失/多余路由 | `apps/api/src/contracts/route-parity.test.ts` |
 
-## 8. 仍未覆盖的洞（明确记录，不要假装已解决）
+## 9. 仍未覆盖的洞（明确记录，不要假装已解决）
 
 1. **数据库 schema 没有生成 TS 类型**。SQL migration 改了列，契约不会自动报错，
    只能靠出站校验在运行时抓到。后续动作：`supabase gen types typescript` 产出
@@ -94,6 +131,12 @@
    `status + code` 组合，暂无编译期约束。
 4. **分页/排序/过滤参数未统一**。约定在第一个列表功能（Task 4 主数据）落地时
    一次性定死 `page`/`pageSize`/`sort` 契约，再回填文档，避免各页面各写一套。
+5. **托管 CI 尚未在 Gitee Go 上跑通**。`.workflow/ci.yml` 已写好并被格式门禁覆盖，
+   但「配置存在」不等于「门禁生效」——必须先在 Gitee 流水线页面真跑出一次全绿，
+   再删除遗留的 `.github/workflows/ci.yml`。在拿到构建记录前，把 CI 当「未生效」看待。
+6. **令牌仍在浏览器可读存储中**（`sessionStorage`）。相比 localStorage 已收窄
+   XSS 窗口（关标签即失效），但彻底方案是把 Supabase Auth 代理到 Worker 并用
+   httpOnly Cookie，属独立工程，未立项。
 
 ## 附录 A：为什么选 zod-first（方案评估）
 
@@ -102,7 +145,7 @@
 | **zod-first 共享包（采用）** | 强：单一 schema 同时产出类型、入站校验、出站校验、清单 | 低：zod 已是 pinned 依赖，零 codegen | 选它 |
 | OpenAPI-first + 生成客户端 | 最强：文档即契约 | 高：要维护 yaml、跑 codegen、Workers 构建链路变长；1 人团队不划算 | 暂不采用；等有外部对接方再评估 |
 | tRPC | 最强（同构 TS） | 中：把前端锁死在同一 TS 单体 | 不采用：Admin 是**独立前端、跨仓消费**同一 Hono API，tRPC 直接堵死这条路 |
-| 只靠 DB 生成类型 | 弱：只管到数据层，管不到 HTTP 边界 | 中：依赖 CLI/Docker | 作为补充（见 §8.1），不能替代 HTTP 契约 |
+| 只靠 DB 生成类型 | 弱：只管到数据层，管不到 HTTP 边界 | 中：依赖 CLI/Docker | 作为补充（见 §9.1），不能替代 HTTP 契约 |
 | 手写 interface（现状之前） | 无：靠人记 | 低 | 已淘汰：API 侧 4 个端点里已经出现 `body.error.message` 与 `body.message` 不一致 |
 
 结论：当前栈（Hono + Workers + 无 ORM + 手写 SQL）下，**zod-first 是唯一能在不加
@@ -117,6 +160,8 @@
 4. `apps/web/src/lib/…`：`api.call('<routeKey>', { params, body })`，返回值自动是 `RouteResponse<K>`。
 5. 测试：正向 + 拒绝用例；跑 `pnpm typecheck && pnpm lint && pnpm test`。
 6. `route-parity.test.ts` 会自动确认你没有漏挂路由。
+7. 若端点是写操作：确认它能在 `Idempotency-Key` 存在时正确回放（客户端已自动附加），
+   并确认新增的前端域名已加入 `ALLOWED_ORIGINS`。
 
 ## 相关文档
 
