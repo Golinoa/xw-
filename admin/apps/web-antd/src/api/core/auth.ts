@@ -13,7 +13,9 @@
 import type { OpsLoginResult } from '#/api/ops/identity/session';
 
 import { withRequestMeta } from '#/api/adapter/request-meta';
-import { OPS_ENDPOINTS } from '#/api/ops/identity/session';
+// 端点清单在 identity/endpoints（2026-10-30 从 session.ts 抽出）。
+// 直接指文件而非 `identity/index`，避免把 members/roles 客户端一并拉进登录路径。
+import { OPS_ENDPOINTS } from '#/api/ops/identity/endpoints';
 import { baseRequestClient, requestClient } from '#/api/request';
 
 export namespace AuthApi {

@@ -4,24 +4,9 @@
  * 契约来源：`Docs/ops-api-contract.md` §5.1（meta / session / identity）。
  * 字段名严格照抄契约，不得自行改名；新增字段必须先在契约里出现。
  */
-import { getOpsEnv } from '#/api/adapter/env';
 import { requestClient } from '#/api/request';
 
-const OPS_API_PREFIX = getOpsEnv().opsApiPrefix;
-
-/**
- * 运营端点清单。全部端点都必须从这里取路径，禁止在调用处手写字符串，
- * 否则契约前缀调整（如 v2）时会漏改。
- */
-export const OPS_ENDPOINTS = {
-  /** 运营覆盖层登录 [推导：契约 §5.1 未列认证端点，路径沿用设计文档 §2.2] */
-  login: `${OPS_API_PREFIX}/auth/login`,
-  logout: `${OPS_API_PREFIX}/auth/logout`,
-  refresh: `${OPS_API_PREFIX}/auth/refresh`,
-  session: `${OPS_API_PREFIX}/session`,
-  meta: `${OPS_API_PREFIX}/meta`,
-  permissions: `${OPS_API_PREFIX}/permissions`,
-} as const;
+import { OPS_ENDPOINTS } from './endpoints';
 
 /** 运营成员状态。取值来自契约 §5.1 的 `status='invited'` 与 §6.4 的成员失效原因。 */
 export type OpsOperatorStatus = 'active' | 'disabled' | 'invited';
