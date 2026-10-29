@@ -6,6 +6,7 @@ import type { CustomerRepository } from '../modules/customers/customer-service';
 import type { OrderRepository } from '../modules/orders/order-service';
 import type { SupplierRepository } from '../modules/suppliers/supplier-service';
 import type { FinanceRepository } from '../modules/finance/finance-service';
+import type { FinanceApplicationRepository } from '../modules/finance-applications/finance-application-service';
 import { ApiHttpError } from './error-handler';
 import { createSupabaseAuthVerifier } from '../services/supabase-auth-verifier';
 
@@ -22,6 +23,7 @@ export interface ApiEnvironment {
     ORDER_REPOSITORY?: OrderRepository;
     SUPPLIER_REPOSITORY?: SupplierRepository;
     FINANCE_REPOSITORY?: FinanceRepository;
+    FINANCE_APPLICATION_REPOSITORY?: FinanceApplicationRepository;
     SUPABASE_URL?: string;
     SUPABASE_PUBLISHABLE_KEY?: string;
     SUPABASE_SERVICE_ROLE_KEY?: string;

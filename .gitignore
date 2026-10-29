@@ -5,6 +5,7 @@
 
 # 通用
 node_modules/
+.turbo/
 dist/
 *.log
 .DS_Store

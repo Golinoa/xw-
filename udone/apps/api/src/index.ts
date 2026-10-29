@@ -12,6 +12,7 @@ import { customerRoutes } from './modules/customers/routes';
 import { orderRoutes } from './modules/orders/routes';
 import { supplierRoutes } from './modules/suppliers/routes';
 import { financeRoutes } from './modules/finance/routes';
+import { financeApplicationRoutes } from './modules/finance-applications/routes';
 
 export const app = new Hono<ApiEnvironment>();
 
@@ -32,5 +33,6 @@ app.route('/', customerRoutes);
 app.route('/', orderRoutes);
 app.route('/', supplierRoutes);
 app.route('/', financeRoutes);
+app.route('/', financeApplicationRoutes);
 
 export default app;

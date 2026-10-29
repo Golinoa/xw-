@@ -15,6 +15,16 @@ import {
 } from './customers';
 import type { HttpMethod } from './http';
 import {
+  createFinanceApplicationRequestSchema,
+  decideFinanceApplicationRequestSchema,
+  financeApplicationDetailResponseSchema,
+  financeApplicationListQuerySchema,
+  financeApplicationListResponseSchema,
+  financeApplicationParamsSchema,
+  financeApplicationReasonRequestSchema,
+  financeApplicationResponseSchema,
+} from './finance-applications';
+import {
   financeListQuerySchema,
   orderFinanceResponseSchema,
   payableListQuerySchema,
@@ -217,6 +227,44 @@ export const ROUTES = {
     path: '/api/payables',
     request: payableListQuerySchema,
     response: payableListResponseSchema,
+  }),
+  listFinanceApplications: defineRoute({
+    method: 'GET',
+    path: '/api/finance-applications',
+    request: financeApplicationListQuerySchema,
+    response: financeApplicationListResponseSchema,
+  }),
+  createFinanceApplication: defineRoute({
+    method: 'POST',
+    path: '/api/finance-applications',
+    request: createFinanceApplicationRequestSchema,
+    response: financeApplicationResponseSchema,
+  }),
+  getFinanceApplication: defineRoute({
+    method: 'GET',
+    path: '/api/finance-applications/:applicationId',
+    request: financeApplicationParamsSchema,
+    response: financeApplicationDetailResponseSchema,
+  }),
+  /** 通过或驳回。终审通过才把金额从在途挪进已收/已付。 */
+  decideFinanceApplication: defineRoute({
+    method: 'PATCH',
+    path: '/api/finance-applications/:applicationId',
+    request: decideFinanceApplicationRequestSchema,
+    response: financeApplicationResponseSchema,
+  }),
+  withdrawFinanceApplication: defineRoute({
+    method: 'POST',
+    path: '/api/finance-applications/:applicationId/withdraw',
+    request: financeApplicationReasonRequestSchema,
+    response: financeApplicationResponseSchema,
+  }),
+  /** 撤销终审：把已确认金额退回在途，申请回到待审。 */
+  undoFinanceApplication: defineRoute({
+    method: 'POST',
+    path: '/api/finance-applications/:applicationId/undo',
+    request: financeApplicationReasonRequestSchema,
+    response: financeApplicationResponseSchema,
   }),
 } as const;
 
