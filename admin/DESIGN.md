@@ -7,7 +7,7 @@
 以下规则由同级 `udone` 项目维护，作为两套有单 Web 后台共享的视觉真源：
 
 | 规范 | 正文 | 适用内容 |
-|---|---|---|
+| --- | --- | --- |
 | 色彩 | [色彩规范](../udone/.harness/Design-system/color-system.md) | 品牌色、中性色、语意色、状态映射和对比度 |
 | 布局与间距 | [布局与间距规范](../udone/.harness/Design-system/layout-spacing.md) | 页面层级、间距 token、圆角和密度 |
 | 字体与排版 | [字体与排版规范](../udone/.harness/Design-system/typography.md) | 字体栈、字号、行高、字重和可读性 |
