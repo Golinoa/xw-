@@ -3,11 +3,11 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 5
-- Tables discovered: 7
-- Functions discovered: 12
-- Indexes discovered: 4
-- RLS policies discovered: 16
+- Migration sources scanned: 6
+- Tables discovered: 11
+- Functions discovered: 13
+- Indexes discovered: 12
+- RLS policies discovered: 27
 - Triggers discovered: 0
 
 | Migration | Tables | Functions | Indexes | Policies | Triggers |
@@ -17,3 +17,4 @@
 | `20261003000002_organization_context_api.sql` | — | `public.create_organization_with_owner` | — | `organization_members_select_self`, `organizations_select_member_self` | — |
 | `20261003000003_request_organization_context.sql` | — | `public.current_organization_id` | — | `organization_members_select_self`, `organizations_select_member_self` | — |
 | `20261003000004_permissions_and_member_lifecycle.sql` | `public.organization_role_permissions`, `public.organization_role_data_scopes`, `public.organization_invitations` | `public.current_organization_id`, `public.has_permission`, `public.current_data_scope`, `public.get_current_auth_context`, `public.create_organization_invitation`, `public.accept_organization_invitation`, `public.update_organization_member` | `organization_invitations_pending_email_idx`, `organization_invitations_pending_expiry_idx` | `organization_members_select_self`, `organizations_select_member_self` | — |
+| `20261029000001_customer_domain.sql` | `public.customer_sources`, `public.customer_tags`, `public.customers`, `public.customer_tag_links` | `public.create_customer_with_tags` | `customer_sources_root_name_idx`, `customer_sources_child_name_idx`, `customer_sources_organization_idx`, `customers_organization_created_idx`, `customers_organization_phone_idx`, `customers_organization_source_idx`, `customers_organization_creator_idx`, `customer_tag_links_tag_idx` | `customers_select_scoped`, `customers_insert_writer`, `customers_update_writer`, `customer_sources_select_reader`, `customer_sources_insert_writer`, `customer_sources_update_writer`, `customer_tags_select_reader`, `customer_tags_insert_writer`, `customer_tag_links_select_reader`, `customer_tag_links_insert_writer`, `customer_tag_links_delete_writer` | — |

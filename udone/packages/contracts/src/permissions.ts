@@ -8,6 +8,10 @@ export const PERMISSIONS = {
   MEMBER_MANAGE: 'member.manage',
   SETTINGS_MANAGE: 'settings.manage',
   AUDIT_READ: 'audit.read',
+  CUSTOMER_READ: 'customer.read',
+  CUSTOMER_WRITE: 'customer.write',
+  /** 查看客户电话、证件号原值；无此权限只返回掩码值。 */
+  CUSTOMER_SENSITIVE_READ: 'customer.sensitive.read',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -25,12 +29,23 @@ export const ROLE_AUTHORIZATION = {
       PERMISSIONS.MEMBER_MANAGE,
       PERMISSIONS.SETTINGS_MANAGE,
       PERMISSIONS.AUDIT_READ,
+      PERMISSIONS.CUSTOMER_READ,
+      PERMISSIONS.CUSTOMER_WRITE,
+      PERMISSIONS.CUSTOMER_SENSITIVE_READ,
     ],
     dataScope: 'all',
   },
-  operator: { permissions: [PERMISSIONS.ORGANIZATION_READ], dataScope: 'own' },
+  operator: {
+    permissions: [
+      PERMISSIONS.ORGANIZATION_READ,
+      PERMISSIONS.CUSTOMER_READ,
+      PERMISSIONS.CUSTOMER_WRITE,
+      PERMISSIONS.CUSTOMER_SENSITIVE_READ,
+    ],
+    dataScope: 'own',
+  },
   finance: {
-    permissions: [PERMISSIONS.ORGANIZATION_READ, PERMISSIONS.AUDIT_READ],
+    permissions: [PERMISSIONS.ORGANIZATION_READ, PERMISSIONS.AUDIT_READ, PERMISSIONS.CUSTOMER_READ],
     dataScope: 'all',
   },
 } as const satisfies Record<string, { permissions: readonly Permission[]; dataScope: DataScope }>;

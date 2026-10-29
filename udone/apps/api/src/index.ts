@@ -8,6 +8,7 @@ import type { ApiEnvironment } from './middleware/auth';
 import { healthRoutes } from './routes/health';
 import { organizationRoutes } from './routes/organizations';
 import { memberRoutes } from './modules/members/routes';
+import { customerRoutes } from './modules/customers/routes';
 
 export const app = new Hono<ApiEnvironment>();
 
@@ -24,5 +25,6 @@ app.onError(errorHandler);
 app.route('/', healthRoutes);
 app.route('/', organizationRoutes);
 app.route('/', memberRoutes);
+app.route('/', customerRoutes);
 
 export default app;

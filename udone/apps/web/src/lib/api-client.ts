@@ -13,9 +13,12 @@ import {
 const ERROR_MESSAGES: Record<string, string> = {
   AUTH_REQUIRED: '登录状态已失效，请重新登录',
   FORBIDDEN: '当前账号无权执行该操作',
+  TENANT_SCOPE_DENIED: '没有该公司的数据权限',
   ORG_CONTEXT_REQUIRED: '请先选择公司',
   VALIDATION_ERROR: '提交的内容不合法，请检查后重试',
+  NOT_FOUND: '记录不存在或已被删除',
   CONFLICT: '数据已存在或状态冲突，请刷新后重试',
+  OBJECT_REFERENCED: '该记录仍被其他单据引用，不能删除',
   RATE_LIMITED: '操作过于频繁，请稍后再试',
   INTERNAL_ERROR: '服务暂时不可用，请稍后重试',
 };

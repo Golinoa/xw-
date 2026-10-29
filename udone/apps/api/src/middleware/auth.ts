@@ -2,6 +2,7 @@ import type { MiddlewareHandler } from 'hono';
 import type { AuthContext, Permission } from '@erp/contracts';
 import { ERROR_CODES } from '@erp/contracts';
 import type { OrganizationRepository } from '../services/organization-service';
+import type { CustomerRepository } from '../modules/customers/customer-service';
 import { ApiHttpError } from './error-handler';
 import { createSupabaseAuthVerifier } from '../services/supabase-auth-verifier';
 
@@ -14,6 +15,7 @@ export interface ApiEnvironment {
   Bindings: {
     AUTH_VERIFIER?: AuthVerifier;
     ORGANIZATION_REPOSITORY?: OrganizationRepository;
+    CUSTOMER_REPOSITORY?: CustomerRepository;
     SUPABASE_URL?: string;
     SUPABASE_PUBLISHABLE_KEY?: string;
     SUPABASE_SERVICE_ROLE_KEY?: string;

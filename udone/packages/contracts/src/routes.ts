@@ -1,5 +1,18 @@
 import type { z } from 'zod';
 import { authContextSchema } from './auth';
+import {
+  createCustomerRequestSchema,
+  createCustomerResponseSchema,
+  createCustomerTagRequestSchema,
+  customerDeletedResponseSchema,
+  customerListQuerySchema,
+  customerListResponseSchema,
+  customerParamsSchema,
+  customerResponseSchema,
+  customerTagListResponseSchema,
+  customerTagResponseSchema,
+  updateCustomerRequestSchema,
+} from './customers';
 import type { HttpMethod } from './http';
 import { healthResponseSchema } from './health';
 import {
@@ -81,6 +94,47 @@ export const ROUTES = {
     method: 'POST',
     path: '/api/invitations/:invitationId/accept',
     response: acceptInvitationResponseSchema,
+  }),
+  listCustomers: defineRoute({
+    method: 'GET',
+    path: '/api/customers',
+    request: customerListQuerySchema,
+    response: customerListResponseSchema,
+  }),
+  createCustomer: defineRoute({
+    method: 'POST',
+    path: '/api/customers',
+    request: createCustomerRequestSchema,
+    response: createCustomerResponseSchema,
+  }),
+  getCustomer: defineRoute({
+    method: 'GET',
+    path: '/api/customers/:customerId',
+    request: customerParamsSchema,
+    response: customerResponseSchema,
+  }),
+  updateCustomer: defineRoute({
+    method: 'PATCH',
+    path: '/api/customers/:customerId',
+    request: updateCustomerRequestSchema,
+    response: customerResponseSchema,
+  }),
+  deleteCustomer: defineRoute({
+    method: 'DELETE',
+    path: '/api/customers/:customerId',
+    request: customerParamsSchema,
+    response: customerDeletedResponseSchema,
+  }),
+  listCustomerTags: defineRoute({
+    method: 'GET',
+    path: '/api/customer-tags',
+    response: customerTagListResponseSchema,
+  }),
+  createCustomerTag: defineRoute({
+    method: 'POST',
+    path: '/api/customer-tags',
+    request: createCustomerTagRequestSchema,
+    response: customerTagResponseSchema,
   }),
 } as const;
 

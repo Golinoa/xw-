@@ -6,18 +6,24 @@ describe('shared API errors', () => {
     expect(ERROR_CODES).toEqual({
       AUTH_REQUIRED: 'AUTH_REQUIRED',
       FORBIDDEN: 'FORBIDDEN',
+      TENANT_SCOPE_DENIED: 'TENANT_SCOPE_DENIED',
       ORG_CONTEXT_REQUIRED: 'ORG_CONTEXT_REQUIRED',
       VALIDATION_ERROR: 'VALIDATION_ERROR',
+      NOT_FOUND: 'NOT_FOUND',
       CONFLICT: 'CONFLICT',
+      OBJECT_REFERENCED: 'OBJECT_REFERENCED',
       RATE_LIMITED: 'RATE_LIMITED',
       INTERNAL_ERROR: 'INTERNAL_ERROR',
     });
     expectTypeOf<ErrorCode>().toEqualTypeOf<
       | 'AUTH_REQUIRED'
       | 'FORBIDDEN'
+      | 'TENANT_SCOPE_DENIED'
       | 'ORG_CONTEXT_REQUIRED'
       | 'VALIDATION_ERROR'
+      | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'OBJECT_REFERENCED'
       | 'RATE_LIMITED'
       | 'INTERNAL_ERROR'
     >();

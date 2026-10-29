@@ -5,10 +5,12 @@
 export { z } from 'zod';
 
 export * from './auth';
+export * from './customers';
 export * from './errors';
 export * from './health';
 export * from './http';
 export * from './members';
 export * from './organizations';
+export * from './pagination';
 export * from './permissions';
 export * from './routes';
