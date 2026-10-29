@@ -25,9 +25,10 @@
 | `schema:check` | 与 13 个迁移一致 |
 | `check:deploy` | 通过 |
 | `typecheck` | 通过（**仅 `tsc --noEmit`，不含 `.vue`**，见 A2） |
-| `test` | 37 个文件 / 255 用例通过 |
+| `test` | 37 个文件 / 256 用例通过 |
 | `build` | 通过（主 chunk 1,638.00 kB / gzip 506.52 kB，见 D1） |
 | `db:local:verify` | 重放 13 个迁移，11 个 pgTAP 文件 **189 断言**全过 |
+| `db:local:http` | 真实 PostgREST 16.5 + 原生 PostgreSQL，**15 条** HTTP 集成用例全过 |
 
 规模：13 迁移 / 31 个契约端点 / 6 个 API 模块 / 5 个前端业务模块。
 
@@ -37,7 +38,7 @@
 
 ## 任务总览
 
-共 **21 项**未完成项：A 段 5 项、B 段 2 项、C 段 12 项、D 段 2 项。下表 C6–C12 合并为一行呈现，明细见 §5。
+原计划 **21 项**：A 段 5 项、B 段 2 项、C 段 12 项、D 段 2 项。其中 **A3 已完成**（见下文），剩余 20 项。下表 C6–C12 合并为一行呈现，明细见 §5。
 
 | 编号 | 任务 | 优先级 | 规模 | 依赖 |
 |---|---|---|---|---|
@@ -92,22 +93,25 @@
 
 **规模:** S/M（取决于首次运行错误量）
 
-### A3 服务端 HTTP 集成（PostgREST 假设）
+### A3 服务端 HTTP 集成（PostgREST 假设）— 已完成
+
+- [x] 取方案 a：真实 PostgREST + 原生 PostgreSQL，`pnpm db:local:http` 一键跑通
+
+**完成情况（2026-10-29）:** 下载 PostgREST 16.5 Windows 二进制，连本地原生 PostgreSQL；15 条用例覆盖「建客户 → 建供应商 → 建单（事务函数）→ 财务汇总 → 提交申请 → 财务一审 → 过期版本冲突 → 管理员终审 → 超额拒绝 → 自审拒绝 → 付款路径 → 分页总数 → 越权 403 → 跨租户不可读」。鉴权用真 JWT 交给 PostgREST 校验，RLS 与 `has_permission()` 全都真跑；只替换 Supabase Auth（GoTrue），因为那部分已有独立单测。
+
+**它抓到的第一个真缺陷:** `restPage` 把 PostgREST 的 **416 Range Not Satisfiable** 当错误抛出。凡筛选后翻到超出范围的页，所有列表端点都会 500——分页器正常操作即可触发。已改为「416 = 空页 + 保留 `Content-Range` 总数」，并补了单测。
+
+**变异验证:** 把服务层的 `requested_amount` 改成 `requested_amount_typo` 后，第 5 条立刻变红（HTTP 500），证明这套用例确实守住了「参数名写错只会在线上炸」这个原始风险点。
+
+**遗留:** PostgREST 返回 404（RPC 不存在，例如迁移没应用）时，服务层仍落到 500「服务暂时不可用」，不指向具体原因。属于错误可诊断性问题，未在本轮处理。
+
+### A3 原始评估（保留以便追溯）
 
 - [ ] 让至少 6 个写端点在真实 HTTP 下跑通，含乐观锁与三个 409
 
 **现状证据:** 仓库层单测全部打桩；31 个端点的真实 HTTP 行为无自动覆盖。上一轮用一次性 SQL 探针（真实 PG，跑完 `ROLLBACK`）手工验了 9 个参数名与 `result_application_id` / `new_status` / `new_step` / `error_code` 四组返回列名——**这恰恰证明这层假设会错**，而错了只会在生产 500，探针不入库等于没有回归保护。
 
-**决策点（需确认后执行）:**
-
-| 方案 | 做法 | 代价 | 覆盖 |
-|---|---|---|---|
-| **a（推荐）** | 下载 PostgREST 单文件二进制，复用 `local-db.mjs` 的原生 PostgreSQL，用真实 HTTP 跑集成测试 | 引入一个外部二进制，需批准下载 | 参数名、返回列名、HTTP 状态码映射全部真实 |
-| b | 仓储层改为可注入 `pg` 直连做集成测试 | 成本低 | 只剩 PostgREST 差异未覆盖，需记为已知风险 |
-
-**验收标准:** ≥6 个写端点真实 HTTP 通过；`version` 冲突、`APPLICATION_STATE_CONFLICT`、`AMOUNT_EXCEEDS_AVAILABLE` 各有断言。
-
-**规模:** L
+**决策结果:** 采用方案 a。方案 b 只能覆盖一半：PostgREST 的 416、206、`Content-Range` 与 SQLSTATE→状态码映射都不在 pg 直连里，而这些正是这次抓到的 bug 所在。
 
 ### A4 vitest worker 超时定位
 

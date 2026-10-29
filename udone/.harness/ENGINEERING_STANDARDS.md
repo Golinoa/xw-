@@ -24,7 +24,7 @@
 
 ## 4. CI and quality gates
 
-- Local gates are `pnpm format:check`, `pnpm format:sql:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm check:deploy`, `pnpm deps:audit`, `pnpm licenses:check`, `pnpm secrets:check`, `pnpm secrets:canary:check`, `pnpm schema:check`, and `pnpm db:test`. `.github/workflows/ci.yml` runs these on pull requests and pushes to `main`; pgTAP uses a disposable local Supabase stack, with no production credentials or remote writes.
+- Local gates are `pnpm format:check`, `pnpm format:sql:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm check:deploy`, `pnpm deps:audit`, `pnpm licenses:check`, `pnpm secrets:check`, `pnpm secrets:canary:check`, `pnpm schema:check`, `pnpm db:local:verify`, and `pnpm db:local:http`. `.github/workflows/ci.yml` runs these on pull requests and pushes to `main`; pgTAP uses a disposable local Supabase stack, with no production credentials or remote writes.
 - Recommended merge gate: typecheck, unit/contract/API tests and build for every code change; database tests for schema/RLS changes; E2E for critical user flows; deployment checks for Worker/config changes.
 - Add CI only when the workflow can run without production credentials or shared mutable data. Keep external staging acceptance separate and report its evidence explicitly.
 - Formatting/lint tooling must be selected, configured and scripted before it becomes a required gate; see [code writing standards](CODE_STANDARDS.md).

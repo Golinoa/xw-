@@ -8,7 +8,8 @@
 |---|---|---|
 | Unit/contract | Pure domain rules, validation, mapping, permissions, errors | Co-located `*.test.ts`; `pnpm test` |
 | API integration | Route, middleware, auth, request validation, error/permission behavior | `apps/api/src/**/*.test.ts`; `pnpm test` |
-| Database | Constraints, grants, RLS, transaction/RPC and tenant isolation | `supabase/tests/*.sql`; `pnpm db:test` |
+| Database | Constraints, grants, RLS, transaction/RPC and tenant isolation | `supabase/tests/*.sql`; `pnpm db:local:verify`（原生 PostgreSQL + 兼容层）；有 Supabase CLI 时用 `pnpm db:test` |
+| HTTP integration | Service → rest-client → PostgREST → RPC/RLS: RPC parameter names, returned column names, SQLSTATE→HTTP mapping, pagination `Content-Range` | `tests/integration/*.test.ts`; `pnpm db:local:http` |
 | Browser E2E | Critical user workflows through the web app | `tests/e2e/*.spec.ts`; `pnpm exec playwright test --config playwright.config.ts` |
 | Worker smoke | Deployment shape, health, auth/session and real integration boundaries | `tests/smoke/*.spec.ts`; `pnpm smoke` |
 
