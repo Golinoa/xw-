@@ -64,25 +64,33 @@ export type CustomerDetail = z.infer<typeof customerDetailSchema>;
  *
  * 单独抽出来是因为 `z.object(...).refine(...)` 产出的 schema 不能再 `.partial()`，
  * 更新请求必须从同一份形状派生，否则两份字段定义迟早漂移。
+ *
+ * 可选业务字段都允许显式 `null`：`undefined`/缺失表示「不修改」，`null` 表示「清空」。
+ * 没有这个区分，用户清掉一个错误的手机号或备注就永远改不回去。
  */
 const customerFieldsShape = {
   name: z.string().trim().min(1).max(100),
-  phone: z.string().trim().min(3).max(32).optional(),
-  email: z.string().trim().toLowerCase().pipe(z.email()).optional(),
-  idType: customerIdTypeSchema.optional(),
-  idNumber: z.string().trim().min(1).max(64).optional(),
+  phone: z.string().trim().min(3).max(32).nullable().optional(),
+  email: z.string().trim().toLowerCase().pipe(z.email()).nullable().optional(),
+  idType: customerIdTypeSchema.nullable().optional(),
+  idNumber: z.string().trim().min(1).max(64).nullable().optional(),
   birthday: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'birthday must be an ISO date (YYYY-MM-DD)')
+    .nullable()
     .optional(),
-  sourceId: z.string().min(1).max(64).optional(),
+  sourceId: z.string().min(1).max(64).nullable().optional(),
   tagIds: z.array(z.string().min(1).max(64)).max(20).optional(),
-  remark: z.string().max(2000).optional(),
+  remark: z.string().max(2000).nullable().optional(),
 };
 
-/** 证件类型与证件号必须成对出现，只有一半的数据无法用于核验身份。 */
-function idNumberPairedWithType(value: { idType?: string; idNumber?: string }) {
-  return (value.idType === undefined) === (value.idNumber === undefined);
+/** 证件类型与证件号必须成对出现；`null` 与缺失同义，都算「没有」。 */
+function absent(value: string | null | undefined): boolean {
+  return value === undefined || value === null;
+}
+
+function idNumberPairedWithType(value: { idType?: string | null; idNumber?: string | null }) {
+  return absent(value.idType) === absent(value.idNumber);
 }
 
 const idPairIssue = {

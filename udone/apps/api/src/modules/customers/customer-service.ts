@@ -75,29 +75,34 @@ export interface CustomerListFilter {
   ownerUserId?: string;
 }
 
+/** 创建时空值统一落库为 NULL，`null` 与缺失等价（契约层两种情况都允许）。 */
 export interface CustomerCreateInput {
   organizationId: string;
   name: string;
-  phone?: string;
-  email?: string;
-  idType?: CustomerIdType;
-  idNumber?: string;
-  birthday?: string;
-  sourceId?: string;
+  phone?: string | null;
+  email?: string | null;
+  idType?: CustomerIdType | null;
+  idNumber?: string | null;
+  birthday?: string | null;
+  sourceId?: string | null;
   tagIds?: string[];
-  remark?: string;
+  remark?: string | null;
 }
 
+/**
+ * 更新语义：`undefined` 表示不修改，`null` 表示清空该字段。
+ * 没有这个区分，用户填错的手机号或备注就永远删不掉。
+ */
 export interface CustomerUpdateInput {
   name?: string;
-  phone?: string;
-  email?: string;
-  idType?: CustomerIdType;
-  idNumber?: string;
-  birthday?: string;
-  sourceId?: string;
+  phone?: string | null;
+  email?: string | null;
+  idType?: CustomerIdType | null;
+  idNumber?: string | null;
+  birthday?: string | null;
+  sourceId?: string | null;
   tagIds?: string[];
-  remark?: string;
+  remark?: string | null;
 }
 
 export interface CustomerRepository {
@@ -132,10 +137,16 @@ export class CustomerTagConflictError extends Error {
   }
 }
 
-export class CustomerPhoneConflictError extends Error {
+/**
+ * 客户写入时的唯一约束冲突。
+ *
+ * 手机号刻意**不唯一**（同号只做重复提示，R-CUSTOMER-01），因此这里不能叫
+ * `CustomerPhoneConflictError`——真正会撞的是标签关联主键这类约束，笼统按冲突处理。
+ */
+export class CustomerConflictError extends Error {
   constructor() {
-    super('A customer with this phone already exists');
-    this.name = 'CustomerPhoneConflictError';
+    super('The customer conflicts with an existing record');
+    this.name = 'CustomerConflictError';
   }
 }
 
@@ -368,7 +379,7 @@ export function createSupabaseCustomerRepository(
         },
       });
     } catch (cause) {
-      if (cause instanceof RestConflictError) throw new CustomerPhoneConflictError();
+      if (cause instanceof RestConflictError) throw new CustomerConflictError();
       throw cause;
     }
     if (!newId) throw new Error('Customer creation returned no identifier');

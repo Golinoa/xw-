@@ -17,7 +17,7 @@ import { requireAuth, requirePermission } from '../../middleware/auth';
 import { ApiHttpError } from '../../middleware/error-handler';
 import type { CustomerRecord, CustomerRepository } from './customer-service';
 import {
-  CustomerPhoneConflictError,
+  CustomerConflictError,
   CustomerTagConflictError,
   CustomerTagInvalidError,
   customerRepository,
@@ -81,11 +81,11 @@ function customerError(cause: unknown): unknown {
       invalidTagIds: cause.tagIds,
     });
   }
-  if (cause instanceof CustomerPhoneConflictError) {
+  if (cause instanceof CustomerConflictError) {
     return new ApiHttpError(
       409,
       ERROR_CODES.CONFLICT,
-      'A customer with this phone number already exists',
+      'The customer conflicts with an existing record',
     );
   }
   if (cause instanceof CustomerTagConflictError) {

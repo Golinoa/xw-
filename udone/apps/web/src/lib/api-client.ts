@@ -60,8 +60,27 @@ export interface ApiClientOptions {
 
 export interface CallOptions<K extends RouteKey> {
   params?: Record<PathParamNames<RoutePath<K>>, string>;
+  /**
+   * 请求体。GET 路由的契约 `request` 描述的是查询条件，此时 body 经校验后
+   * 序列化为查询串（见 `toQueryString`），不会作为请求体发出。
+   */
   body?: unknown;
   signal?: AbortSignal;
+}
+
+/**
+ * 查询串的值来自已通过契约校验的对象，因此这里只做序列化，不再重复校验。
+ * 空值不写入 URL，避免 `?keyword=` 这类无意义参数影响缓存与分享。
+ */
+function toQueryString(value: unknown): string {
+  if (value === null || typeof value !== 'object') return '';
+  const search = new URLSearchParams();
+  for (const [name, raw] of Object.entries(value as Record<string, unknown>)) {
+    if (raw === undefined || raw === null || raw === '') continue;
+    search.append(name, String(raw));
+  }
+  const query = search.toString();
+  return query ? `?${query}` : '';
 }
 
 function describeIssues(error: { issues: { path: PropertyKey[]; code: string }[] }) {
@@ -104,14 +123,23 @@ export function createApiClient(options: ApiClientOptions) {
     const requestSchema = 'request' in route ? route.request : undefined;
 
     if (requestSchema) {
-      const parsed = requestSchema.safeParse(callOptions.body);
+      /**
+       * 契约里的 `request` 有两种用途：请求体（create/update）与路径参数（get/delete）。
+       * 调用方给了 body 就校验 body，否则校验 params——没有这一步，纯路径参数路由
+       * 会因为 body 为空而永远通不过自检。
+       */
+      const candidate = callOptions.body === undefined ? callOptions.params : callOptions.body;
+      const parsed = requestSchema.safeParse(candidate);
       if (!parsed.success) {
         throw new ContractViolationError(key, 'request', describeIssues(parsed.error));
       }
     }
 
     const path = buildPath(route.path, callOptions.params as Record<string, string> | undefined);
-    const url = `${options.baseUrl ?? ''}${path}`;
+    // GET 只有查询条件，没有请求体；其余方法才把 body 送到服务端。
+    const sendsBody = route.method !== 'GET';
+    const query = route.method === 'GET' ? toQueryString(callOptions.body) : '';
+    const url = `${options.baseUrl ?? ''}${path}${query}`;
     let token = await options.getAccessToken();
     if (!token) throw new ApiClientError('AUTH_REQUIRED', ERROR_MESSAGES.AUTH_REQUIRED!, 401);
 
@@ -122,11 +150,13 @@ export function createApiClient(options: ApiClientOptions) {
       const organizationId = options.getOrganizationId?.() ?? null;
       if (organizationId) headers[ORGANIZATION_HEADER] = organizationId;
       if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
-      if (callOptions.body !== undefined) headers['Content-Type'] = JSON_MEDIA_TYPE;
+      if (callOptions.body !== undefined && sendsBody) headers['Content-Type'] = JSON_MEDIA_TYPE;
       return fetcher(url, {
         method: route.method,
         headers,
-        ...(callOptions.body === undefined ? {} : { body: JSON.stringify(callOptions.body) }),
+        ...(callOptions.body === undefined || !sendsBody
+          ? {}
+          : { body: JSON.stringify(callOptions.body) }),
         ...(callOptions.signal ? { signal: callOptions.signal } : {}),
       });
     };

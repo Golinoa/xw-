@@ -133,6 +133,20 @@ describe('customer routes', () => {
     expect(body.code).toBe('VALIDATION_ERROR');
   });
 
+  it('accepts the default page size when the client sends it explicitly', async () => {
+    const { testApp, env } = setup(repositoryStub());
+
+    const response = await testApp.request(
+      '/api/customers?pageSize=15',
+      {
+        headers: authHeaders,
+      },
+      env,
+    );
+
+    expect(response.status).toBe(200);
+  });
+
   it('creates a customer and reports same-phone candidates without blocking', async () => {
     const repository = repositoryStub({
       create: vi.fn().mockResolvedValue(record()),
@@ -322,6 +336,28 @@ describe('customer routes', () => {
     const body = (await response.json()) as { customer: { name: string; version: number } };
     expect(body.customer).toMatchObject({ name: '张三改', version: 3 });
     expect(repository.update).toHaveBeenCalledWith('org-alpha', 'cust-1', 2, { name: '张三改' });
+  });
+
+  it('clears an optional field when the client sends null', async () => {
+    const repository = repositoryStub({
+      findById: vi.fn().mockResolvedValue(record({ version: 2 })),
+      update: vi.fn().mockResolvedValue(record({ phone: undefined, version: 3 })),
+    });
+    const { testApp, env } = setup(repository);
+
+    const response = await testApp.request(
+      '/api/customers/cust-1',
+      {
+        method: 'PATCH',
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        // null 表示清空；缺失才表示不修改。两者不能混为一谈。
+        body: JSON.stringify({ phone: null, version: 2 }),
+      },
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(repository.update).toHaveBeenCalledWith('org-alpha', 'cust-1', 2, { phone: null });
   });
 
   it('soft deletes a customer and reports the deleted identifier', async () => {

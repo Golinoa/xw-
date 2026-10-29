@@ -11,7 +11,11 @@ import { z } from 'zod';
  * 无法像值一样参数化绑定，只能从固定集合里选（`DATABASE_STANDARDS.md` §2）。
  */
 
-export const PAGE_SIZE_OPTIONS = [10, 20, 30, 50, 100] as const;
+/**
+ * 允许的每页条数。默认值 15 必须同时出现在这里：`pageSizeSchema` 只认白名单，
+ * 如果把 15 排除在外，客户端回传自己的默认值就会被 400 拒绝。
+ */
+export const PAGE_SIZE_OPTIONS = [15, 10, 20, 30, 50, 100] as const;
 export const DEFAULT_PAGE_SIZE = 15;
 
 export const sortOrderSchema = z.enum(['asc', 'desc']);

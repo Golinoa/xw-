@@ -314,6 +314,11 @@ export function createAuthStore(options: { client?: AuthClient | null; fetcher?:
   }
 
   return {
+    /**
+     * 页面复用同一个客户端，避免各页面重复拼装令牌与组织上下文后出现两份配置。
+     * 令牌在每次 call 时重新读取，因此切换公司/刷新会话后立即生效。
+     */
+    api,
     session,
     user,
     memberships,
