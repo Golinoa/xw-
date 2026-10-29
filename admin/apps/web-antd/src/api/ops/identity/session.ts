@@ -91,7 +91,13 @@ export async function fetchOpsSession(): Promise<OpsSession> {
   return requestClient.get<OpsSession>(OPS_ENDPOINTS.session);
 }
 
-/** 契约自述端点：前端据 `contractVersion` 做不兼容快速失败（契约 §2.1）。 */
+/**
+ * 契约自述端点。
+ *
+ * 兼容判定**不在这里**：本函数只负责取回 `/meta`，判定由
+ * `contract-version.ts` 的 `checkContractCompatibility()` 完成，调用点在
+ * `store/auth.ts` 登录成功之后（登录页不受阻断，否则看不到升级提示）。
+ */
 export async function fetchOpsMeta(): Promise<OpsMeta> {
   if (import.meta.env.VITE_OPS_MOCK === 'true') {
     const { stubOpsMeta } = await import('../__stub__');

@@ -273,3 +273,37 @@ cd admin && corepack pnpm -F @vben/web-antd dev
 ### 11.6 一条我无法端到端验证的
 
 邀请走 `auth.admin`（service_role）：我本地栈没有 GoTrue（Supabase Auth 是替身），「邀请 → `status='invited'` → 审计」只能单测替身。要真验需要 staging 的 Supabase 项目，否则这条在验收表里必须标「单测替身」，不能算已验证。
+
+---
+
+## 12. 前端回执（2026-10-30，`feat/ops-console` @ `2052c8a`）
+
+### 12.1 你的 P0 处理结果
+
+| 编号 | 状态 | 说明 |
+| --- | --- | --- |
+| **P0-1** 入库并推远端 | ✅ 完成 | 分支 **`feat/ops-console`**，已推 `origin`（gitee），工作树干净。拆成 4 个提交：`chore(tooling)` 配置 / `docs(ops)` 契约与 journal / `feat(ops-console)` 主体 264 文件 / `docs(ops)` 格式修正，便于分别回滚。 |
+| **P0-2** 认证三端点 | ✅ 完成 | 已并入契约 **§5.1 正式端点表**（此前只在本文件 §5.1 的缺口表里，契约正文 0 处提及）。**按你的裁决原样采纳**，另补两条约定：① 三个 `POST /auth/*` 豁免 `Authorization`，其余全部要求；② `SameSite=Strict` 只在同源成立，跨源必须 `None; Secure` + CORS 凭证，否则「登录成功但立刻 401」——这条我实测过，浏览器会静默丢 `Set-Cookie`。 |
+| **P0-3** `contractVersion` | ✅ 采纳 (a) 实现阻断 | 规则写进契约 **§2.1.1**，实现 `api/ops/identity/contract-version.ts`。判定：MAJOR 不等或无法解析 → 阻断；MINOR/PATCH 不同 → 放行（契约加法演进）。**版本门在登录成功之后生效**，登录页不受阻断——否则运维看不到升级提示，只能看白屏。前端常量 `OPS_CONTRACT_VERSION = '1.0.0'`，**以契约 §2.1.1 为准**；你 T-01 定稿后若版本号不同，告诉我，我改常量。 |
+| **P0-4** identity 幂等键 | ⏳ 未做 | 需要先有 `/operators`、`/roles`、`/audit-events` 客户端（当前 identity 只有 `session.ts`）。属 Task 8 治理域，不阻塞 T-03。你按契约返回 400 是对的，我不会在没带键的情况下调这些端点。 |
+
+### 12.2 你的 P1 回应
+
+- **P1-1（§9 口径）**：认可。但正文数字我想等 Task 8 完成后一次改对，避免改两次。本文件 §9 的「6 个业务域」现在是**过时数字**，实际是 **8 个业务域 + identity 仅会话层**，请以此为准。
+- **P1-2（dev 同源代理）**：已确认，`vite.config.ts` 的 `/api` 代理指向 `http://localhost:5320/api`，dev 是同源。你那边端口若不同，改这一处即可，前端不需要别的配合。
+- **P1-3（e2e 专用 env）**：**这条建议已经落地了**，不需要再改。`apps/web-antd/.env.e2e` 已存在且 `VITE_OPS_MOCK=true`，与 `.env.development`/`.env.production` 的 `false` 分离。
+
+### 12.3 一处影响你本地跑测试的改动（请 rebase 后注意）
+
+我修正了单测配置，**`admin/vitest.config.ts` 已删除**，配置移到 `apps/web-antd/vitest.config.ts`。
+
+原因是那份文件从来没被加载过：vitest 从 cwd 逐级向上找配置，先命中 `vite.config.*` 就停，`apps/web-antd` 下有 `vite.config.ts`，所以上层那份永远读不到（实测把它的 `environment` 改成不存在的值，测试照样通过）。同时 vitest 4 已移除 `poolOptions`，写入会被静默忽略。
+
+顺带解决了「用例全过但 exit 1」的假失败——真因是 fork worker 启动超时，**被跳过的整个测试文件不出现在失败列表里**，只是总数悄悄变小（漏过 7 个用例）。现在 48 文件 / 347 用例 / exit 0，连跑两轮一致，耗时从 83s 降到 27s。
+
+如果你 checkout 后跑 `pnpm -F @vben/web-antd test:unit`，用的是新配置，不需要额外操作。
+
+### 12.4 我这边当前的阻塞点
+
+只剩一个：**等你 T-01/T-02 出 `/meta` 与 `/session`**，我就能关桩跑真登录。在那之前我没有可以推进的联调工作，Task 8 治理域要不要现在做，取决于你是否希望 `identity` 客户端先就位（做完你 P0-4 也一并解决）。
+

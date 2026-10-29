@@ -77,6 +77,24 @@ ops 域只持久化「软件提供方与旅行社之间的商业关系、交付�
 
 > ⚠️ 该决策使仓库同时存在两种前缀形态。控制手段：所有 ops 路径字符串必须写在 `ROUTES`/`OPS_ROUTES` 契约清单里并由 `route-parity.test.ts` 对账，禁止在 handler 中手写路径 [继承 `udone/packages/contracts/src/routes.ts` 注释与 `apps/api/src/contracts/route-parity.test.ts`]。
 
+#### 2.1.1 契约版本兼容判定
+
+`contractVersion` 形态为 `MAJOR.MINOR.PATCH`（缺省段按 `0` 补齐，如 `1.2` 等价 `1.2.0`）。前端实现见 `apps/web-antd/src/api/ops/identity/contract-version.ts`，判定规则：
+
+| 情形 | 判定 | 前端行为 |
+| --- | --- | --- |
+| `MAJOR` 相同（`MINOR`/`PATCH` 任意不同） | 兼容 | 正常进入业务页 |
+| `MAJOR` 不同 | 不兼容（`MAJOR_MISMATCH`） | 阻止渲染业务页，登录页显示升级提示 |
+| 缺失、空串、`null`、非 `X.Y[.Z]` 形态（含 `v1.0.0`、`1.0.0-beta`） | 不兼容（`MALFORMED`） | 同上，提示版本无法解析 |
+
+四条约定：
+
+1. **登录页不受阻断**。版本门在登录成功之后、进入业务页之前生效；若在登录前阻断，运维连「版本不匹配」这条提示都看不到，只能看到白屏。
+2. **解析失败按不兼容处理**。返回 `''`/`null` 的半成品 `/meta` 不得被当作兼容，否则等于静默降级。
+3. **只做「前端 → 后端」方向判定**。若后端要拒绝过旧前端，应在 `/session` 或请求头自行判定，前端不承担该方向。
+4. **前端常量 `OPS_CONTRACT_VERSION` 当前为 `1.0.0`**。T-01 落地后若实际版本号不同，需同时修改该常量与本节，**以本文档为准**。
+
+
 ### 2.2 金额与精度决策
 
 **决策：数据库 `numeric(14,2)`（精确十进制），JSON 传输 `number`（最多 2 位小数），服务端不做浮点累加。**
@@ -481,8 +499,15 @@ ops 域只持久化「软件提供方与旅行社之间的商业关系、交付�
 
 ### 5.1 meta / session / identity
 
+> **认证端点例外**：下表三个 `POST /auth/*` 不要求 `Authorization` 头，其余全部要求。令牌分工——access token 只驻内存、只经响应体下发；refresh token 只走 `HttpOnly` cookie，`Path=/api/v1/ops/auth` 使其仅在认证端点间发送。两者都不落 `localStorage`，避免 XSS 直接取到长期凭证。
+>
+> `SameSite=Strict` 只在**同源**时成立；跨源部署必须改成 `None; Secure` 并同时开 CORS 凭证，否则浏览器会静默丢弃 `Set-Cookie`，表现为「登录成功但立刻 401」。因此开发与生产都应走同源代理（见 §7.2），不要在跨源下调试登录。
+
 | 端点 | 权限 | 请求关键字段 | 响应关键字段 | 关键错误 | 幂等 |
 | --- | --- | --- | --- | --- | --- |
+| `POST /auth/login` | 匿名 | `{email, password}` | `{accessToken}` + `Set-Cookie: ops_refresh=…; HttpOnly; Secure; SameSite=Strict; Path=/api/v1/ops/auth` | 401 `AUTH_REQUIRED`（**不区分**邮箱不存在/密码错误）；403 `FORBIDDEN` + `details.reason='OPS_MEMBER_MISSING'`\|`'OPS_MEMBER_INACTIVE'`（且**不下发 cookie**）；429 `RATE_LIMITED` | — |
+| `POST /auth/refresh` | 凭 cookie | 无 body | `{accessToken}` + 轮换后的 cookie | 401 `AUTH_REQUIRED` | — |
+| `POST /auth/logout` | 凭 cookie | 无 body | 204，清 cookie | — | — |
 | `GET /meta` | 已认证运营成员 | — | `contractVersion`、`serverTime`、`timezone='Asia/Shanghai'`、`supportedSalesModes`、`supportedCurrencies` | 401/403 | — |
 | `GET /session` | 已认证运营成员 | — | `operator{id,displayName,email,status,mfaRequired}`、`roles[{code,name}]`、`permissions[]`、`permissionVersion`、`lastLoginAt` | 401/403 | — |
 | `GET /permissions` | `operator.read` | — | `items[{code,domain,description,isHighRisk}]` | 403 | — |
@@ -1014,7 +1039,8 @@ GRANT EXECUTE ON FUNCTION ops.transition_contract(uuid, text, integer, text) TO 
 - 断言：P1–P13 全部按 §7.4 表格结果。
 - 断言：`ops` schema 不出现在 `anon` 可访问对象中（`has_schema_privilege('anon','ops','USAGE') = false`）。
 - 断言：空库全量重放迁移成功且迁移版本号无重复。
-- 拒绝：前端 `contractVersion` 与 `/meta` 不匹配时不渲染业务页，显示升级提示（不静默回退 mock）。
+- 拒绝：`/meta` 返回的 `contractVersion` 与前端 `OPS_CONTRACT_VERSION` **MAJOR 不同**时不渲染业务页，登录页显示升级提示（规则见 §2.1.1；实现 `api/ops/identity/contract-version.ts`，用例 `src/api/__tests__/contract-version.test.ts`、`src/store/__tests__/auth-session.test.ts`）。
+- 拒绝：`/meta` 返回空串、`null` 或非 `X.Y[.Z]` 形态时同样阻断——半成品 `/meta` 不得被当作兼容（不静默回退 mock）。
 
 ---
 

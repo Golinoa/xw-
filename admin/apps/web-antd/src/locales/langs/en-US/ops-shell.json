@@ -47,6 +47,7 @@
       "credentials": "Incorrect account or password.",
       "disabled": "This account has been disabled. Contact an operations administrator.",
       "network": "Network connection failed. Check your network and try again.",
+      "contractMismatch": "The frontend and backend API contract versions are incompatible, so business pages cannot load. Ask an administrator to align the deployed versions and try again.",
       "noPermission": "This account has no ops console permission. Ask an administrator to assign an ops role.",
       "rateLimited": "Too many attempts. Try again later.",
       "server": "Service is temporarily unavailable. Try again later.",

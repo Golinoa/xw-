@@ -7,6 +7,7 @@
  * 文案口径见 `ops-shell.login.error.*`：
  * - credentials：凭据错误
  * - disabled：账号停用
+ * - contract：前后端契约版本不兼容（需升级一端，不是重试能解决的）
  * - no-permission：无运营权限（非运营成员 / 无任何动作码）
  * - network：网络或超时
  * - rate-limited：限流
@@ -15,6 +16,7 @@
  */
 
 export type LoginErrorKind =
+  | 'contract'
   | 'credentials'
   | 'disabled'
   | 'network'
@@ -24,6 +26,7 @@ export type LoginErrorKind =
   | 'unknown';
 
 const ERROR_MESSAGE_KEYS: Record<LoginErrorKind, string> = {
+  contract: 'ops-shell.login.error.contractMismatch',
   credentials: 'ops-shell.login.error.credentials',
   disabled: 'ops-shell.login.error.disabled',
   network: 'ops-shell.login.error.network',
@@ -75,6 +78,12 @@ export function classifyLoginError(error: unknown): LoginErrorKind {
   const status = readStatus(error);
   const kind = typeof shape.kind === 'string' ? shape.kind : '';
   const message = typeof shape.message === 'string' ? shape.message : '';
+
+  // 契约版本不兼容最先判：它的 code 不会被下面的关键词命中，但排在前面
+  // 可以保证将来调整关键词时不会把这条误归成「无权限」（两者都发生在认证后）。
+  if (code === 'contract_version_mismatch') {
+    return 'contract';
+  }
 
   // 账号停用优先于「无权限」，否则会把停用误报成权限问题。
   if (DISABLED_HINTS.some((hint) => code.includes(hint))) {

@@ -45,4 +45,4 @@
 | 刷新响应体 | `{ accessToken }` | 同上；轮换语义假定为「每次刷新轮换 refresh token」 |
 | 登出语义 | `POST`，无请求体 | 假定服务端清 Cookie，事件幂等 |
 | `operator.status` 枚举 | `active` / `invited` / `disabled` | 契约只出现 `status='invited'` 与 `OPS_MEMBER_INACTIVE`，其它取值由 §6.4 反推 |
-| 契约版本自述 | `GET /meta` 的 `contractVersion` | 已实现 `fetchOpsMeta()`，前端暂不阻断不兼容版本（等后端给出真实版本号） |
+| 契约版本自述 | `GET /meta` 的 `contractVersion` | 已实现 `fetchOpsMeta()` 与兼容判定 `checkContractCompatibility()`（`identity/contract-version.ts`）：MAJOR 不同或无法解析时阻止进入业务页，登录页显示升级提示。规则见契约 §2.1.1 |
