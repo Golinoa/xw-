@@ -28,7 +28,9 @@ Work on **有单·旅游管理系统** and its replication research. Distinguish
 
 ## Handoff
 
-Summarize changed files, actual evidence/validation, remaining uncertainty, and next steps. Do not claim checks that were not run. Do not mark a plan complete merely because it moved to `completed/`; deployment gates remain active until proven.
+Summarize changed files, actual evidence/validation, remaining uncertainty, and next steps. Do not claim checks that were not run.
+
+When the handoff is a status or progress report rather than a narrow answer, follow [`.harness/REPORTING.md`](.harness/REPORTING.md): an inline diagram per end of the monorepo, one of four explicit states per item, and every number read from output observed in the current session. Do not mark a plan complete merely because it moved to `completed/`; deployment gates remain active until proven.
 
 ## Superpowers skill selection
 

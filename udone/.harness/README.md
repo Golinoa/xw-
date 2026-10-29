@@ -8,4 +8,5 @@
 - [测试规范](TESTING_STANDARDS.md)
 - [安全规范](SECURITY.md)
 - [可靠性规范](RELIABILITY.md)
+- [状态汇报规范](REPORTING.md)
 - [活跃执行计划](docs/exec-plans/active/README.md)

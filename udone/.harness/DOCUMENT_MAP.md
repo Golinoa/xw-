@@ -23,6 +23,7 @@
 | [`CONTRACTS.md`](CONTRACTS.md)、[`API_STANDARDS.md`](API_STANDARDS.md)、[`DATABASE_STANDARDS.md`](DATABASE_STANDARDS.md) | 跨端契约与类型一致性、API、权限、迁移、RLS 与数据库访问约束。 |
 | [`TESTING_STANDARDS.md`](TESTING_STANDARDS.md)、[`ENGINEERING_STANDARDS.md`](ENGINEERING_STANDARDS.md) | 测试策略与工具链/依赖/CI/发布门禁。 |
 | [`FRONTEND.md`](FRONTEND.md)、[`SECURITY.md`](SECURITY.md)、[`RELIABILITY.md`](RELIABILITY.md)、[`QUALITY_SCORE.md`](QUALITY_SCORE.md) | 前端、安全、可靠性和质量评审补充规则。 |
+| [`REPORTING.md`](REPORTING.md) | 状态/进度汇报的约束：分端内联图、四态、数字取自当次观测输出。 |
 | [`docs/product-specs/`](docs/product-specs/) | 产品规格检索索引；需求真源仍在 `Docs/REQUIREMENTS.md`。 |
 | [`docs/design-docs/`](docs/design-docs/) | 已确认的架构理由和专题设计。 |
 | [`docs/exec-plans/active/`](docs/exec-plans/active/) | 尚待执行/外部验收的计划；完成必须具备计划要求的证据。 |
