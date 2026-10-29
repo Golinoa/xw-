@@ -39,15 +39,19 @@ const channel = process.env.PLAYWRIGHT_CHANNEL ?? undefined;
 export default defineConfig({
   testDir: './e2e',
   // 用例文件统一用 `*.e2e.ts`：`pnpm --filter @vben/web-antd test:unit` 在包目录内
-  // 启动 vitest 时不会读到根 vitest.config 的 `exclude: ['**/e2e/**']`，
-  // 用默认的 `*.spec.ts` 命名会被 Vitest 当成单测收集并报错。
+  // 单测侧已在 `apps/web-antd/vitest.config.ts` 里排除 `**/e2e/**`；
+  // 这里仍用 `*.e2e.ts` 命名，是为了让「这是 e2e」在文件名上就能看出来。
   testMatch: '**/*.e2e.ts',
   // 用例之间通过 storageState/cookie 隔离，不依赖执行顺序
   fullyParallel: true,
   forbidOnly: CI,
   retries: CI ? 1 : 0,
-  workers: CI ? 2 : undefined,
-  timeout: 30_000,
+  // 本地默认 undefined 会按 CPU 核数起最多 8 个 worker，同时打两个 dev server
+  // （5666 桩 / 5667 契约回放）。首次访问触发 Vite 依赖预构建并 reload，
+  // 并发过高时导航会被 `net::ERR_ABORTED` 打断，表现为随机的 goto 超时。
+  workers: CI ? 2 : 4,
+  // 首次编译 + 预构建实测可到 20s 以上，30s 余量不足；这是构建成本，不是产品慢。
+  timeout: 60_000,
   expect: { timeout: 10_000 },
   reporter: CI
     ? [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]]
