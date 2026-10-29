@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
 const auth = useAuthStore();
+const route = useRoute();
 const router = useRouter();
 async function onOrganizationChange(organizationId: string) {
   await auth.switchOrganization(organizationId);
@@ -16,7 +17,21 @@ async function logout() {
 <template>
   <a-layout class="app-shell">
     <a-layout-header class="app-header">
-      <RouterLink to="/" class="brand">有单·旅游管理系统</RouterLink>
+      <div class="header-main">
+        <RouterLink to="/" class="brand">有单·旅游管理系统</RouterLink>
+        <nav class="app-nav" aria-label="主导航">
+          <RouterLink to="/" class="nav-link" :class="{ 'nav-link-active': route.name === 'home' }">
+            工作台
+          </RouterLink>
+          <RouterLink
+            to="/customers"
+            class="nav-link"
+            :class="{ 'nav-link-active': route.name === 'customers' }"
+          >
+            客户
+          </RouterLink>
+        </nav>
+      </div>
       <div class="account-tools">
         <label for="organization">当前公司</label>
         <a-select
@@ -72,6 +87,29 @@ async function logout() {
   line-height: var(--line-height-lg);
   font-weight: 600;
   text-decoration: none;
+}
+.header-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-32);
+}
+.app-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-24);
+}
+.nav-link {
+  color: var(--color-secondary-text);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-sm);
+  text-decoration: none;
+}
+.nav-link:hover {
+  color: var(--color-primary);
+}
+.nav-link-active {
+  color: var(--color-primary);
+  font-weight: 600;
 }
 .account-tools {
   display: flex;

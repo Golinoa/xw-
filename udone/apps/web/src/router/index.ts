@@ -19,7 +19,14 @@ export function createAppRouter(
       {
         path: '/',
         component: () => import('../layouts/AppLayout.vue'),
-        children: [{ path: '', name: 'home', component: () => import('../views/HomeView.vue') }],
+        children: [
+          { path: '', name: 'home', component: () => import('../views/HomeView.vue') },
+          {
+            path: 'customers',
+            name: 'customers',
+            component: () => import('../views/customers/CustomerListView.vue'),
+          },
+        ],
       },
       { path: '/:pathMatch(.*)*', redirect: '/' },
     ],
