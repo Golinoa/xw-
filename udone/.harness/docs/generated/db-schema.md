@@ -3,11 +3,11 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 11
+- Migration sources scanned: 12
 - Tables discovered: 15
 - Functions discovered: 19
 - Indexes discovered: 20
-- RLS policies discovered: 47
+- RLS policies discovered: 53
 - Triggers discovered: 2
 
 | Migration | Tables | Functions | Indexes | Policies | Triggers |
@@ -23,3 +23,4 @@
 | `20261029000004_soft_delete_visibility.sql` | — | — | — | `customers_select_scoped`, `orders_select_scoped` | — |
 | `20261029000005_order_write_grants.sql` | — | `public.sync_order_totals` | — | — | `order_receivables_sync_totals`, `order_payables_sync_totals` |
 | `20261029000006_order_line_upsert.sql` | — | `public.update_order_with_items` | — | — | — |
+| `20261029000007_line_write_state_guard.sql` | — | — | — | `order_receivables_insert_writer`, `order_receivables_update_writer`, `order_receivables_delete_writer`, `order_payables_insert_writer`, `order_payables_update_writer`, `order_payables_delete_writer` | — |
