@@ -11,16 +11,5 @@ export function formatCustomerIdType(value: CustomerIdType | undefined): string 
   return value ? CUSTOMER_ID_TYPE_LABELS[value] : '—';
 }
 
-/** 时间按本地时区展示；服务端返回的是 ISO 字符串，非法值原样回显而不是显示 Invalid Date。 */
-export function formatDateTime(value: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
-}
+/** 时间格式化已统一到 `lib/format`，这里转出以保持客户相关组件的导入入口不变。 */
+export { formatDateTime } from '../../lib/format';

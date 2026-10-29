@@ -30,6 +30,20 @@ async function logout() {
           >
             客户
           </RouterLink>
+          <RouterLink
+            to="/orders"
+            class="nav-link"
+            :class="{ 'nav-link-active': route.name === 'orders' }"
+          >
+            订单
+          </RouterLink>
+          <RouterLink
+            to="/suppliers"
+            class="nav-link"
+            :class="{ 'nav-link-active': route.name === 'suppliers' }"
+          >
+            供应商
+          </RouterLink>
         </nav>
       </div>
       <div class="account-tools">
