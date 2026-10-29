@@ -51,6 +51,13 @@ async function logout() {
           >
             财务
           </RouterLink>
+          <RouterLink
+            to="/finance/applications"
+            class="nav-link"
+            :class="{ 'nav-link-active': route.name === 'finance-applications' }"
+          >
+            审批
+          </RouterLink>
         </nav>
       </div>
       <div class="account-tools">

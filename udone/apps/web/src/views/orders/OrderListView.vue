@@ -61,6 +61,8 @@ const permissions = computed<readonly Permission[]>(() => {
 const canRead = computed(() => permissions.value.includes(PERMISSIONS.ORDER_READ));
 /** 隐藏入口只影响体验：服务端仍按 order.write 独立校验。 */
 const canWrite = computed(() => permissions.value.includes(PERMISSIONS.ORDER_WRITE));
+/** 发起收付款申请是另一道权限：能改订单不等于能报款。 */
+const canApply = computed(() => permissions.value.includes(PERMISSIONS.FINANCE_WRITE));
 
 const {
   options: customerOptions,
@@ -666,6 +668,7 @@ async function onChanged() {
       :open="detailOpen"
       :order-id="detailOrderId"
       :can-write="canWrite"
+      :can-apply="canApply"
       :seed="detailSeed"
       @update:open="onDetailOpenChange"
       @edit="openEdit"

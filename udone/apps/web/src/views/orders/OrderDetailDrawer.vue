@@ -5,6 +5,8 @@ import type { OrderAction, OrderDetail, OrderFinanceSummary } from '@erp/contrac
 import { ApiClientError } from '../../lib/api-client';
 import { formatDateTime, formatMoney, formatRatio } from '../../lib/format';
 import { useAuthStore } from '../../stores/auth';
+import FinanceApplicationFormModal from '../finance/FinanceApplicationFormModal.vue';
+import type { ApplicationTarget } from '../finance/FinanceApplicationFormModal.vue';
 import {
   ORDER_ACTION_EFFECTS,
   ORDER_ACTION_LABELS,
@@ -20,6 +22,8 @@ const props = defineProps<{
   orderId: string | null;
   /** 仅用于控制操作入口；服务端仍会独立校验 order.write。 */
   canWrite: boolean;
+  /** 发起收付款申请需要 finance.write，与订单编辑权限是两件事。 */
+  canApply: boolean;
   /** 保存/状态迁移响应里的服务端订单：先立即展示，再后台回读一次确保是最新版本。 */
   seed: OrderDetail | null;
 }>();
@@ -135,6 +139,7 @@ const receivableColumns = [
     width: 140,
     align: 'right',
   },
+  { title: '操作', key: 'apply', width: 110 },
 ];
 
 const payableColumns = [
@@ -148,7 +153,42 @@ const payableColumns = [
     width: 140,
     align: 'right',
   },
+  { title: '操作', key: 'apply', width: 110 },
 ];
+
+/**
+ * 已取消的订单不再产生资金流动（库函数会返回 ORDER_STATE_CONFLICT）。
+ * 已锁团的订单仍然允许收款：尾款在出团后结是常态，锁团约束的是改价。
+ */
+const canApplyHere = computed(() => props.canApply && detail.value?.status !== 'cancelled');
+
+const applicationTarget = ref<ApplicationTarget | null>(null);
+const applicationOpen = ref(false);
+
+function startApplication(
+  kind: 'receipt' | 'payment',
+  line: { id: string; name: string; availableAmount: number },
+) {
+  const order = detail.value;
+  if (!order) return;
+  applicationTarget.value = {
+    orderId: order.id,
+    orderNumber: order.orderNumber,
+    kind,
+    lineId: line.id,
+    lineName: line.name,
+    availableAmount: line.availableAmount,
+  };
+  applicationOpen.value = true;
+}
+
+/**
+ * 申请提交后回读订单与财务摘要：在途金额变了，可申请余额也跟着变。
+ * 只改本地数字会让下一次申请的上限停留在旧值，用户会以为还能再申请一次。
+ */
+async function onApplicationCreated() {
+  if (props.orderId) await load(props.orderId);
+}
 
 function close() {
   emit('update:open', false);
@@ -364,6 +404,17 @@ async function confirmAction() {
           >
             {{ formatMoney(record[column.dataIndex]) }}
           </template>
+          <template v-else-if="column.key === 'apply'">
+            <a-button
+              v-if="canApplyHere && record.availableAmount > 0"
+              type="link"
+              size="small"
+              @click="startApplication('receipt', record)"
+            >
+              申请收款
+            </a-button>
+            <span v-else class="apply-hint">{{ record.availableAmount > 0 ? '—' : '已满额' }}</span>
+          </template>
         </template>
       </a-table>
 
@@ -379,6 +430,17 @@ async function confirmAction() {
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'amount' || column.key === 'availableAmount'">
             {{ formatMoney(record[column.dataIndex]) }}
+          </template>
+          <template v-else-if="column.key === 'apply'">
+            <a-button
+              v-if="canApplyHere && record.availableAmount > 0"
+              type="link"
+              size="small"
+              @click="startApplication('payment', record)"
+            >
+              申请付款
+            </a-button>
+            <span v-else class="apply-hint">{{ record.availableAmount > 0 ? '—' : '已满额' }}</span>
           </template>
         </template>
       </a-table>
@@ -436,6 +498,13 @@ async function confirmAction() {
       <a-alert v-if="transitionError" type="error" show-icon :message="transitionError" />
     </template>
   </a-modal>
+
+  <!-- 申请收付款挂在金额行上：订单与行 id 由行按钮带过来，不让用户再选一次。 -->
+  <FinanceApplicationFormModal
+    v-model:open="applicationOpen"
+    :target="applicationTarget"
+    @created="onApplicationCreated"
+  />
 </template>
 
 <style scoped>
@@ -466,6 +535,11 @@ async function confirmAction() {
 
 .detail-note {
   margin: var(--space-8) 0 0;
+  color: var(--color-secondary-text);
+  font-size: var(--font-size-xs);
+}
+
+.apply-hint {
   color: var(--color-secondary-text);
   font-size: var(--font-size-xs);
 }
