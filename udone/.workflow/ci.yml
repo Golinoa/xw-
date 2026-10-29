@@ -1,0 +1,57 @@
+# ============================================================
+# udone OMS 质量门禁流水线（Gitee Go）
+#
+# 这是本仓库唯一的托管 CI。GitHub Actions 已下线，原因见
+# udone/ARCHITECTURE.md 的「持续集成」一节：远端一直是 Gitee 私有库，
+# GitHub 工作流从未真正执行过，等于没有门禁。
+#
+# 本阶段刻意不纳入的门禁及原因：
+#   - deps:audit / licenses:check：需要稳定访问 npm registry 与许可证清单，
+#     等依赖基线确定后再接入。
+#   - db:test（pgTAP）：需要本地 PostgreSQL 或 service 容器，Gitee Go 侧
+#     尚未验证该能力，见计划「残余风险」第 1、2 条。
+# ============================================================
+version: '1.0'
+name: udone-ci
+displayName: udone 质量门禁
+
+triggers:
+  push:
+    branches:
+      precise:
+        - main
+  pr:
+    branches:
+      precise:
+        - main
+
+variables:
+  # 与 package.json 的 packageManager 保持一致，不依赖 runner 预装版本。
+  PNPM_VERSION: '11.24.0'
+
+stages:
+  - stage: quality
+    displayName: 质量门禁
+    # 任一 step 失败立即结束，避免后续步骤在残缺产物上继续跑。
+    strategy: fast
+    trigger: auto
+    steps:
+      - step: npmbuild@1
+        name: quality_gate
+        displayName: 格式/静态检查/类型/测试/构建
+        inputs:
+          nodeVersion: '24'
+          goals: |
+            set -euo pipefail
+            node -v
+            npm -v
+            npm install -g pnpm@${PNPM_VERSION}
+            pnpm -v
+            pnpm install --frozen-lockfile
+            pnpm format:check
+            pnpm lint
+            pnpm typecheck
+            pnpm test
+            pnpm build
+            pnpm schema:check
+            pnpm check:deploy

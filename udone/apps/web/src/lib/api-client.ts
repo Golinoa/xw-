@@ -16,6 +16,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   ORG_CONTEXT_REQUIRED: '请先选择公司',
   VALIDATION_ERROR: '提交的内容不合法，请检查后重试',
   CONFLICT: '数据已存在或状态冲突，请刷新后重试',
+  RATE_LIMITED: '操作过于频繁，请稍后再试',
   INTERNAL_ERROR: '服务暂时不可用，请稍后重试',
 };
 
@@ -77,6 +78,16 @@ function buildPath(template: string, params: Record<string, string> | undefined)
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * 同一逻辑写操作在重试时必须复用同一个键，服务端才能识别为重复提交。
+ * 键在单次 call 内生成一次，跨 retry 不变；不同 call 各自生成。
+ */
+function createIdempotencyKey(): string {
+  const uuid = globalThis.crypto?.randomUUID?.();
+  if (uuid) return uuid;
+  return `idem-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export function createApiClient(options: ApiClientOptions) {
   const fetcher = options.fetcher ?? fetch;
   const maxRetries = options.maxServerErrorRetries ?? 3;
@@ -101,10 +112,13 @@ export function createApiClient(options: ApiClientOptions) {
     let token = await options.getAccessToken();
     if (!token) throw new ApiClientError('AUTH_REQUIRED', ERROR_MESSAGES.AUTH_REQUIRED!, 401);
 
+    const idempotencyKey = route.method === 'GET' ? undefined : createIdempotencyKey();
+
     const send = async (bearer: string) => {
       const headers: Record<string, string> = { Authorization: `Bearer ${bearer}` };
       const organizationId = options.getOrganizationId?.() ?? null;
       if (organizationId) headers[ORGANIZATION_HEADER] = organizationId;
+      if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
       if (callOptions.body !== undefined) headers['Content-Type'] = JSON_MEDIA_TYPE;
       return fetcher(url, {
         method: route.method,

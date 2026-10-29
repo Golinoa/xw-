@@ -9,6 +9,7 @@ describe('shared API errors', () => {
       ORG_CONTEXT_REQUIRED: 'ORG_CONTEXT_REQUIRED',
       VALIDATION_ERROR: 'VALIDATION_ERROR',
       CONFLICT: 'CONFLICT',
+      RATE_LIMITED: 'RATE_LIMITED',
       INTERNAL_ERROR: 'INTERNAL_ERROR',
     });
     expectTypeOf<ErrorCode>().toEqualTypeOf<
@@ -17,6 +18,7 @@ describe('shared API errors', () => {
       | 'ORG_CONTEXT_REQUIRED'
       | 'VALIDATION_ERROR'
       | 'CONFLICT'
+      | 'RATE_LIMITED'
       | 'INTERNAL_ERROR'
     >();
   });

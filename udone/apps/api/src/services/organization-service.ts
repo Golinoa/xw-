@@ -1,7 +1,6 @@
 import type { AuthRole } from '@erp/contracts';
-import { ApiHttpError } from '../middleware/error-handler';
 import type { ApiEnvironment } from '../middleware/auth';
-import { ERROR_CODES } from '@erp/contracts';
+import { RestConflictError, createRestClient } from '../lib/rest-client';
 
 export interface OrganizationMembership {
   organizationId: string;
@@ -34,47 +33,6 @@ export class OrganizationConflictError extends Error {
   }
 }
 
-function databaseUrl(environment: ApiEnvironment['Bindings']): string {
-  if (!environment.SUPABASE_URL || !environment.SUPABASE_PUBLISHABLE_KEY) {
-    throw new ApiHttpError(
-      503,
-      ERROR_CODES.INTERNAL_ERROR,
-      'Organization storage is not configured',
-    );
-  }
-  return environment.SUPABASE_URL.replace(/\/$/, '');
-}
-
-async function supabaseRequest<T>(
-  environment: ApiEnvironment['Bindings'],
-  token: string,
-  path: string,
-  init: RequestInit = {},
-  organizationId?: string,
-): Promise<T> {
-  const response = await fetch(`${databaseUrl(environment)}/rest/v1/${path}`, {
-    ...init,
-    headers: {
-      apikey: environment.SUPABASE_PUBLISHABLE_KEY!,
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      ...init.headers,
-      ...(organizationId ? { 'X-Organization-ID': organizationId } : {}),
-    },
-  });
-
-  if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as { code?: string } | null;
-    if (response.status === 409 || payload?.code === '23505') {
-      throw new OrganizationConflictError();
-    }
-    throw new Error(`Organization storage request failed (${response.status})`);
-  }
-
-  if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
-}
-
 type MembershipRow = {
   organization_id: string;
   role: AuthRole;
@@ -94,11 +52,11 @@ export function createSupabaseOrganizationRepository(
   environment: ApiEnvironment['Bindings'],
   token: string,
 ): OrganizationRepository {
+  const client = createRestClient(environment, token);
+
   return {
     async getMemberships(userId) {
-      const rows = await supabaseRequest<MembershipRow[]>(
-        environment,
-        token,
+      const rows = await client.rest<MembershipRow[]>(
         `organization_members?user_id=eq.${encodeURIComponent(userId)}&status=eq.active&select=organization_id,role,organizations(name)`,
       );
       return rows.map(toMembership);
@@ -106,46 +64,46 @@ export function createSupabaseOrganizationRepository(
 
     async createWithOwner({ name }) {
       // The RPC derives ownership from auth.uid(); clients cannot choose an owner.
-      const rows = await supabaseRequest<
-        Array<{
-          organization_id: string;
-          organization_name: string;
-          membership_role: AuthRole;
-        }>
-      >(environment, token, 'rpc/create_organization_with_owner', {
-        method: 'POST',
-        body: JSON.stringify({ requested_name: name }),
-      });
-      const created = rows[0];
-      if (!created) throw new Error('Organization creation returned no result');
-      return {
-        organization: { id: created.organization_id, name: created.organization_name },
-        membership: {
-          organizationId: created.organization_id,
-          organizationName: created.organization_name,
-          role: created.membership_role,
-        },
-      };
+      try {
+        const rows = await client.rest<
+          Array<{
+            organization_id: string;
+            organization_name: string;
+            membership_role: AuthRole;
+          }>
+        >('rpc/create_organization_with_owner', {
+          method: 'POST',
+          body: { requested_name: name },
+        });
+        const created = rows[0];
+        if (!created) throw new Error('Organization creation returned no result');
+        return {
+          organization: { id: created.organization_id, name: created.organization_name },
+          membership: {
+            organizationId: created.organization_id,
+            organizationName: created.organization_name,
+            role: created.membership_role,
+          },
+        };
+      } catch (cause) {
+        if (cause instanceof RestConflictError) throw new OrganizationConflictError();
+        throw cause;
+      }
     },
 
     async findMembership(userId, organizationId) {
-      const rows = await supabaseRequest<MembershipRow[]>(
-        environment,
-        token,
+      const rows = await client.rest<MembershipRow[]>(
         `organization_members?user_id=eq.${encodeURIComponent(userId)}&organization_id=eq.${encodeURIComponent(organizationId)}&status=eq.active&select=organization_id,role,organizations(name)&limit=1`,
       );
       return rows[0] ? toMembership(rows[0]) : null;
     },
 
     async listMembers(organizationId) {
-      const rows = await supabaseRequest<
+      const rows = await client.rest<
         Array<{ user_id: string; role: AuthRole; status: 'active' | 'disabled' }>
       >(
-        environment,
-        token,
         `organization_members?organization_id=eq.${encodeURIComponent(organizationId)}&select=user_id,role,status`,
-        {},
-        organizationId,
+        { organizationId },
       );
       return rows.map((row) => ({ userId: row.user_id, role: row.role, status: row.status }));
     },

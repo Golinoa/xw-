@@ -2,20 +2,11 @@ import type { AuthRole } from '@erp/contracts';
 import { ERROR_CODES } from '@erp/contracts';
 import type { ApiEnvironment } from '../../middleware/auth';
 import { ApiHttpError } from '../../middleware/error-handler';
+import { RestConflictError, RestRequestError, createRestClient } from '../../lib/rest-client';
 
 type MemberRole = AuthRole;
 type MemberStatus = 'active' | 'disabled';
 type Invitation = { id: string; status: 'pending'; expiresAt: string; created: boolean };
-
-function config(environment: ApiEnvironment['Bindings']) {
-  if (!environment.SUPABASE_URL || !environment.SUPABASE_PUBLISHABLE_KEY) {
-    throw new ApiHttpError(503, ERROR_CODES.INTERNAL_ERROR, 'Membership service is not configured');
-  }
-  return {
-    baseUrl: environment.SUPABASE_URL.replace(/\/$/, ''),
-    key: environment.SUPABASE_PUBLISHABLE_KEY,
-  };
-}
 
 async function rpc<T>(
   environment: ApiEnvironment['Bindings'],
@@ -24,35 +15,37 @@ async function rpc<T>(
   payload: unknown,
   organizationId?: string,
 ): Promise<T> {
-  const { baseUrl, key } = config(environment);
-  const response = await fetch(`${baseUrl}/rest/v1/rpc/${name}`, {
-    method: 'POST',
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      ...(organizationId ? { 'X-Organization-ID': organizationId } : {}),
-    },
-    body: JSON.stringify(payload),
-  });
-  if (response.status === 409) {
-    throw new ApiHttpError(
-      409,
-      ERROR_CODES.CONFLICT,
-      'An invitation already exists for this email',
-    );
+  const client = createRestClient(environment, token);
+  try {
+    return await client.rest<T>(`rpc/${name}`, {
+      method: 'POST',
+      body: payload,
+      organizationId,
+    });
+  } catch (cause) {
+    if (cause instanceof RestConflictError) {
+      throw new ApiHttpError(
+        409,
+        ERROR_CODES.CONFLICT,
+        'An invitation already exists for this email',
+      );
+    }
+    if (cause instanceof RestRequestError && (cause.status === 400 || cause.status === 422)) {
+      throw new ApiHttpError(
+        400,
+        ERROR_CODES.VALIDATION_ERROR,
+        'The membership request is invalid',
+      );
+    }
+    if (cause instanceof RestRequestError) {
+      throw new ApiHttpError(
+        500,
+        ERROR_CODES.INTERNAL_ERROR,
+        'Membership change could not be completed',
+      );
+    }
+    throw cause;
   }
-  if (response.status === 400 || response.status === 422) {
-    throw new ApiHttpError(400, ERROR_CODES.VALIDATION_ERROR, 'The membership request is invalid');
-  }
-  if (!response.ok) {
-    throw new ApiHttpError(
-      500,
-      ERROR_CODES.INTERNAL_ERROR,
-      'Membership change could not be completed',
-    );
-  }
-  return response.json() as Promise<T>;
 }
 
 async function sendInvitationEmail(
@@ -60,7 +53,6 @@ async function sendInvitationEmail(
   email: string,
   invitationId: string,
 ): Promise<void> {
-  const { baseUrl, key } = config(environment);
   const serviceKey = environment.SUPABASE_SERVICE_ROLE_KEY;
   if (!serviceKey) {
     throw new ApiHttpError(
@@ -69,28 +61,25 @@ async function sendInvitationEmail(
       'Invitation delivery is not configured',
     );
   }
+  const client = createRestClient(environment, '');
   const redirect = environment.APP_BASE_URL
     ? `${environment.APP_BASE_URL.replace(/\/$/, '')}/login?invitationId=${encodeURIComponent(invitationId)}`
     : undefined;
   const redirectQuery = redirect ? `?redirect_to=${encodeURIComponent(redirect)}` : '';
-  const adminResponse = await fetch(`${baseUrl}/auth/v1/invite${redirectQuery}`, {
+  const adminResponse = await client.auth(`/auth/v1/invite${redirectQuery}`, {
     method: 'POST',
-    headers: {
-      apikey: serviceKey,
-      Authorization: `Bearer ${serviceKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email }),
+    apiKey: serviceKey,
+    bearer: serviceKey,
+    body: { email },
   });
   if (adminResponse.ok) return;
 
   // Existing Auth identities cannot be invited a second time; send a recovery link
   // to the same email with the invitation return path, without exposing account state.
   if (adminResponse.status === 409 || adminResponse.status === 422) {
-    const recoveryResponse = await fetch(`${baseUrl}/auth/v1/recover${redirectQuery}`, {
+    const recoveryResponse = await client.auth(`/auth/v1/recover${redirectQuery}`, {
       method: 'POST',
-      headers: { apikey: key, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
+      body: { email },
     });
     if (recoveryResponse.ok) return;
   }
@@ -173,9 +162,8 @@ export async function acceptInvitation(
   token: string,
   invitationId: string,
 ): Promise<{ organizationId: string; role: AuthRole }> {
-  const { baseUrl, key } = config(environment);
-  const userResponse = await fetch(`${baseUrl}/auth/v1/user`, {
-    headers: { apikey: key, Authorization: `Bearer ${token}` },
+  const userResponse = await createRestClient(environment, token).auth('/auth/v1/user', {
+    bearer: token,
   });
   if (!userResponse.ok)
     throw new ApiHttpError(401, ERROR_CODES.AUTH_REQUIRED, 'Authentication is required');

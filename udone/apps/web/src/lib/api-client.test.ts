@@ -117,4 +117,50 @@ describe('typed API client', () => {
 
     await expect(api.call('me')).rejects.toMatchObject({ code: 'AUTH_REQUIRED' });
   });
+
+  it('sends one idempotency key per write call and reuses it across retries', async () => {
+    const createdOrg = {
+      organization: { id: 'org-new', name: 'New Org' },
+      membership: { organizationId: 'org-new', organizationName: 'New Org', role: 'admin' },
+    };
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({ code: 'INTERNAL_ERROR', message: 'x', requestId: 'r' }, 500),
+      )
+      .mockResolvedValueOnce(jsonResponse(createdOrg));
+
+    await client(fetcher).call('createOrganization', { body: { name: 'New Org' } });
+
+    const first = (fetcher.mock.calls[0]?.[1] as RequestInit).headers as Record<string, string>;
+    const second = (fetcher.mock.calls[1]?.[1] as RequestInit).headers as Record<string, string>;
+    expect(first['Idempotency-Key']).toBeTruthy();
+    expect(second['Idempotency-Key']).toBe(first['Idempotency-Key']);
+  });
+
+  it('uses a fresh idempotency key for each distinct write call', async () => {
+    const createdOrg = {
+      organization: { id: 'org-new', name: 'New Org' },
+      membership: { organizationId: 'org-new', organizationName: 'New Org', role: 'admin' },
+    };
+    const fetcher = vi.fn<typeof fetch>();
+    fetcher.mockImplementation(() => Promise.resolve(jsonResponse(createdOrg)));
+    const api = client(fetcher);
+
+    await api.call('createOrganization', { body: { name: 'First' } });
+    await api.call('createOrganization', { body: { name: 'Second' } });
+
+    const first = (fetcher.mock.calls[0]?.[1] as RequestInit).headers as Record<string, string>;
+    const second = (fetcher.mock.calls[1]?.[1] as RequestInit).headers as Record<string, string>;
+    expect(first['Idempotency-Key']).not.toBe(second['Idempotency-Key']);
+  });
+
+  it('never sends an idempotency key on a safe read', async () => {
+    const fetcher = vi.fn().mockResolvedValue(jsonResponse(meBody));
+
+    await client(fetcher).call('me');
+
+    const headers = (fetcher.mock.calls[0]?.[1] as RequestInit).headers as Record<string, string>;
+    expect(headers['Idempotency-Key']).toBeUndefined();
+  });
 });

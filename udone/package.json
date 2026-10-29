@@ -4,8 +4,8 @@
   "packageManager": "pnpm@11.24.0",
   "scripts": {
     "dev": "pnpm --parallel --filter @erp/web --filter @erp/api dev",
-    "format:write": "prettier --write \"apps/**/*.{js,ts,tsx,vue,json}\" \"packages/**/*.{js,ts,tsx,json}\" \"scripts/**/*.{js,mjs,ts,json}\" \"tests/**/*.{js,mjs,ts,json}\" \"*.{js,json,yml,yaml}\" \".github/**/*.{yml,yaml}\" .prettierrc.json",
-    "format:check": "prettier --check \"apps/**/*.{js,ts,tsx,vue,json}\" \"packages/**/*.{js,ts,tsx,json}\" \"scripts/**/*.{js,mjs,ts,json}\" \"tests/**/*.{js,mjs,ts,json}\" \"*.{js,json,yml,yaml}\" \".github/**/*.{yml,yaml}\" .prettierrc.json",
+    "format:write": "prettier --write \"apps/**/*.{js,ts,tsx,vue,json}\" \"packages/**/*.{js,ts,tsx,json}\" \"scripts/**/*.{js,mjs,ts,json}\" \"tests/**/*.{js,mjs,ts,json}\" \"*.{js,json,yml,yaml}\" \".github/**/*.{yml,yaml}\" \".workflow/**/*.{yml,yaml}\" .prettierrc.json",
+    "format:check": "prettier --check \"apps/**/*.{js,ts,tsx,vue,json}\" \"packages/**/*.{js,ts,tsx,json}\" \"scripts/**/*.{js,mjs,ts,json}\" \"tests/**/*.{js,mjs,ts,json}\" \"*.{js,json,yml,yaml}\" \".github/**/*.{yml,yaml}\" \".workflow/**/*.{yml,yaml}\" .prettierrc.json",
     "format:sql:write": "node scripts/format-sql.mjs --write",
     "format:sql:check": "node scripts/format-sql.mjs --check",
     "lint": "eslint apps packages scripts tests eslint.config.mjs && pnpm css:tokens:check",

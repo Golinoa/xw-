@@ -19,6 +19,8 @@ export interface ApiEnvironment {
     SUPABASE_SERVICE_ROLE_KEY?: string;
     APP_BASE_URL?: string;
     APP_VERSION?: string;
+    ALLOWED_ORIGINS?: string;
+    RATE_LIMIT_PER_MINUTE?: string;
     CF_VERSION_METADATA?: WorkerVersionMetadata;
   };
   Variables: {

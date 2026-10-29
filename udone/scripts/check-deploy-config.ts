@@ -3,6 +3,40 @@ import { join, resolve } from 'node:path';
 
 const root = process.cwd();
 
+/** Every literal that must appear in wrangler.toml for a deployable Worker. */
+export const WRANGLER_REQUIREMENTS = [
+  'name = "udone-oms"',
+  'main = "apps/api/src/index.ts"',
+  'directory = "apps/web/dist"',
+  'not_found_handling = "single-page-application"',
+  'run_worker_first = ["/api/*"]',
+  '[version_metadata]',
+  'binding = "CF_VERSION_METADATA"',
+  '[observability]',
+] as const;
+
+/** Server-only values the Worker type surface must declare. */
+export const WORKER_ENV_VARIABLES = [
+  'SUPABASE_URL',
+  'SUPABASE_PUBLISHABLE_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY',
+] as const;
+
+/** Variables .env.example must document; secrets stay blank, config carries a usable default. */
+export const ENV_EXAMPLE_VARIABLES = [
+  'SUPABASE_URL',
+  'SUPABASE_PUBLISHABLE_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY',
+  'ALLOWED_ORIGINS',
+  'RATE_LIMIT_PER_MINUTE',
+] as const;
+
+const BLANK_IN_EXAMPLE = new Set([
+  'SUPABASE_URL',
+  'SUPABASE_PUBLISHABLE_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY',
+]);
+
 async function readText(path: string): Promise<string> {
   try {
     return await readFile(resolve(root, path), 'utf8');
@@ -50,15 +84,7 @@ export async function checkDeployConfig(): Promise<string[]> {
   const config = await readText('wrangler.toml');
   const workerEnv = await readText('apps/api/src/env.d.ts');
   const example = await readText('.env.example');
-  const configRequirements = [
-    'name = "udone-oms"',
-    'main = "apps/api/src/index.ts"',
-    'directory = "apps/web/dist"',
-    'not_found_handling = "single-page-application"',
-    'run_worker_first = ["/api/*"]',
-    '[version_metadata]',
-    'binding = "CF_VERSION_METADATA"',
-  ];
+  const configRequirements = WRANGLER_REQUIREMENTS;
   for (const requirement of configRequirements) {
     if (!config.includes(requirement))
       issues.push(`Wrangler configuration is missing ${requirement}`);
@@ -67,14 +93,24 @@ export async function checkDeployConfig(): Promise<string[]> {
     issues.push('Wrangler configuration must not require deferred object storage');
   }
 
-  for (const name of ['SUPABASE_URL', 'SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_SERVICE_ROLE_KEY']) {
+  for (const name of WORKER_ENV_VARIABLES) {
     if (!workerEnv.includes(name)) issues.push(`Worker environment types are missing ${name}`);
   }
-  for (const name of ['SUPABASE_URL', 'SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_SERVICE_ROLE_KEY']) {
+  for (const name of ENV_EXAMPLE_VARIABLES) {
     const assignment = example.match(new RegExp(`^${name}=(.*)$`, 'm'));
-    if (!assignment) issues.push(`.env.example is missing ${name}`);
-    if (name === 'SUPABASE_SERVICE_ROLE_KEY' && assignment?.[1].trim()) {
-      issues.push('.env.example must not contain a service-role key value');
+    if (!assignment) {
+      issues.push(`.env.example is missing ${name}`);
+      continue;
+    }
+    const value = assignment[1].trim();
+    if (BLANK_IN_EXAMPLE.has(name) && value) {
+      issues.push(`.env.example must not contain a ${name} value`);
+    }
+    if (!BLANK_IN_EXAMPLE.has(name) && !value) {
+      issues.push(`.env.example must document a usable ${name} default`);
+    }
+    if (name === 'ALLOWED_ORIGINS' && value === '*') {
+      issues.push('.env.example must not allow wildcard origins');
     }
   }
 

@@ -1,7 +1,11 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { hasSecretLeak } from '../../scripts/check-deploy-config';
+import {
+  ENV_EXAMPLE_VARIABLES,
+  WRANGLER_REQUIREMENTS,
+  hasSecretLeak,
+} from '../../scripts/check-deploy-config';
 
 const root = process.cwd();
 
@@ -37,5 +41,19 @@ describe('Worker deployment configuration', () => {
     for (const name of ['SUPABASE_URL', 'SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_SERVICE_ROLE_KEY']) {
       expect(example).toMatch(new RegExp(`^${name}=$`, 'm'));
     }
+  });
+
+  it('gates the cross-origin allowlist and rate-limit ceiling', async () => {
+    const example = await readFile(resolve(root, '.env.example'), 'utf8');
+
+    expect(ENV_EXAMPLE_VARIABLES).toContain('ALLOWED_ORIGINS');
+    expect(ENV_EXAMPLE_VARIABLES).toContain('RATE_LIMIT_PER_MINUTE');
+    expect(example).toMatch(/^ALLOWED_ORIGINS=.+/m);
+    expect(example).not.toMatch(/^ALLOWED_ORIGINS=\*$/m);
+    expect(example).toMatch(/^RATE_LIMIT_PER_MINUTE=\d+$/m);
+  });
+
+  it('gates Worker observability so logs are not silently dropped', () => {
+    expect(WRANGLER_REQUIREMENTS).toContain('[observability]');
   });
 });
