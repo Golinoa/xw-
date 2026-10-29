@@ -16,6 +16,10 @@ export const PERMISSIONS = {
   ORDER_WRITE: 'order.write',
   SUPPLIER_READ: 'supplier.read',
   SUPPLIER_WRITE: 'supplier.write',
+  /** 创建收付款申请（占用额度），不包含审批。 */
+  FINANCE_WRITE: 'finance.write',
+  /** 审批收付款申请；终审通过才计入已收/已付。 */
+  FINANCE_APPROVE: 'finance.approve',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -40,6 +44,8 @@ export const ROLE_AUTHORIZATION = {
       PERMISSIONS.ORDER_WRITE,
       PERMISSIONS.SUPPLIER_READ,
       PERMISSIONS.SUPPLIER_WRITE,
+      PERMISSIONS.FINANCE_WRITE,
+      PERMISSIONS.FINANCE_APPROVE,
     ],
     dataScope: 'all',
   },
@@ -53,6 +59,7 @@ export const ROLE_AUTHORIZATION = {
       PERMISSIONS.ORDER_WRITE,
       PERMISSIONS.SUPPLIER_READ,
       PERMISSIONS.SUPPLIER_WRITE,
+      PERMISSIONS.FINANCE_WRITE,
     ],
     dataScope: 'own',
   },
@@ -63,6 +70,8 @@ export const ROLE_AUTHORIZATION = {
       PERMISSIONS.CUSTOMER_READ,
       PERMISSIONS.ORDER_READ,
       PERMISSIONS.SUPPLIER_READ,
+      PERMISSIONS.FINANCE_WRITE,
+      PERMISSIONS.FINANCE_APPROVE,
     ],
     dataScope: 'all',
   },

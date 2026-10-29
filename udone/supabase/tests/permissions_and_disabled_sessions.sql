@@ -182,6 +182,7 @@ SELECT
       'customer.read',
       'customer.sensitive.read',
       'customer.write',
+      'finance.write',
       'order.read',
       'order.write',
       'organization.read',

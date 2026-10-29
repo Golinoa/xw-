@@ -15,6 +15,8 @@ describe('shared permissions', () => {
       ORDER_WRITE: 'order.write',
       SUPPLIER_READ: 'supplier.read',
       SUPPLIER_WRITE: 'supplier.write',
+      FINANCE_WRITE: 'finance.write',
+      FINANCE_APPROVE: 'finance.approve',
     });
     expectTypeOf<Permission>().toEqualTypeOf<
       | 'organization.read'
@@ -28,6 +30,8 @@ describe('shared permissions', () => {
       | 'order.write'
       | 'supplier.read'
       | 'supplier.write'
+      | 'finance.write'
+      | 'finance.approve'
     >();
   });
 
@@ -45,6 +49,8 @@ describe('shared permissions', () => {
         'order.write',
         'supplier.read',
         'supplier.write',
+        'finance.write',
+        'finance.approve',
       ],
       dataScope: 'all',
     });
@@ -59,10 +65,11 @@ describe('shared permissions', () => {
         'order.write',
         'supplier.read',
         'supplier.write',
+        'finance.write',
       ],
       dataScope: 'own',
     });
-    // 财务只读：能看订单与供应商，但不改订单业务内容（REQUIREMENTS.md §16.3）。
+    // 财务负责收付款申请的创建与审批，但不改订单业务内容（REQUIREMENTS.md §16.3、R-FIN-02/03）。
     expect(authorizationForRole('finance')).toEqual({
       permissions: [
         'organization.read',
@@ -70,6 +77,8 @@ describe('shared permissions', () => {
         'customer.read',
         'order.read',
         'supplier.read',
+        'finance.write',
+        'finance.approve',
       ],
       dataScope: 'all',
     });

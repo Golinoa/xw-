@@ -3,11 +3,11 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 12
-- Tables discovered: 15
-- Functions discovered: 19
-- Indexes discovered: 20
-- RLS policies discovered: 53
+- Migration sources scanned: 13
+- Tables discovered: 17
+- Functions discovered: 26
+- Indexes discovered: 23
+- RLS policies discovered: 55
 - Triggers discovered: 2
 
 | Migration | Tables | Functions | Indexes | Policies | Triggers |
@@ -24,3 +24,4 @@
 | `20261029000005_order_write_grants.sql` | — | `public.sync_order_totals` | — | — | `order_receivables_sync_totals`, `order_payables_sync_totals` |
 | `20261029000006_order_line_upsert.sql` | — | `public.update_order_with_items` | — | — | — |
 | `20261029000007_line_write_state_guard.sql` | — | — | — | `order_receivables_insert_writer`, `order_receivables_update_writer`, `order_receivables_delete_writer`, `order_payables_insert_writer`, `order_payables_update_writer`, `order_payables_delete_writer` | — |
+| `20261029000008_finance_applications.sql` | `public.finance_applications`, `public.finance_application_actions` | `public.release_finance_application_hold`, `public.confirm_finance_application_hold`, `public.release_finance_application_confirm`, `public.create_finance_application`, `public.decide_finance_application`, `public.undo_finance_application`, `public.withdraw_finance_application` | `finance_applications_order_index`, `finance_applications_pending_index`, `finance_application_actions_application_index` | `finance_applications_select_reader`, `finance_application_actions_select_reader` | — |
