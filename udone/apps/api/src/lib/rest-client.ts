@@ -93,6 +93,7 @@ export function createRestClient(
     path: string,
     init: RestInit,
     extraHeaders: Record<string, string> = {},
+    allowedStatuses: readonly number[] = [],
   ): Promise<Response> {
     requireConfig();
     const headers: Record<string, string> = {
@@ -112,7 +113,7 @@ export function createRestClient(
       ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }),
     });
 
-    if (!response.ok) {
+    if (!response.ok && !allowedStatuses.includes(response.status)) {
       const payload: unknown = await response.json().catch(() => null);
       if (response.status === 409 || isUniqueViolation(payload)) {
         throw new RestConflictError();
@@ -131,9 +132,15 @@ export function createRestClient(
     },
 
     async restPage<T>(path: string, init: RestInit = {}): Promise<RestPage<T>> {
-      const response = await restFetch(path, init, { Prefer: 'count=exact' });
-      const rows = response.status === 204 ? [] : ((await response.json()) as T[]);
-      return { rows, total: parseContentRange(response.headers.get('Content-Range')) };
+      // 416 不是错误，是「这一页在数据范围之外」。PostgREST 在 offset 超过
+      // 总行数时返回它，并仍然给出 `Content-Range: */<total>`。
+      // 不特殊处理的话，用户从筛选结果翻到第 2 页就会看到 500——而正确的
+      // 表现是空页 + 正确的总数，分页器才能自己退回去。
+      const response = await restFetch(path, init, { Prefer: 'count=exact' }, [416]);
+      const total = parseContentRange(response.headers.get('Content-Range'));
+      if (response.status === 204 || response.status === 416) return { rows: [], total: total };
+      const rows = (await response.json()) as T[];
+      return { rows, total };
     },
 
     async auth(path: string, init: AuthInit = {}): Promise<Response> {

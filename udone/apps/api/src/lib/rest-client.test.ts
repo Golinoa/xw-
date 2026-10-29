@@ -84,6 +84,23 @@ describe('createRestClient', () => {
     );
   });
 
+  it('treats a 416 range error as an empty page but keeps the total', async () => {
+    // PostgREST 在 offset 超过总行数时返回 416，并带上 `Content-Range: */<total>`。
+    // 当成错误抛出去的话，任何筛选后翻到第 2 页的用户都会看到 500。
+    const fetcher = vi.fn<typeof fetch>();
+    fetcher.mockImplementation(() =>
+      Promise.resolve(new Response('[]', { status: 416, headers: { 'Content-Range': '*/1' } })),
+    );
+    vi.stubGlobal('fetch', fetcher);
+
+    const page = await createRestClient(environment, 'caller-token').restPage(
+      'customers?offset=10&limit=10',
+    );
+
+    expect(page).toEqual({ rows: [], total: 1 });
+    expect(headersOf(fetcher).get('Prefer')).toBe('count=exact');
+  });
+
   it('never leaks the upstream body in a server error message', async () => {
     respondWith('{"message":"relation secret_table does not exist"}', 500);
 
