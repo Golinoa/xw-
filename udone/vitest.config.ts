@@ -13,6 +13,13 @@ export default defineConfig({
   },
   test: {
     include: ['apps/**/*.test.ts', 'packages/**/*.test.ts', 'tests/**/*.test.ts'],
-    exclude: ['**/.worktrees/**', '**/node_modules/**', '**/dist/**', '**/coverage/**'],
+    // 集成测试需要真实数据库与 PostgREST，走 vitest.integration.config.ts。
+    exclude: [
+      '**/.worktrees/**',
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/coverage/**',
+      'tests/integration/**',
+    ],
   },
 });

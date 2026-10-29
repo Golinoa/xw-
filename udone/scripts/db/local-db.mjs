@@ -11,7 +11,9 @@
 // 这个 shell 收尾时连同兄弟进程一起被杀，表现是「日志显示 ready，随后连接被拒」。
 // 这里改为把 postgres 作为本进程的直接子进程，收尾时显式优雅停止。
 import { spawn, spawnSync } from 'node:child_process';
+import { createServer, request as httpRequest } from 'node:http';
 import {
+  copyFileSync,
   createWriteStream,
   existsSync,
   mkdirSync,
@@ -36,7 +38,29 @@ const DB_NAME = 'udone_local';
 const PG_ZIP_URL =
   'https://get.enterprisedb.com/postgresql/postgresql-17.6-1-windows-x64-binaries.zip';
 
+// PostgREST 是「服务层对 Supabase 的假设」唯一能被真实执行的地方：
+// 参数名、返回列名、SQLSTATE 到 HTTP 状态码的映射，都只有经过它才成立。
+// 本机没有 Docker / Supabase CLI，所以直接用官方单文件二进制连原生 PostgreSQL。
+const REST_PORT = process.env.UDONE_LOCAL_REST_PORT ?? '55433';
+const JWT_SECRET = process.env.UDONE_LOCAL_JWT_SECRET ?? 'udone-local-integration-jwt-secret';
+const POSTGREST_DIR = join(WORK_DIR, 'postgrest');
+const POSTGREST_BIN = join(POSTGREST_DIR, 'postgrest.exe');
+const POSTGREST_CONFIG = join(WORK_DIR, 'postgrest.conf');
+const POSTGREST_LOG = join(WORK_DIR, 'postgrest.log');
+const FIXTURE_SQL = join(WORK_DIR, 'integration-fixture.sql');
+
+// 固定 UUID：集成测试要拿它们签 JWT、拼 X-Organization-ID，
+// 随机生成再回传会多一条「把 id 传错」的失败路径，而那与要验证的东西无关。
+const ORG_ID = 'a0000000-0000-4000-8000-000000000001';
+const USER_IDS = {
+  admin: 'a1000000-0000-4000-8000-000000000001',
+  operator: 'a1000000-0000-4000-8000-000000000002',
+  finance: 'a1000000-0000-4000-8000-000000000003',
+};
+
 let serverProcess = null;
+let postgrestProcess = null;
+let gatewayServer = null;
 
 const sleep = (ms) => new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
 
@@ -254,6 +278,265 @@ async function ensureServer() {
   if (!isRunning()) await start();
 }
 
+/**
+ * 下载 PostgREST 官方二进制。
+ *
+ * 不走 `github.com/.../releases/download/...`：这台机器到 github.com 连接超时，
+ * 而 api.github.com 与 release-assets.githubusercontent.com 都可达。
+ * 所以用 asset API 拿直链（Accept: application/octet-stream 会 302 到 CDN），
+ * 这是网络环境的具体约束，不是通用做法。
+ */
+async function downloadPostgrest(archive) {
+  if (existsSync(archive)) return;
+  const release = await (
+    await fetch('https://api.github.com/repos/PostgREST/postgrest/releases/latest')
+  ).json();
+  const asset = release.assets?.find((entry) => entry.name.includes('windows-x86-64'));
+  if (!asset) throw new Error('PostgREST 该版本没有 Windows 构建');
+  console.log(`下载 PostgREST ${release.tag_name}（${asset.size} 字节）`);
+  const response = await fetch(
+    `https://api.github.com/repos/PostgREST/postgrest/releases/assets/${asset.id}`,
+    { headers: { Accept: 'application/octet-stream' }, redirect: 'follow' },
+  );
+  if (!response.ok || !response.body) throw new Error(`下载失败：HTTP ${response.status}`);
+  await new Promise((resolvePromise, rejectPromise) => {
+    const stream = createWriteStream(archive);
+    Readable.fromWeb(response.body).pipe(stream);
+    stream.on('finish', resolvePromise);
+    stream.on('error', rejectPromise);
+  });
+}
+
+async function ensurePostgrest() {
+  if (existsSync(POSTGREST_BIN)) return;
+  mkdirSync(DOWNLOAD_DIR, { recursive: true });
+  if (process.platform !== 'win32') {
+    throw new Error('本地 HTTP 集成目前只准备了 Windows 二进制，其它平台请设置 UDONE_PG_REST_BIN');
+  }
+  const archive = join(DOWNLOAD_DIR, 'postgrest.zip');
+  await downloadPostgrest(archive);
+  console.log('解压 PostgREST…');
+  extractZip(archive, POSTGREST_DIR);
+  if (!existsSync(POSTGREST_BIN)) {
+    throw new Error(`解压后没有找到 ${POSTGREST_BIN}，请检查压缩包结构`);
+  }
+  copyPgRuntime(POSTGREST_DIR);
+}
+
+/**
+ * PostgREST 的 Windows 构建动态链接 libpq，而不是静态链接。
+ *
+ * 只有 exe 不足以启动：进程会以 0xC0000135（DLL 未找到）直接退出，
+ * 而且没有任何输出——看起来像「二进制坏了」，实际只是缺库。
+ * 本地已经有 PostgreSQL 二进制，把它的 DLL 复制到 exe 同目录即可：
+ * Windows 的 DLL 搜索顺序里，exe 所在目录优先于 PATH。
+ *
+ * 依赖 PATH 的做法不可靠：这个仓库的脚本可能在 Git Bash 里被启动，
+ * 那里的 PATH 是 POSIX 形式，交给 Windows 加载器会失效。
+ */
+function copyPgRuntime(target) {
+  const bin = requirePgBin();
+  let copied = 0;
+  for (const name of readdirSync(bin)) {
+    if (!name.toLowerCase().endsWith('.dll')) continue;
+    copyFileSync(join(bin, name), join(target, name));
+    copied += 1;
+  }
+  console.log(`已复制 ${copied} 个 PostgreSQL 运行时库到 ${target}`);
+}
+
+function writePostgrestConfig() {
+  writeFileSync(
+    POSTGREST_CONFIG,
+    [
+      `db-uri = "postgres://postgres@127.0.0.1:${PORT}/${DB_NAME}"`,
+      'db-schemas = "public"',
+      'db-anon-role = "anon"',
+      // 与测试签 JWT 用同一个密钥；不一致时每个请求都会 401，
+      // 而 401 会被误读成「鉴权中间件坏了」。
+      `jwt-secret = "${JWT_SECRET}"`,
+      // PostgREST 自己监听 REST_PORT+1，REST_PORT 留给只做前缀重写的网关。
+      `server-port = ${Number(REST_PORT) + 1}`,
+      'server-host = "127.0.0.1"',
+      'db-pool = 5',
+      '',
+    ].join('\n'),
+    'utf8',
+  );
+}
+
+async function waitForPostgrest(timeoutMs = 30000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (postgrestProcess && postgrestProcess.exitCode !== null) {
+      throw new Error(
+        `PostgREST 启动后退出（exit ${postgrestProcess.exitCode}），见 ${POSTGREST_LOG}`,
+      );
+    }
+    try {
+      const response = await fetch(`http://127.0.0.1:${Number(REST_PORT) + 1}/`);
+      if (response.ok) return;
+    } catch {
+      // 还没监听，继续等。
+    }
+    await sleep(250);
+  }
+  throw new Error(`等待 PostgREST 就绪超时，见 ${POSTGREST_LOG}`);
+}
+
+async function startPostgrest() {
+  await ensurePostgrest();
+  writePostgrestConfig();
+  const logFd = openSync(POSTGREST_LOG, 'a');
+  postgrestProcess = spawn(POSTGREST_BIN, [POSTGREST_CONFIG], {
+    stdio: ['ignore', logFd, logFd],
+    windowsHide: true,
+  });
+  await waitForPostgrest();
+  // PostgREST 直接在根路径上提供 API，而客户端拼的是 `/rest/v1/...`
+  // ——生产环境里这一段前缀由 Supabase 的网关（Kong）剥掉。
+  // 不在客户端或仓储层去掉前缀：那等于为了迁就测试环境去改被测代码。
+  await startGateway();
+  console.log(`PostgREST 已启动：http://127.0.0.1:${REST_PORT}`);
+}
+
+/**
+ * 只做一件事：把 `/rest/v1/<x>` 转发到 PostgREST 的 `/<x>`。
+ * 不加鉴权、不改响应、不重试——任何多余逻辑都会让「验证的是 PostgREST 行为」
+ * 这句话打折扣。其它前缀一律 501，明确表示 GoTrue 不在这个栈里。
+ */
+function startGateway() {
+  const server = createServer((request, response) => {
+    const url = request.url ?? '/';
+    if (!url.startsWith('/rest/v1')) {
+      response.writeHead(501, { 'Content-Type': 'application/json' });
+      response.end(
+        JSON.stringify({
+          message: 'local stack only proxies /rest/v1; Supabase Auth is not emulated',
+        }),
+      );
+      return;
+    }
+
+    const upstream = httpRequest(
+      {
+        host: '127.0.0.1',
+        port: Number(REST_PORT) + 1,
+        path: url.slice('/rest/v1'.length) || '/',
+        method: request.method,
+        headers: { ...request.headers, host: `127.0.0.1:${Number(REST_PORT) + 1}` },
+      },
+      (upstreamResponse) => {
+        response.writeHead(upstreamResponse.statusCode ?? 502, upstreamResponse.headers);
+        upstreamResponse.pipe(response);
+      },
+    );
+    upstream.on('error', (cause) => {
+      response.writeHead(502, { 'Content-Type': 'application/json' });
+      response.end(JSON.stringify({ message: `upstream failed: ${cause.message}` }));
+    });
+    request.pipe(upstream);
+  });
+
+  return new Promise((resolvePromise, rejectPromise) => {
+    server.once('error', rejectPromise);
+    server.listen(REST_PORT, '127.0.0.1', () => {
+      gatewayServer = server;
+      resolvePromise();
+    });
+  });
+}
+
+function stopGateway() {
+  if (!gatewayServer) return;
+  gatewayServer.close();
+  gatewayServer = null;
+}
+
+function stopPostgrest() {
+  if (!postgrestProcess || postgrestProcess.exitCode !== null) {
+    postgrestProcess = null;
+    return;
+  }
+  postgrestProcess.kill();
+  postgrestProcess = null;
+}
+
+/**
+ * 组织与成员只能在库里造：没有「第一个管理员」的入口，
+ * 邀请与成员管理都要求调用者已经是管理员。这一段是夹具，不是被测对象。
+ */
+function seedFixture() {
+  writeFileSync(
+    FIXTURE_SQL,
+    `INSERT INTO auth.users (id, email) VALUES
+  ('${USER_IDS.admin}', 'admin@integration.test'),
+  ('${USER_IDS.operator}', 'operator@integration.test'),
+  ('${USER_IDS.finance}', 'finance@integration.test');
+
+INSERT INTO public.profiles (id, display_name) VALUES
+  ('${USER_IDS.admin}', 'Admin'),
+  ('${USER_IDS.operator}', 'Operator'),
+  ('${USER_IDS.finance}', 'Finance');
+
+INSERT INTO public.organizations (id, name, created_by)
+VALUES ('${ORG_ID}', 'Integration Org', '${USER_IDS.admin}');
+
+INSERT INTO public.organization_members (organization_id, user_id, role) VALUES
+  ('${ORG_ID}', '${USER_IDS.admin}', 'admin'),
+  ('${ORG_ID}', '${USER_IDS.operator}', 'operator'),
+  ('${ORG_ID}', '${USER_IDS.finance}', 'finance');
+`,
+    'utf8',
+  );
+  psqlMust(DB_NAME, ['-v', 'ON_ERROR_STOP=1', '-f', FIXTURE_SQL]);
+}
+
+/**
+ * 启动 → 重放 → 造夹具 → 起 PostgREST → 跑集成测试 → 全部收尾。
+ *
+ * 与 verify 相同，必须一条命令打包：这个 shell 结束时会把残留子进程一起收掉，
+ * 分步调用的话第二次连不上库，PostgREST 也会跟着消失。
+ */
+async function http(...extra) {
+  await ensureServer();
+  try {
+    replay();
+    seedFixture();
+    await startPostgrest();
+    const vitest = join(ROOT, 'node_modules', 'vitest', 'vitest.mjs');
+    // 必须异步 spawn。spawnSync 会阻塞本进程的事件循环，而网关就活在这个进程里：
+    // 端口能 accept（内核排队）却永远没人处理，表现是「测试全部超时」，
+    // 看起来像 PostgREST 挂了，实际是网关被自己的父进程堵死。
+    const child = spawn(
+      process.execPath,
+      [vitest, 'run', '--config', 'vitest.integration.config.ts', ...extra],
+      {
+        cwd: ROOT,
+        stdio: 'inherit',
+        windowsHide: true,
+        env: {
+          ...process.env,
+          UDONE_REST_URL: `http://127.0.0.1:${REST_PORT}`,
+          UDONE_LOCAL_JWT_SECRET: JWT_SECRET,
+          UDONE_TEST_ORG_ID: ORG_ID,
+          UDONE_TEST_ADMIN_ID: USER_IDS.admin,
+          UDONE_TEST_OPERATOR_ID: USER_IDS.operator,
+          UDONE_TEST_FINANCE_ID: USER_IDS.finance,
+        },
+      },
+    );
+    return await new Promise((resolvePromise) => {
+      child.on('exit', (code) => resolvePromise(code ?? 1));
+      child.on('error', () => resolvePromise(1));
+    });
+  } finally {
+    stopGateway();
+    stopPostgrest();
+    stop();
+  }
+}
+
 function replay() {
   // 每次都从空库重放：只有「空库能一路建起来」才算迁移可重放，
   // 在已有库上增量 apply 会漏掉「建表依赖了后来才加的东西」这类问题。
@@ -360,20 +643,28 @@ async function sql(statement) {
   }
 }
 
-const commands = { setup, start, stop, replay, test, verify, sql };
+const commands = { setup, start, stop, replay, test, verify, sql, http };
 
-const [command, ...rest] = process.argv.slice(2);
-if (!commands[command]) {
-  console.error(`用法：node scripts/db/local-db.mjs <${Object.keys(commands).join('|')}> [参数]`);
-  process.exitCode = 2;
-} else {
-  try {
-    const outcome = await commands[command](...rest);
-    // 用 exitCode 而不是 process.exit()：管道上的 stdout 是异步写，
-    // 直接 exit 会把还没 flush 的日志整段吞掉，排查时只剩一个退出码。
-    if (typeof outcome === 'number' && outcome > 0) process.exitCode = 1;
-  } catch (cause) {
-    console.error(cause instanceof Error ? cause.message : cause);
-    process.exitCode = 1;
+// 允许被 import（例如集成测试想复用启停逻辑）而不触发 CLI 分支。
+const invokedDirectly =
+  process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
+
+if (invokedDirectly) {
+  const [command, ...rest] = process.argv.slice(2);
+  if (!commands[command]) {
+    console.error(`用法：node scripts/db/local-db.mjs <${Object.keys(commands).join('|')}> [参数]`);
+    process.exitCode = 2;
+  } else {
+    try {
+      const outcome = await commands[command](...rest);
+      // 用 exitCode 而不是 process.exit()：管道上的 stdout 是异步写，
+      // 直接 exit 会把还没 flush 的日志整段吞掉，排查时只剩一个退出码。
+      if (typeof outcome === 'number' && outcome > 0) process.exitCode = 1;
+    } catch (cause) {
+      console.error(cause instanceof Error ? cause.message : cause);
+      process.exitCode = 1;
+    }
   }
 }
+
+export { ORG_ID, USER_IDS, JWT_SECRET, REST_PORT, DB_NAME, PORT };

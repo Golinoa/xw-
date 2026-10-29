@@ -23,6 +23,7 @@
     "db:test": "supabase test db --local",
     "db:local:setup": "node scripts/db/local-db.mjs setup",
     "db:local:verify": "node scripts/db/local-db.mjs verify",
+    "db:local:http": "node scripts/db/local-db.mjs http",
     "smoke": "playwright test --config playwright.smoke.config.ts",
     "wrangler": "pnpm --filter @erp/api exec wrangler --config ../../wrangler.toml"
   },
