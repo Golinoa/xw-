@@ -482,6 +482,21 @@ BEGIN
     RAISE EXCEPTION 'customer_not_available' USING ERRCODE = '23503';
   END IF;
 
+  -- 应付行引用的供应商必须属于当前组织且仍启用：外键只保证租户一致，
+  -- 不保证「没被停用」，停用供应商被新订单引用会让结算口径悄悄变脏。
+  IF EXISTS (
+    SELECT 1
+    FROM jsonb_array_elements(coalesce(requested_payables, '[]'::jsonb)) AS item
+    WHERE NOT EXISTS (
+      SELECT 1 FROM public.suppliers AS supplier
+      WHERE supplier.id = (item ->> 'supplierId')::uuid
+        AND supplier.organization_id = current_org_id
+        AND supplier.is_active
+    )
+  ) THEN
+    RAISE EXCEPTION 'supplier_not_available' USING ERRCODE = '23503';
+  END IF;
+
   generated_number := 'SO-' || to_char(now() AT TIME ZONE 'Asia/Shanghai', 'YYYYMMDD') || '-'
     || lpad(nextval('public.order_number_seq')::text, 6, '0');
 
@@ -580,6 +595,19 @@ BEGIN
   IF current_order.version <> requested_version THEN
     RETURN QUERY SELECT NULL::uuid, 'VERSION_CONFLICT'::text;
     RETURN;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM jsonb_array_elements(coalesce(requested_payables, '[]'::jsonb)) AS item
+    WHERE NOT EXISTS (
+      SELECT 1 FROM public.suppliers AS supplier
+      WHERE supplier.id = (item ->> 'supplierId')::uuid
+        AND supplier.organization_id = current_org_id
+        AND supplier.is_active
+    )
+  ) THEN
+    RAISE EXCEPTION 'supplier_not_available' USING ERRCODE = '23503';
   END IF;
 
   -- 锁团后编辑受限：必须先解锁再改（R-ORDER-02）。
@@ -693,7 +721,8 @@ BEGIN
     status = target_status,
     -- 取消时记下原状态，恢复动作据此回到原业务状态。
     previous_status = CASE WHEN requested_action = 'cancel' THEN current_order.status ELSE current_order.previous_status END,
-    status_reason = requested_reason,
+    -- 未提供原因时保留上一次说明，避免 confirm/revert 这类无原因动作把锁团原因抹掉。
+    status_reason = coalesce(requested_reason, current_order.status_reason),
     version = current_order.version + 1,
     updated_by = (SELECT auth.uid ()),
     updated_at = now()

@@ -51,6 +51,7 @@ function toListItem(record: OrderRecord): OrderListItem {
 function toDetail(record: OrderRecord): OrderDetail {
   return {
     ...toListItem(record),
+    ...(record.previousStatus ? { previousStatus: record.previousStatus } : {}),
     ...(record.remark ? { remark: record.remark } : {}),
     ...(record.statusReason ? { statusReason: record.statusReason } : {}),
     receivables: record.receivables,

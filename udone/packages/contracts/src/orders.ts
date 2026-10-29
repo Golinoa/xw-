@@ -172,6 +172,8 @@ export const orderListItemSchema = z.object({
 export type OrderListItem = z.infer<typeof orderListItemSchema>;
 
 export const orderDetailSchema = orderListItemSchema.extend({
+  /** 取消前的业务状态。没有它，界面上无法说明「恢复」会回到哪个状态。 */
+  previousStatus: orderStatusSchema.optional(),
   remark: z.string().optional(),
   /** 锁团原因，解锁后保留最后一次说明，便于追溯。 */
   statusReason: z.string().optional(),

@@ -379,7 +379,17 @@ export function createSupabaseOrderRepository(
       const keyword = filter.keyword ? sanitizeKeyword(filter.keyword) : '';
       if (keyword) {
         const pattern = `*${keyword}*`;
-        query.set('or', `(order_number.ilike.${pattern},route_name.ilike.${pattern})`);
+        // 列表里展示客户名，但客户名不在 orders 表上；不补这一段，用户按客户名搜索会得到空列表。
+        // 客户查询受 customers 的 RLS 限制，没有 customer.read 的账号只是搜不到客户名，不影响订单本身。
+        const matchedCustomers = await client.rest<Array<{ id: string }>>(
+          `customers?organization_id=eq.${encodeURIComponent(filter.organizationId)}&deleted_at=is.null&name=ilike.${pattern}&select=id&limit=50`,
+          { organizationId: filter.organizationId },
+        );
+        const conditions = [`order_number.ilike.${pattern}`, `route_name.ilike.${pattern}`];
+        if (matchedCustomers.length > 0) {
+          conditions.push(`customer_id=${inList(matchedCustomers.map((row) => row.id))}`);
+        }
+        query.set('or', `(${conditions.join(',')})`);
       }
 
       const page = await client.restPage<OrderRow>(`orders?${query.toString()}`, {
