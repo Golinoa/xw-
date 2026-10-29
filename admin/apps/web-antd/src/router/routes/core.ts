@@ -7,7 +7,14 @@ import { $t } from '#/locales';
 
 const BasicLayout = () => import('#/layouts/basic.vue');
 const AuthPageLayout = () => import('#/layouts/auth.vue');
-/** 全局404页面 */
+
+/**
+ * 全局 404 页面。
+ *
+ * 口径（已采纳）：无权限路由在登录后**不生成**，直接输入 URL 会落到本兜底路由，
+ * 因此 404 文案必须包含「不存在或无访问权限」，避免把资源是否存在泄露成 403。
+ * 该路由不属于 `coreRoutes`，未登录访问仍会先被守卫送到登录页。
+ */
 const fallbackNotFoundRoute: RouteRecordRaw = {
   component: () => import('#/views/_core/fallback/not-found.vue'),
   meta: {
@@ -56,41 +63,26 @@ const coreRoutes: RouteRecordRaw[] = [
           title: $t('page.auth.login'),
         },
       },
-      {
-        name: 'CodeLogin',
-        path: 'code-login',
-        component: () => import('#/views/_core/authentication/code-login.vue'),
-        meta: {
-          title: $t('page.auth.codeLogin'),
-        },
-      },
-      {
-        name: 'QrCodeLogin',
-        path: 'qrcode-login',
-        component: () =>
-          import('#/views/_core/authentication/qrcode-login.vue'),
-        meta: {
-          title: $t('page.auth.qrcodeLogin'),
-        },
-      },
-      {
-        name: 'ForgetPassword',
-        path: 'forget-password',
-        component: () =>
-          import('#/views/_core/authentication/forget-password.vue'),
-        meta: {
-          title: $t('page.auth.forgetPassword'),
-        },
-      },
-      {
-        name: 'Register',
-        path: 'register',
-        component: () => import('#/views/_core/authentication/register.vue'),
-        meta: {
-          title: $t('page.auth.register'),
-        },
-      },
     ],
+  },
+  /**
+   * 403 拒绝页。
+   *
+   * 本阶段无权限一律走 404（见 `fallbackNotFoundRoute` 注释），
+   * 该路由用于两处：① 页面内需要「功能存在但无权限」明示的场景；
+   * ② 路由声明 `meta.menuVisibleWithForbidden` 后由 `forbiddenComponent` 复用同一页面。
+   */
+  {
+    component: () => import('#/views/_core/fallback/forbidden.vue'),
+    meta: {
+      hideInBreadcrumb: true,
+      hideInMenu: true,
+      hideInTab: true,
+      ignoreAccess: true,
+      title: '403',
+    },
+    name: 'Forbidden',
+    path: '/error/403',
   },
 ];
 

@@ -4,8 +4,7 @@ import {
   createWebHistory,
 } from 'vue-router';
 
-import { resetStaticRoutes } from '@vben/utils';
-
+import { resetAccessRoutes } from './access';
 import { createRouterGuard } from './guard';
 import { routes } from './routes';
 
@@ -29,7 +28,11 @@ const router = createRouter({
   // strict: true,
 });
 
-const resetRoutes = () => resetStaticRoutes(router, routes);
+/**
+ * 登出 / 换账号时清理动态路由（含 Root 容器内的残留子路由）。
+ * 由 store 侧登出流程调用；本文件不感知账号状态。
+ */
+const resetRoutes = () => resetAccessRoutes(router, routes);
 
 // 创建路由守卫
 createRouterGuard(router);

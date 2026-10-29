@@ -1,0 +1,69 @@
+{
+  "app": {
+    "name": "Ops Console",
+    "shortName": "Ops"
+  },
+  "nav": {
+    "overview": "Overview",
+    "customer": "Customers",
+    "catalog": "Products & Plans",
+    "contract": "Contracts",
+    "billing": "Billing",
+    "entitlement": "Subscriptions & Licenses",
+    "tenant": "Tenant Delivery",
+    "deployment": "Private Deployments",
+    "support": "Support Tickets",
+    "governance": "Operations Settings",
+    "audit": "Audit & Integration"
+  },
+  "menu": {
+    "overview": "Overview",
+    "customerList": "Customers & Contacts",
+    "catalogProducts": "Product Catalog",
+    "catalogPlans": "Plans & Pricing",
+    "contractList": "Contract List",
+    "billingReceivables": "Receivable Schedule",
+    "billingReceipts": "Receipts & Reconciliation",
+    "entitlementSubscriptions": "SaaS Subscriptions",
+    "entitlementLicenses": "Licenses & Entitlements",
+    "tenantMappings": "Tenant Mappings & Provisioning",
+    "deploymentInstances": "Deployment Instances",
+    "ticketList": "Ticket List",
+    "governanceOperators": "Operators & Roles",
+    "governanceSettings": "System Settings",
+    "auditEvents": "Audit Events",
+    "auditExports": "Export Tasks"
+  },
+  "login": {
+    "title": "Ops Console Sign In",
+    "subtitle": "Internal operators only. Accounts are issued by administrators.",
+    "username": "Account",
+    "usernamePlaceholder": "Enter operator account",
+    "password": "Password",
+    "passwordPlaceholder": "Enter password",
+    "submit": "Sign in",
+    "noRegisterHint": "Public sign-up is not available. Contact an operations administrator for an account.",
+    "error": {
+      "credentials": "Incorrect account or password.",
+      "disabled": "This account has been disabled. Contact an operations administrator.",
+      "network": "Network connection failed. Check your network and try again.",
+      "noPermission": "This account has no ops console permission. Ask an administrator to assign an ops role.",
+      "rateLimited": "Too many attempts. Try again later.",
+      "server": "Service is temporarily unavailable. Try again later.",
+      "unknown": "Sign-in failed. Try again later."
+    }
+  },
+  "fallback": {
+    "forbiddenTitle": "Access denied",
+    "forbiddenDescription": "Your account cannot access this page. Contact an operations administrator to request access.",
+    "notFoundTitle": "Page not found or not accessible",
+    "notFoundDescription": "Check the address. If the link is correct, your account may not have permission for this page.",
+    "backToWorkbench": "Back to overview"
+  },
+  "placeholder": {
+    "tag": "Not implemented",
+    "pending": "This page will be delivered in a later iteration. Only the route entry and menu contract exist now.",
+    "requiredPermissions": "Permissions required by this page",
+    "authorityNote": "Hiding menus and pages only improves experience. Real authorization is enforced by the server on action codes."
+  }
+}
