@@ -9,6 +9,8 @@ import { healthRoutes } from './routes/health';
 import { organizationRoutes } from './routes/organizations';
 import { memberRoutes } from './modules/members/routes';
 import { customerRoutes } from './modules/customers/routes';
+import { orderRoutes } from './modules/orders/routes';
+import { supplierRoutes } from './modules/suppliers/routes';
 
 export const app = new Hono<ApiEnvironment>();
 
@@ -26,5 +28,7 @@ app.route('/', healthRoutes);
 app.route('/', organizationRoutes);
 app.route('/', memberRoutes);
 app.route('/', customerRoutes);
+app.route('/', orderRoutes);
+app.route('/', supplierRoutes);
 
 export default app;

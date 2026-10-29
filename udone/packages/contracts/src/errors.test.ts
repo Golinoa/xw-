@@ -12,6 +12,7 @@ describe('shared API errors', () => {
       NOT_FOUND: 'NOT_FOUND',
       CONFLICT: 'CONFLICT',
       OBJECT_REFERENCED: 'OBJECT_REFERENCED',
+      ORDER_STATE_CONFLICT: 'ORDER_STATE_CONFLICT',
       RATE_LIMITED: 'RATE_LIMITED',
       INTERNAL_ERROR: 'INTERNAL_ERROR',
     });
@@ -24,6 +25,7 @@ describe('shared API errors', () => {
       | 'NOT_FOUND'
       | 'CONFLICT'
       | 'OBJECT_REFERENCED'
+      | 'ORDER_STATE_CONFLICT'
       | 'RATE_LIMITED'
       | 'INTERNAL_ERROR'
     >();

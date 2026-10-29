@@ -3,6 +3,8 @@ import type { AuthContext, Permission } from '@erp/contracts';
 import { ERROR_CODES } from '@erp/contracts';
 import type { OrganizationRepository } from '../services/organization-service';
 import type { CustomerRepository } from '../modules/customers/customer-service';
+import type { OrderRepository } from '../modules/orders/order-service';
+import type { SupplierRepository } from '../modules/suppliers/supplier-service';
 import { ApiHttpError } from './error-handler';
 import { createSupabaseAuthVerifier } from '../services/supabase-auth-verifier';
 
@@ -16,6 +18,8 @@ export interface ApiEnvironment {
     AUTH_VERIFIER?: AuthVerifier;
     ORGANIZATION_REPOSITORY?: OrganizationRepository;
     CUSTOMER_REPOSITORY?: CustomerRepository;
+    ORDER_REPOSITORY?: OrderRepository;
+    SUPPLIER_REPOSITORY?: SupplierRepository;
     SUPABASE_URL?: string;
     SUPABASE_PUBLISHABLE_KEY?: string;
     SUPABASE_SERVICE_ROLE_KEY?: string;

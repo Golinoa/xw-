@@ -14,6 +14,21 @@ import {
   updateCustomerRequestSchema,
 } from './customers';
 import type { HttpMethod } from './http';
+import {
+  createOrderRequestSchema,
+  orderListQuerySchema,
+  orderListResponseSchema,
+  orderParamsSchema,
+  orderResponseSchema,
+  transitionOrderRequestSchema,
+  updateOrderRequestSchema,
+} from './orders';
+import {
+  createSupplierRequestSchema,
+  supplierListQuerySchema,
+  supplierListResponseSchema,
+  supplierResponseSchema,
+} from './suppliers';
 import { healthResponseSchema } from './health';
 import {
   acceptInvitationResponseSchema,
@@ -135,6 +150,48 @@ export const ROUTES = {
     path: '/api/customer-tags',
     request: createCustomerTagRequestSchema,
     response: customerTagResponseSchema,
+  }),
+  listOrders: defineRoute({
+    method: 'GET',
+    path: '/api/orders',
+    request: orderListQuerySchema,
+    response: orderListResponseSchema,
+  }),
+  createOrder: defineRoute({
+    method: 'POST',
+    path: '/api/orders',
+    request: createOrderRequestSchema,
+    response: orderResponseSchema,
+  }),
+  getOrder: defineRoute({
+    method: 'GET',
+    path: '/api/orders/:orderId',
+    request: orderParamsSchema,
+    response: orderResponseSchema,
+  }),
+  updateOrder: defineRoute({
+    method: 'PATCH',
+    path: '/api/orders/:orderId',
+    request: updateOrderRequestSchema,
+    response: orderResponseSchema,
+  }),
+  transitionOrder: defineRoute({
+    method: 'POST',
+    path: '/api/orders/:orderId/transition',
+    request: transitionOrderRequestSchema,
+    response: orderResponseSchema,
+  }),
+  listSuppliers: defineRoute({
+    method: 'GET',
+    path: '/api/suppliers',
+    request: supplierListQuerySchema,
+    response: supplierListResponseSchema,
+  }),
+  createSupplier: defineRoute({
+    method: 'POST',
+    path: '/api/suppliers',
+    request: createSupplierRequestSchema,
+    response: supplierResponseSchema,
   }),
 } as const;
 

@@ -11,6 +11,10 @@ describe('shared permissions', () => {
       CUSTOMER_READ: 'customer.read',
       CUSTOMER_WRITE: 'customer.write',
       CUSTOMER_SENSITIVE_READ: 'customer.sensitive.read',
+      ORDER_READ: 'order.read',
+      ORDER_WRITE: 'order.write',
+      SUPPLIER_READ: 'supplier.read',
+      SUPPLIER_WRITE: 'supplier.write',
     });
     expectTypeOf<Permission>().toEqualTypeOf<
       | 'organization.read'
@@ -20,6 +24,10 @@ describe('shared permissions', () => {
       | 'customer.read'
       | 'customer.write'
       | 'customer.sensitive.read'
+      | 'order.read'
+      | 'order.write'
+      | 'supplier.read'
+      | 'supplier.write'
     >();
   });
 
@@ -33,22 +41,36 @@ describe('shared permissions', () => {
         'customer.read',
         'customer.write',
         'customer.sensitive.read',
+        'order.read',
+        'order.write',
+        'supplier.read',
+        'supplier.write',
       ],
       dataScope: 'all',
     });
-    // 计调员数据范围是 own：客户列表在 API 与 RLS 两侧都会按本人创建过滤。
+    // 计调员数据范围是 own：客户与订单在 API 与 RLS 两侧都会按本人创建过滤。
     expect(authorizationForRole('operator')).toEqual({
       permissions: [
         'organization.read',
         'customer.read',
         'customer.write',
         'customer.sensitive.read',
+        'order.read',
+        'order.write',
+        'supplier.read',
+        'supplier.write',
       ],
       dataScope: 'own',
     });
-    // 财务只读客户，且看不到电话/证件原值（REQUIREMENTS.md §16.3）。
+    // 财务只读：能看订单与供应商，但不改订单业务内容（REQUIREMENTS.md §16.3）。
     expect(authorizationForRole('finance')).toEqual({
-      permissions: ['organization.read', 'audit.read', 'customer.read'],
+      permissions: [
+        'organization.read',
+        'audit.read',
+        'customer.read',
+        'order.read',
+        'supplier.read',
+      ],
       dataScope: 'all',
     });
   });

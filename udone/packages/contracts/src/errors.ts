@@ -14,6 +14,8 @@ export const ERROR_CODES = {
   CONFLICT: 'CONFLICT',
   /** 主数据仍被业务单据引用，不能物理删除（需求 §19.2）。 */
   OBJECT_REFERENCED: 'OBJECT_REFERENCED',
+  /** 订单当前状态不允许该动作，例如对已锁团订单执行确认出团。 */
+  ORDER_STATE_CONFLICT: 'ORDER_STATE_CONFLICT',
   RATE_LIMITED: 'RATE_LIMITED',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;
