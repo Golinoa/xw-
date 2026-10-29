@@ -375,15 +375,17 @@ SELECT
   );
 
 
--- 明细行不支持就地改：金额列没有 UPDATE 授权，改价必须走 update_order_with_items
--- 整体重写。这条断言把这个约定固定住，避免有人为了「顺手改一行」放开列授权。
+-- 金额行允许就地改 name/amount（订单编辑按 id 增量合并需要它），
+-- 但 confirmed_amount / pending_amount 永远不开放给客户端：
+-- 一旦放开，任何人都能把「已确认收款」直接写成任意值，
+-- 「金额只能由收付款流程确认」这条不变式就失效了。
 SELECT
   throws_like (
     $sql$
-    UPDATE public.order_receivables SET amount = 999999 WHERE id = 'e5000000-0000-4000-8000-000000000001'
+    UPDATE public.order_receivables SET confirmed_amount = 999999 WHERE id = 'e5000000-0000-4000-8000-000000000001'
     $sql$,
     '%permission denied%',
-    'receivable amounts cannot be edited in place'
+    'confirmed amounts cannot be written by clients'
   );
 
 
