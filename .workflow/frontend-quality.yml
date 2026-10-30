@@ -29,8 +29,12 @@ displayName: admin 前端质量门禁
 triggers:
   push:
     branches:
-      precise:
+      # 同 ci.yml：只用 prefix 一个类别。Gitee Go 不同匹配类别之间是【交集】，
+      # 混用 precise:main + prefix:feat/ 会变成「既是 main 又以 feat/ 开头」= 永不触发。
+      # 原配置只监听 main，而开发全在 feat/*，这条流水线因此从未执行过一次。
+      prefix:
         - main
+        - feat/
   pr:
     branches:
       precise:

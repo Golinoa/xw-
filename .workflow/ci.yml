@@ -20,8 +20,14 @@ displayName: udone 质量门禁
 triggers:
   push:
     branches:
-      precise:
+      # 只用 prefix 一个类别，别和 precise 混用。
+      # Gitee Go 文档：「分支匹配的多种规则是【交集】关系，同时设置只有满足所有规则才触发」。
+      # 原配置只写 precise:[main]，而所有开发都在 feat/* 上，于是这条流水线
+      # 从建立起一次都没跑过——「有 yml」被当成了「有 CI」。同一类别内多条是并集，
+      # 所以 main 与 feat/ 都写进 prefix：main 本身也满足 main 前缀。
+      prefix:
         - main
+        - feat/
   pr:
     branches:
       precise:
