@@ -52,7 +52,7 @@
 |---|---|---|---|---|
 | 0 | ~~0.1~~ | 幂等键命名空间 + `ops.idempotency_records` ✅ `3df4fe2` / `fe4e184` | S + M | 落库部分依赖 0.2 |
 | 0 | ~~0.2~~ | PostgREST 暴露 `ops`（config.toml / local-db / rest-client 三处）✅ `9aba9ce` | S | — |
-| 0 | 0.3 | 契约双注册表（`respond` / `RouteKey` / route-parity） | S | — |
+| 0 | ~~0.3~~ | 契约双注册表（`respond` / `RouteKey` / route-parity）✅ `36b2cc8` | S | — |
 | 0 | 0.4 | 认证代理（GoTrue）+ 受控 CORS 凭证 | M | 0.2 完成后才能验成员判定 |
 | 1 | T-01 | 契约包与路由骨架 + `GET /meta` | M | 0.3 |
 | 1 | T-02 | `ops` schema 引导、RLS 帮助函数、审计表 | M | 0.2 |
@@ -97,14 +97,18 @@ Wave 1 只做到「前端登录、菜单、403/404 能对着真 API 跑通」，
 
 **规模:** S
 
-### 0.3 契约双注册表
+### 0.3 契约双注册表 — 已完成（`36b2cc8`）
 
-- [ ] `RouteKey` 扩为 `keyof typeof ROUTES | keyof typeof OPS_ROUTES`，`respond()` 按注册表查 schema
-- [ ] `route-parity.test.ts` 改为并集对账，并新增前缀断言
+- [x] `RouteKey` 扩为合并视图 `keyof typeof ROUTE_ENTRIES`，`respond()` 按合并视图查 schema
+- [x] `route-parity.test.ts` 改为并集对账，并新增前缀断言（`OPS_ROUTES` 必须是 `/api/v1/ops` 开头）
+
+**做法修正:** 原计划写「`keyof A | keyof B`」，实现时改用 `{ ...ROUTES, ...OPS_ROUTES }` 的合并视图 `ROUTE_ENTRIES`。理由：`RouteResponse<K>` 需要对联合键取 schema，而 TS 不允许对联合类型的索引签名直接索引；合并视图让 `RouteResponse` / `RouteRequest` 的条件类型原样可用。代价是**同名 key 会静默覆盖**，所以对账里专门有一条同名断言——那是展开唯一掩盖不了的东西。
 
 **现状证据:** `respond<K extends RouteKey>`，`RouteKey = keyof typeof ROUTES`；对账测试第二条断言「每条已注册路由都要在 `ROUTES` 里有契约」——直接挂 ops 路由会立刻变红。报告把这步算作「骨架」，实际要改共享基建。
 
 **验收标准:** 故意删一条挂载 → 红；故意写错前缀（如 `/api/ops/meta`）→ 红；`OPS_ROUTES` 与 `ROUTES` 出现同名键 → 红。
+
+**完成情况:** 对账逻辑抽成纯函数 `apps/api/src/contracts/parity.ts` + 6 条合成输入断言（未挂载 / 未登记 / 双表同名 / 前缀写错 / 不检查无前缀要求的表 / 全对时四数组为空）。理由：真实数据上「通过」与「函数恒返回空数组」无法区分，只有喂坏数据才能证明门禁有效。两轮真实变异：往 `OPS_ROUTES` 登记一条不挂载的 `/api/v1/ops/meta` → 点名 `GET /api/v1/ops/meta`；把路径改成 `/api/ops/meta` → 前缀规则变红。
 
 **规模:** S
 
