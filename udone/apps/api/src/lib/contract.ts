@@ -1,7 +1,7 @@
 import type { Context } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { z } from '@erp/contracts';
-import { ERROR_CODES, ROUTES, type RouteKey, type RouteResponse } from '@erp/contracts';
+import { ERROR_CODES, ROUTE_ENTRIES, type RouteKey, type RouteResponse } from '@erp/contracts';
 import type { ApiEnvironment } from '../middleware/auth';
 import { ApiHttpError } from '../middleware/error-handler';
 
@@ -50,7 +50,7 @@ export function parseQuery<T extends z.ZodType>(context: ApiContext, schema: T):
 }
 
 /**
- * 出站校验：响应体必须满足该端点在 `ROUTES` 注册的 schema。
+ * 出站校验：响应体必须满足该端点在注册表（`ROUTES` 或 `OPS_ROUTES`）里的 schema。
  *
  * 多字段、少字段、类型不符都会在这里变成 500 + 结构化日志，而不是静默流到前端。
  * 这是「服务端不会先走形」的强制门：只要写路由时用 respond()，就无法返回契约外的字段。
@@ -61,7 +61,7 @@ export function respond<K extends RouteKey>(
   data: RouteResponse<K>,
   status: ContentfulStatusCode = 200,
 ) {
-  const parsed = ROUTES[key].response.safeParse(data);
+  const parsed = ROUTE_ENTRIES[key].response.safeParse(data);
   if (!parsed.success) {
     console.error(
       JSON.stringify({

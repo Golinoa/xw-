@@ -268,11 +268,37 @@ export const ROUTES = {
   }),
 } as const;
 
-export type RouteKey = keyof typeof ROUTES;
-export type RoutePath<K extends RouteKey> = (typeof ROUTES)[K]['path'];
-export type RouteMethod<K extends RouteKey> = (typeof ROUTES)[K]['method'];
-export type RouteResponse<K extends RouteKey> = z.output<(typeof ROUTES)[K]['response']>;
-export type RouteRequest<K extends RouteKey> = (typeof ROUTES)[K] extends {
+/**
+ * 运营后台（`/api/v1/ops/*`）的端点清单。
+ *
+ * 与 `ROUTES` 分开是刻意的：两张表有不同的路径前缀、不同的鉴权体系（运营成员
+ * 而不是租户成员）、不同的错误码词表。合成一张表会让「这条路由属于谁」变成
+ * 需要读路径字符串才能回答的问题，而 `respond()` 的 key 恰恰是最容易抄错的东西。
+ *
+ * 现在是空的：T-01 起逐个登记。留空不影响任何现有行为——`OPS_ROUTES` 没有键时，
+ * 并集类型与今天完全相同。
+ */
+export const OPS_ROUTES = {} as const satisfies Record<string, RouteContract>;
+
+export type OpsRouteKey = keyof typeof OPS_ROUTES;
+
+/**
+ * 两张清单的并集，供 `respond()` 与对账测试使用。
+ *
+ * 用展开而不是让调用方自己判断属于哪张表：这样 `respond(context, 'getMeta', ...)`
+ * 在 T-01 之后可以直接用，不必改签名。同名键会静默覆盖，所以对账测试里有一条
+ * 「同一 key 出现在两张表」的断言——那是展开唯一掩盖不了的东西。
+ */
+export const ROUTE_ENTRIES = { ...ROUTES, ...OPS_ROUTES };
+
+/** 全部注册表。对账测试遍历它，新增第三张表时只需在这里多一项。 */
+export const ROUTE_REGISTRIES = { ROUTES, OPS_ROUTES } as const;
+
+export type RouteKey = keyof typeof ROUTE_ENTRIES;
+export type RoutePath<K extends RouteKey> = (typeof ROUTE_ENTRIES)[K]['path'];
+export type RouteMethod<K extends RouteKey> = (typeof ROUTE_ENTRIES)[K]['method'];
+export type RouteResponse<K extends RouteKey> = z.output<(typeof ROUTE_ENTRIES)[K]['response']>;
+export type RouteRequest<K extends RouteKey> = (typeof ROUTE_ENTRIES)[K] extends {
   request: infer T extends z.ZodType;
 }
   ? z.output<T>
