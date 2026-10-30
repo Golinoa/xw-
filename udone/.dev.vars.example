@@ -1,0 +1,43 @@
+# 本地开发模板：`cp .dev.vars.example .dev.vars` 后填值。
+#
+# 为什么单独一份：`.env.example` 是给人读的文档，这份是 `wrangler dev` 真正加载的文件
+# （wrangler 只认 `.dev.vars`，不读 `.env`）。两份的键集合由 `pnpm check:deploy` 强制相等，
+# 加变量必须同改两处，否则门禁红。
+#
+# `.dev.vars` 已在 udone/.gitignore 中忽略；本文件（`.example`）会入库，所以**值只能是空占位**。
+# 真实部署不走这个文件：生产用 `wrangler secret put <NAME>`，值不落盘、不进仓库。
+
+# ── 浏览器侧（构建期内联，VITE_ 前缀的值会出现在前端产物里，绝不能放密钥）──
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+VITE_SUPABASE_CAPTCHA_SITE_KEY=
+
+# ── 服务端（Supabase 项目 Settings → API 取；前三项为端点的鉴权基础）──
+SUPABASE_URL=
+SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# 幂等键签名密钥，取同一页的 JWT Secret。
+# 留空也能起服务，但幂等命名空间会退化成令牌哈希：access token 一刷新，
+# 同一笔重复提交就落两行。本地跑重复提交相关用例前必须填。
+SUPABASE_JWT_SECRET=
+
+# 邀请链接的落地页，不带尾斜杠。留空时邀请接口不返回可点链接。
+APP_BASE_URL=
+
+# ── 运行策略 ──
+# 本地无 GoTrue，要跑自签令牌用例才改成 true；改在 .dev.vars 里，不要改本文件。
+# wrangler.toml 里出现这个名字即门禁红（生产禁止打开）。
+ALLOW_LOCAL_JWT_AUTH=false
+# 逗号分隔，禁通配符；留空表示拒绝所有跨域来源（同源请求不受影响）。
+ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+RATE_LIMIT_PER_MINUTE=60
+
+# ── 真栈冒烟专用（`pnpm smoke` 指向已部署环境时才填；本地 db:local:* 用夹具，不需要）──
+SMOKE_BASE_URL=
+SMOKE_SUPABASE_URL=
+SMOKE_SUPABASE_PUBLISHABLE_KEY=
+SMOKE_USER_EMAIL=
+SMOKE_USER_PASSWORD=
+SMOKE_ORGANIZATION_ID=
+SMOKE_NONMEMBER_ORGANIZATION_ID=

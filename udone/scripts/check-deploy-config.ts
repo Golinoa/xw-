@@ -20,6 +20,12 @@ export const WORKER_ENV_VARIABLES = [
   'SUPABASE_URL',
   'SUPABASE_PUBLISHABLE_KEY',
   'SUPABASE_SERVICE_ROLE_KEY',
+  /**
+   * 幂等签名密钥。缺它不会报错，只会让幂等命名空间退化成令牌哈希：
+   * access token 一刷新，同一笔重复提交就落两行。这类「配了但没配」没有任何
+   * 运行期信号，只能靠门禁盯住名字——所以它必须出现在类型面与样例里。
+   */
+  'SUPABASE_JWT_SECRET',
   'ALLOW_LOCAL_JWT_AUTH',
 ] as const;
 
@@ -28,6 +34,7 @@ export const ENV_EXAMPLE_VARIABLES = [
   'SUPABASE_URL',
   'SUPABASE_PUBLISHABLE_KEY',
   'SUPABASE_SERVICE_ROLE_KEY',
+  'SUPABASE_JWT_SECRET',
   'ALLOWED_ORIGINS',
   'RATE_LIMIT_PER_MINUTE',
   'ALLOW_LOCAL_JWT_AUTH',
@@ -37,6 +44,7 @@ const BLANK_IN_EXAMPLE = new Set([
   'SUPABASE_URL',
   'SUPABASE_PUBLISHABLE_KEY',
   'SUPABASE_SERVICE_ROLE_KEY',
+  'SUPABASE_JWT_SECRET',
 ]);
 
 async function readText(path: string): Promise<string> {
@@ -95,8 +103,17 @@ export async function checkDeployConfig(): Promise<string[]> {
     issues.push('Wrangler configuration must not require deferred object storage');
   }
 
+  /**
+   * 判的是**声明**，不是提到。
+   *
+   * 第一版用的是 `workerEnv.includes(name)`，变异当场打穿：把 `env.d.ts` 里的
+   * `SUPABASE_JWT_SECRET?: string;` 整行删掉，门禁依然绿——因为上面的注释里写着
+   * 「不能拿 SUPABASE_JWT_SECRET 是否存在当开关」。注释提到一个名字，和类型面声明它
+   * 能读到它，是两件事，而只有后者能让 `context.env.X` 通过编译。
+   */
   for (const name of WORKER_ENV_VARIABLES) {
-    if (!workerEnv.includes(name)) issues.push(`Worker environment types are missing ${name}`);
+    const declared = new RegExp(`^\\s*${name}\\??:\\s*string;`, 'm').test(workerEnv);
+    if (!declared) issues.push(`Worker environment types are missing ${name}`);
   }
   for (const name of ENV_EXAMPLE_VARIABLES) {
     const assignment = example.match(new RegExp(`^${name}=(.*)$`, 'm'));
@@ -116,6 +133,28 @@ export async function checkDeployConfig(): Promise<string[]> {
     }
     if (name === 'ALLOW_LOCAL_JWT_AUTH' && value !== 'false') {
       issues.push('.env.example must leave the local JWT channel off');
+    }
+  }
+
+  /**
+   * 本地模板与样例必须同键集合。
+   *
+   * `.env.example` 是文档，`.dev.vars.example` 是 `wrangler dev` 的填法。两者键集合一旦
+   * 漂移，新加的服务端变量就只在其中一处出现，照另一处配的人会得到缺项的工作副本；
+   * 症状不是启动失败，而是某个能力运行期静默降级（例如幂等退化为令牌哈希）。
+   */
+  const devVars = await readText('.dev.vars.example');
+  if (!devVars) {
+    issues.push('Local template .dev.vars.example is missing');
+  } else {
+    const documented = new Set(dotenvValues(example).map((item) => item.name));
+    const templated = new Set(dotenvValues(devVars).map((item) => item.name));
+    for (const name of documented) {
+      if (!templated.has(name)) issues.push(`.dev.vars.example is missing ${name}`);
+    }
+    for (const name of templated) {
+      if (!documented.has(name))
+        issues.push(`.dev.vars.example documents ${name}, which .env.example does not`);
     }
   }
 
