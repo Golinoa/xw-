@@ -350,7 +350,10 @@ function writePostgrestConfig() {
     POSTGREST_CONFIG,
     [
       `db-uri = "postgres://postgres@127.0.0.1:${PORT}/${DB_NAME}"`,
-      'db-schemas = "public"',
+      // 暴露给 PostgREST 的 schema 必须与 supabase/config.toml 的 [api] schemas 一致。
+      // 少了 ops，客户端发 Accept-Profile: ops 会收到 406，而这个 406 会被
+      // 读成「表不存在」——排查方向会完全跑偏。
+      'db-schemas = "public,ops"',
       'db-anon-role = "anon"',
       // 与测试签 JWT 用同一个密钥；不一致时每个请求都会 401，
       // 而 401 会被误读成「鉴权中间件坏了」。

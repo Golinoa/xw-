@@ -60,17 +60,21 @@ function base64url(value: string): string {
  * 而失败原因看起来会像业务逻辑坏了。
  */
 export function signToken(userId: string): string {
+  return signJwt({ sub: userId, role: 'authenticated', aud: 'authenticated' });
+}
+
+/**
+ * service_role 令牌。只用来验证「基础设施表对客户端令牌不可见」这条边界，
+ * 不能拿来跑业务用例——那会把 RLS 绕过去，测出来的全绿没有意义。
+ */
+export function signServiceToken(): string {
+  return signJwt({ role: 'service_role', aud: 'authenticated' });
+}
+
+function signJwt(claims: Record<string, unknown>): string {
   const issuedAt = Math.floor(Date.now() / 1000);
   const header = base64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-  const payload = base64url(
-    JSON.stringify({
-      sub: userId,
-      role: 'authenticated',
-      aud: 'authenticated',
-      iat: issuedAt,
-      exp: issuedAt + 3600,
-    }),
-  );
+  const payload = base64url(JSON.stringify({ ...claims, iat: issuedAt, exp: issuedAt + 3600 }));
   const signature = createHmac('sha256', JWT_SECRET)
     .update(`${header}.${payload}`)
     .digest('base64url');
@@ -204,4 +208,52 @@ export function expectStatus(response: ApiResponse, expected: number): void {
     response.status,
     `期望 HTTP ${expected}，实际 HTTP ${response.status}：${JSON.stringify(response.body)}`,
   ).toBe(expected);
+}
+
+export interface RestRequestOptions {
+  method?: string;
+  body?: unknown;
+  /** `Accept-Profile` / `Content-Profile`，PostgREST 用它选 schema。 */
+  profile?: string;
+  /** 默认用管理员令牌；验边界时要显式传 anon 或 service_role。 */
+  token?: string;
+  prefer?: string;
+}
+
+/**
+ * 直连 PostgREST，不经过 Hono。
+ *
+ * 用于验证「schema 是否真的暴露」这类基础设施问题：走 app.request 只能看到
+ * 业务模块碰巧用到的那个 schema，看不出别的 schema 是被暴露了还是根本不存在。
+ */
+export async function restRequest<T = unknown>(
+  path: string,
+  options: RestRequestOptions = {},
+): Promise<ApiResponse<T>> {
+  const headers: Record<string, string> = {
+    apikey: 'integration-publishable-key',
+    'Content-Type': 'application/json',
+    ...(options.token === undefined ? {} : { Authorization: `Bearer ${options.token}` }),
+    ...(options.profile === undefined
+      ? {}
+      : { 'Accept-Profile': options.profile, 'Content-Profile': options.profile }),
+    ...(options.prefer === undefined ? {} : { Prefer: options.prefer }),
+  };
+
+  const response = await fetch(`${REST_URL}/rest/v1/${path}`, {
+    method: options.method ?? 'GET',
+    headers,
+    ...(options.body === undefined ? {} : { body: JSON.stringify(options.body) }),
+  });
+
+  const text = await response.text();
+  let body: unknown = null;
+  if (text) {
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = { raw: text };
+    }
+  }
+  return { status: response.status, body: body as T, headers: response.headers };
 }

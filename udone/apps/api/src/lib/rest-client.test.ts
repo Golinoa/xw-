@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiHttpError } from '../middleware/error-handler';
-import { RestConflictError, RestRequestError, createRestClient } from './rest-client';
+import {
+  RestConflictError,
+  RestRequestError,
+  createRestClient,
+  createServiceRestClient,
+} from './rest-client';
 
 const environment = {
   SUPABASE_URL: 'https://fixture.supabase.co/',
@@ -155,5 +160,74 @@ describe('createRestClient', () => {
     expect(headers.get('apikey')).toBe('service-role-key');
     expect(headers.get('Authorization')).toBe('Bearer service-role-key');
     expect(init?.body).toBe(JSON.stringify({ email: 'invitee@example.com' }));
+  });
+});
+
+describe('schema profiles', () => {
+  /**
+   * PostgREST 用两个头区分「读哪个 schema」与「写进哪个 schema」。
+   * 只发一个的后果不对称：写会静默落到 public，读会报「表不存在」。
+   */
+  it('sends no profile header unless one is requested', async () => {
+    const fetcher = respondWith('[]');
+
+    await createRestClient(environment, 'caller-token').rest('customers?select=id');
+
+    const headers = headersOf(fetcher);
+    expect(headers.get('Accept-Profile')).toBeNull();
+    expect(headers.get('Content-Profile')).toBeNull();
+  });
+
+  it('sends Accept-Profile for a read and Content-Profile for a write', async () => {
+    const fetcher = respondWith('[]');
+    const client = createRestClient(environment, 'caller-token');
+
+    await client.rest('idempotency_records?select=id', { profile: 'ops' });
+    await client.rest('idempotency_records', {
+      method: 'POST',
+      profile: 'ops',
+      body: { scope_key: 'k' },
+    });
+
+    const read = headersOf(fetcher, 0);
+    expect(read.get('Accept-Profile')).toBe('ops');
+    expect(read.get('Content-Profile')).toBeNull();
+
+    const write = headersOf(fetcher, 1);
+    expect(write.get('Content-Profile')).toBe('ops');
+    expect(write.get('Accept-Profile')).toBeNull();
+  });
+
+  it('sends both profile headers on DELETE, which reads and writes', async () => {
+    const fetcher = respondWith('', 204);
+
+    await createRestClient(environment, 'caller-token').rest('idempotency_records?id=eq.1', {
+      method: 'DELETE',
+      profile: 'ops',
+    });
+
+    const headers = headersOf(fetcher);
+    expect(headers.get('Accept-Profile')).toBe('ops');
+    expect(headers.get('Content-Profile')).toBe('ops');
+  });
+
+  it('requires a service-role key before it will build a service client', () => {
+    // 不做降级：拿 publishable key 冒充 service_role 会让请求以 anon 身份被拒，
+    // 错误现场离原因很远。
+    expect(() => createServiceRestClient(environment)).toThrow(ApiHttpError);
+  });
+
+  it('sends the service-role key as both apikey and bearer', async () => {
+    const fetcher = respondWith('[]');
+    const client = createServiceRestClient({
+      ...environment,
+      SUPABASE_SERVICE_ROLE_KEY: 'fixture-service-role-key',
+    });
+
+    await client.rest('idempotency_records?select=id', { profile: 'ops' });
+
+    const headers = headersOf(fetcher);
+    expect(headers.get('apikey')).toBe('fixture-service-role-key');
+    expect(headers.get('Authorization')).toBe('Bearer fixture-service-role-key');
   });
 });

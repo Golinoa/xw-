@@ -26,6 +26,26 @@ export interface RestInit {
   headers?: HeadersInit;
   body?: unknown;
   organizationId?: string;
+  /**
+   * PostgREST schema profile，默认 schema 不需要传。
+   *
+   * PostgREST 用两个不同的头区分「读哪个 schema」与「写进哪个 schema」：
+   * `Accept-Profile` 管 GET/HEAD/DELETE 的读取，`Content-Profile` 管写方法。
+   * 只发一个的话，跨 schema 的写会落到 public、读会报「表不存在」，
+   * 两种失败看起来都跟 schema 无关。
+   */
+  profile?: string;
+}
+
+export interface RestClientOptions {
+  /**
+   * 覆盖 `apikey` 头。
+   *
+   * service_role 调用必须让 `apikey` 与 `Authorization` 是同一个 service_role
+   * 令牌：PostgREST 先按 apikey 决定请求是否合法，再按 Authorization 决定
+   * 执行角色，两者不一致时会以 401 或 anon 身份执行，而 anon 什么都没有。
+   */
+  apiKey?: string;
 }
 
 export interface AuthInit {
@@ -72,6 +92,28 @@ function isUniqueViolation(payload: unknown): boolean {
   );
 }
 
+const READ_METHODS = new Set(['GET', 'HEAD']);
+const DELETE_METHOD = 'DELETE';
+
+/**
+ * PostgREST 的 profile 头。DELETE 同时要两个：它既读也写。
+ *
+ * 不设 profile 时必须完全不发这些头——PostgREST 在没有任何 profile 头时
+ * 用配置里的第一个 schema，这是现有 31 个端点依赖的行为。
+ */
+function profileHeaders(method: string, profile: string | undefined): Record<string, string> {
+  if (!profile) return {};
+  const normalized = method.toUpperCase();
+  const headers: Record<string, string> = {};
+  if (READ_METHODS.has(normalized) || normalized === DELETE_METHOD) {
+    headers['Accept-Profile'] = profile;
+  }
+  if (!READ_METHODS.has(normalized)) {
+    headers['Content-Profile'] = profile;
+  }
+  return headers;
+}
+
 /**
  * Single HTTP exit for Supabase. Every repository and service goes through here so
  * auth headers, organisation scoping and error mapping cannot drift per module.
@@ -79,12 +121,14 @@ function isUniqueViolation(payload: unknown): boolean {
 export function createRestClient(
   environment: ApiEnvironment['Bindings'],
   token: string,
+  options: RestClientOptions = {},
 ): RestClient {
   const base = (environment.SUPABASE_URL ?? '').replace(/\/+$/, '');
   const publishableKey = environment.SUPABASE_PUBLISHABLE_KEY ?? '';
+  const apiKey = options.apiKey ?? publishableKey;
 
   function requireConfig() {
-    if (!base || !publishableKey) {
+    if (!base || !apiKey) {
       throw new ApiHttpError(503, ERROR_CODES.INTERNAL_ERROR, 'Supabase is not configured');
     }
   }
@@ -96,10 +140,12 @@ export function createRestClient(
     allowedStatuses: readonly number[] = [],
   ): Promise<Response> {
     requireConfig();
+    const method = init.method ?? 'GET';
     const headers: Record<string, string> = {
-      apikey: publishableKey,
+      apikey: apiKey,
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
+      ...profileHeaders(method, init.profile),
     };
     new Headers(init.headers).forEach((value, name) => {
       headers[name] = value;
@@ -108,7 +154,7 @@ export function createRestClient(
     if (init.organizationId) headers['X-Organization-ID'] = init.organizationId;
 
     const response = await fetch(`${base}/rest/v1/${path}`, {
-      method: init.method ?? 'GET',
+      method,
       headers,
       ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }),
     });
@@ -161,4 +207,26 @@ export function createRestClient(
       });
     },
   };
+}
+
+/**
+ * service_role 客户端，只给基础设施表用（幂等记录、审计落地等）。
+ *
+ * 业务读写绝不能用它：service_role 绕过 RLS，一旦被业务模块拿去查客户或订单，
+ * 「租户隔离」这条防线会在无人察觉的情况下消失，而且测试仍然全绿——因为库函数
+ * 里的 organization_id 过滤看起来还在。
+ *
+ * 没有配置 service_role 时直接 503，不做降级：降级成 publishable key 会让
+ * 写基础设施表的请求以 anon 身份被拒，错误现场离原因很远。
+ */
+export function createServiceRestClient(environment: ApiEnvironment['Bindings']): RestClient {
+  const key = environment.SUPABASE_SERVICE_ROLE_KEY;
+  if (!key) {
+    throw new ApiHttpError(
+      503,
+      ERROR_CODES.INTERNAL_ERROR,
+      'Supabase service role is not configured',
+    );
+  }
+  return createRestClient(environment, key, { apiKey: key });
 }
