@@ -17,24 +17,33 @@ export interface OpsRoleRef {
 
 /** `GET /operators` 列表项。 */
 export interface OpsOperatorListItem {
-  id: string;
   email: string;
-  displayName: string;
-  status: OpsOperatorStatus;
-  roles: OpsRoleRef[];
+  id: string;
   lastLoginAt: null | string;
+  /**
+   * `PATCH /operators/{operatorId}` 要求 `version` 必填，但契约 §5.1 的列表项字段里
+   * **没有** `version`，也没有 `GET /operators/{id}` 详情端点——乐观锁的值无处可取。
+   * 这里按可选字段读取：后端返回了就正常带版本提交，没返回时页面禁用编辑并说明原因，
+   * 而不是伪造一个版本号去覆盖别人的改动。已登记为契约缺口。
+   */
+  mfaRequired?: boolean;
+  roles: OpsRoleRef[];
+  status: OpsOperatorStatus;
+  displayName: string;
+  version?: number;
 }
 
 /** `GET /roles` 列表项。`isSystem` 系统角色不可改 code、不可删除。 */
 export interface OpsRoleDetail {
-  id: string;
   code: string;
-  name: string;
-  description: null | string;
+  /** 契约 §5.1 的 `GET /roles` 未列 `description`；缺失时界面不渲染描述行。 */
+  description?: null | string;
+  id: string;
   isSystem: boolean;
-  status: 'active' | 'disabled';
+  name: string;
   /** 权限动作码，真源为契约 §4。 */
   permissions: string[];
+  status: 'active' | 'disabled';
 }
 
 /** `GET /audit-events` 列表项。审计为只读事实，无任何写端点。 */
@@ -111,4 +120,191 @@ export interface OpsPage<T> {
   page: number;
   pageSize: number;
   total: number;
+}
+
+/** 行为主体引用（`actor` / `createdBy` 这类字段的通用形态）。 */
+export interface OpsActorRef {
+  displayName: string;
+  id: string;
+}
+
+/**
+ * 契约只写 `requestedBy` / `updatedBy`，没有给形状（表列是 `requested_by uuid`）。
+ * 前端两种形态都接受：字符串按 id 显示，对象取 `displayName ?? id`。
+ * 不在这里替后端选形态——写成一种会在联调时把另一种静默渲染成 `[object Object]`。
+ */
+export type OpsActorLike = OpsActorRef | string;
+
+/* ------------------------------------------------------------------ *
+ * 运营总览（契约 §5.9 `GET /overview`）
+ * ------------------------------------------------------------------ */
+
+/** 总览指标。金额类字段同契约 §2.2：`number`、最多 2 位小数。 */
+export interface OpsOverviewMetrics {
+  activeCustomers: number;
+  activeContracts: number;
+  runningTenants: number;
+  activeEntitlements: number;
+  expiringEntitlements: number;
+  openTickets: number;
+  waitingTickets: number;
+  failedSyncCommands: number;
+  pendingReceiptAmount: number;
+  unreconciledAmount: number;
+}
+
+/** 按币种分组，不跨币种合并（契约 §2.2 / U-12）。 */
+export interface OpsOverviewAmount {
+  currency: string;
+  totalReceivable: number;
+  settledReceivable: number;
+  overdueReceivable: number;
+  upcomingReceivable: number;
+}
+
+/**
+ * 部分指标取数失败。
+ *
+ * 契约 §5.9 只声明了 `partialFailures[]` 这个数组名，**没有定义条目字段**。
+ * 这里按「宽松读取」处理：字段全部可选，界面把未识别的键原样列出。
+ * 这样后端定稿前不会因为多一个/少一个字段而渲染成空白，也不会让前端
+ * 假装自己知道契约里没有的东西。
+ */
+export interface OpsOverviewPartialFailure {
+  code?: string;
+  message?: string;
+  section?: string;
+}
+
+export interface OpsOverview {
+  statisticsAt: string;
+  windowDays: number;
+  metrics: OpsOverviewMetrics;
+  amounts: OpsOverviewAmount[];
+  partialFailures: OpsOverviewPartialFailure[];
+}
+
+/* ------------------------------------------------------------------ *
+ * 系统设置与字典（契约 §5.9 `/settings`、`/dictionaries`）
+ * ------------------------------------------------------------------ */
+
+/** 三项可配置值，`key` 白名单见契约 §3.9 `ops.settings`。 */
+export interface OpsSettings {
+  /** `overview.expiryWindowDays`：临期权益窗口，1–365 天 */
+  overviewExpiryWindowDays: number;
+  /** `ticket.dueHours`：工单内部时限，1–720 小时 */
+  ticketDueHours: number;
+  /** `retention.exportDays`：导出产物保留天数 */
+  exportRetentionDays: number;
+}
+
+export interface OpsSettingsResponse {
+  settings: OpsSettings;
+  updatedAt: null | string;
+  updatedBy: null | OpsActorLike;
+}
+
+/** `PATCH /settings`：只发被改动的项，`reason` 必填（设置变更写审计）。 */
+export interface UpdateSettingsPayload {
+  exportRetentionDays?: number;
+  overviewExpiryWindowDays?: number;
+  reason: string;
+  ticketDueHours?: number;
+}
+
+export interface OpsDictionaryItem {
+  /**
+   * 契约 §5.9 的字典项响应字段只有 `{value,label,sortOrder,isActive}`，但
+   * `PATCH /dictionary-items/{itemId}` 需要条目 id（表结构 `ops.dictionary_items.id` 存在）。
+   * 这是契约缺口，已登记推导项；前端按 `id` 是否存在决定能否编辑，缺失时只读并说明原因。
+   */
+  id?: string;
+  isActive: boolean;
+  label: string;
+  sortOrder: number;
+  value: string;
+}
+
+export interface OpsDictionary {
+  code: string;
+  items: OpsDictionaryItem[];
+  name: string;
+}
+
+export interface OpsDictionaryList {
+  items: OpsDictionary[];
+}
+
+export interface CreateDictionaryItemPayload {
+  label: string;
+  sortOrder?: number;
+  value: string;
+}
+
+export interface UpdateDictionaryItemPayload {
+  isActive?: boolean;
+  label?: string;
+  sortOrder?: number;
+}
+
+/* ------------------------------------------------------------------ *
+ * 导出任务（契约 §5.9 `/exports`）
+ * ------------------------------------------------------------------ */
+
+export type OpsExportStatus =
+  | 'expired'
+  | 'failed'
+  | 'queued'
+  | 'running'
+  | 'succeeded';
+
+export type OpsExportType =
+  | 'contracts'
+  | 'customers'
+  | 'receipts'
+  | 'receivables'
+  | 'tickets';
+
+export interface OpsExportTask {
+  completedAt?: null | string;
+  createdAt: string;
+  /**
+   * 签名下载地址，仅 `GET /exports/{exportId}` 返回，有效期 ≤ 5 分钟（契约 §5.9）。
+   * 因此**不能**缓存到列表里复用：列表项没有该字段，详情要现取。
+   */
+  downloadUrl?: string;
+  expiresAt: null | string;
+  exportNo: string;
+  exportType: string;
+  id: string;
+  requestedBy: null | OpsActorLike;
+  rowCount: null | number;
+  status: string;
+}
+
+export interface OpsExportListQuery {
+  exportType?: OpsExportType;
+  page?: number;
+  pageSize?: number;
+  requestedBy?: string;
+  status?: OpsExportStatus[];
+}
+
+/**
+ * `POST /exports` 请求体。
+ *
+ * `reason` 是**前端推导项**：契约 §5.9 只列了 `exportType` / `filters`，但 §4 把
+ * `export.create` 标为高风险动作并要求填写原因。前端收集后随请求体提交，
+ * 已登记为推导项 U-17 等后端确认；后端若不接受该字段，多余字段应被忽略而不是报错。
+ */
+export interface CreateExportPayload {
+  exportType: OpsExportType;
+  filters: Record<string, unknown>;
+  reason: string;
+}
+
+export interface CreateExportResult {
+  exportNo: string;
+  id: string;
+  status: 'queued';
 }

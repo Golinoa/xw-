@@ -15,6 +15,10 @@ import { compactParams, OPS_ENDPOINTS } from './endpoints';
 export async function fetchAuditEvents(
   query: AuditEventListQuery = {},
 ): Promise<OpsPage<OpsAuditEvent>> {
+  if (import.meta.env.VITE_OPS_MOCK === 'true') {
+    const { stubListAuditEvents } = await import('./dev-stub');
+    return stubListAuditEvents(query);
+  }
   return requestClient.get<OpsPage<OpsAuditEvent>>(OPS_ENDPOINTS.auditEvents, {
     params: compactParams(query as Record<string, unknown>),
   });

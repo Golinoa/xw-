@@ -25,6 +25,10 @@ import { compactParams, OPS_ENDPOINTS, writeConfig } from './endpoints';
 export async function fetchOperators(
   query: OperatorListQuery = {},
 ): Promise<OpsPage<OpsOperatorListItem>> {
+  if (import.meta.env.VITE_OPS_MOCK === 'true') {
+    const { stubListOperators } = await import('./dev-stub');
+    return stubListOperators(query);
+  }
   return requestClient.get<OpsPage<OpsOperatorListItem>>(
     OPS_ENDPOINTS.operators,
     { params: compactParams(query as Record<string, unknown>) },
@@ -45,6 +49,10 @@ export async function inviteOperator(
   invitationExpiresAt: string;
   operator: { id: string; status: 'invited' };
 }> {
+  if (import.meta.env.VITE_OPS_MOCK === 'true') {
+    const { stubInviteOperator } = await import('./dev-stub');
+    return stubInviteOperator(payload);
+  }
   return requestClient.post(
     OPS_ENDPOINTS.operatorInvitations,
     payload,
@@ -66,6 +74,10 @@ export async function updateOperator(
   operator: OpsOperatorListItem;
   permissionsChanged: { added: string[]; removed: string[] };
 }> {
+  if (import.meta.env.VITE_OPS_MOCK === 'true') {
+    const { stubUpdateOperator } = await import('./dev-stub');
+    return stubUpdateOperator(operatorId, payload);
+  }
   return requestClient.request(OPS_ENDPOINTS.operator(operatorId), {
     data: payload,
     headers: writeConfig(idempotencyKey).headers,

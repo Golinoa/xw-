@@ -37,6 +37,22 @@ export const OPS_ENDPOINTS = {
 
   // ---- 审计 ----
   auditEvents: `${OPS_API_PREFIX}/audit-events`,
+
+  // ---- 运营总览（契约 §5.9）----
+  overview: `${OPS_API_PREFIX}/overview`,
+
+  // ---- 系统设置与字典 ----
+  settings: `${OPS_API_PREFIX}/settings`,
+  dictionaries: `${OPS_API_PREFIX}/dictionaries`,
+  dictionaryItems: (code: string) =>
+    `${OPS_API_PREFIX}/dictionaries/${encodeURIComponent(code)}/items`,
+  dictionaryItem: (itemId: string) =>
+    `${OPS_API_PREFIX}/dictionary-items/${encodeURIComponent(itemId)}`,
+
+  // ---- 导出任务 ----
+  exportTasks: `${OPS_API_PREFIX}/exports`,
+  exportTask: (exportId: string) =>
+    `${OPS_API_PREFIX}/exports/${encodeURIComponent(exportId)}`,
 } as const;
 
 /** 幂等键：写操作必填（契约 §2.5），格式 `[A-Za-z0-9_-]{8,128}`。 */
@@ -70,3 +86,8 @@ export function compactParams(
     ),
   );
 }
+
+/** 分页默认值与白名单（契约 §2.4：`pageSize` 白名单 `10/15/20/30/50/100`，默认 15）。 */
+export const OPS_DEFAULT_PAGE_SIZE = 15;
+
+export const OPS_PAGE_SIZE_OPTIONS = [10, 15, 20, 30, 50, 100] as const;

@@ -20,6 +20,10 @@ import { OPS_ENDPOINTS, writeConfig } from './endpoints';
 
 /** 角色列表（需 `operator.read`）。 */
 export async function fetchRoles(): Promise<OpsPage<OpsRoleDetail>> {
+  if (import.meta.env.VITE_OPS_MOCK === 'true') {
+    const { stubListRoles } = await import('./dev-stub');
+    return stubListRoles();
+  }
   return requestClient.get<OpsPage<OpsRoleDetail>>(OPS_ENDPOINTS.roles);
 }
 
@@ -28,6 +32,10 @@ export async function createRole(
   payload: CreateRolePayload,
   idempotencyKey: string,
 ): Promise<OpsRoleDetail> {
+  if (import.meta.env.VITE_OPS_MOCK === 'true') {
+    const { stubCreateRole } = await import('./dev-stub');
+    return stubCreateRole(payload);
+  }
   return requestClient.post(
     OPS_ENDPOINTS.roles,
     payload,
@@ -51,6 +59,10 @@ export async function updateRole(
   beforePermissions: string[];
   role: OpsRoleDetail;
 }> {
+  if (import.meta.env.VITE_OPS_MOCK === 'true') {
+    const { stubUpdateRole } = await import('./dev-stub');
+    return stubUpdateRole(roleId, payload);
+  }
   return requestClient.request(OPS_ENDPOINTS.role(roleId), {
     data: payload,
     headers: writeConfig(idempotencyKey).headers,

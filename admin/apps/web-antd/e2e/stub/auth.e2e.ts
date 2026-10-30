@@ -30,12 +30,15 @@ test.describe('登录与会话（契约桩）', () => {
       page.getByRole('heading', { level: 2, name: '运营总览' }),
     ).toBeVisible();
     await expect(page.getByText('ops-shell.nav.overview')).toHaveCount(0);
-    // 首页当前是占位页（`views/ops/_shared/placeholder-page.vue`），断言其正文说明
+    // 首页已从占位页换成真实总览（identity-audit 域）：断言统计时刻与分币种区块存在，
+    // 并确认占位文案消失——避免「占位页悄悄回来了」这类回归。
+    await expect(page.getByText('统计时刻：')).toBeVisible();
+    await expect(page.getByText('应收按币种')).toBeVisible();
     await expect(
       page.getByText(
         '该页面将在后续迭代中实现，当前仅提供路由入口与菜单契约。',
       ),
-    ).toBeVisible();
+    ).toHaveCount(0);
     // 桩启用时页面顶部必须出现「开发态契约桩」提示，避免被误当成真实集成
     await expect(page.locator('#ops-dev-stub-banner')).toBeVisible();
   });
