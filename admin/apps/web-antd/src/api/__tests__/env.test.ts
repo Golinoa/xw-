@@ -24,7 +24,11 @@ describe('assertApiBaseUrl', () => {
     expect(() => assertApiBaseUrl('//evil.example.com/api')).toThrow(
       /协议相对地址/,
     );
+    // 这里的 `user:pass` 是待拒绝的输入，不是凭据：本用例断言带 userinfo 的
+    // baseURL 必须抛错。只抑制这一行的 BasicAuth 规则，不忽略整个文件——
+    // 文件级 ignore 会把同文件其余用例的漏检一并吞掉。
     expect(() =>
+      // secretlint-disable-next-line @secretlint/secretlint-rule-basicauth -- 待拒绝的输入
       assertApiBaseUrl('https://user:pass@ops.example.com/api'),
     ).toThrow(/不得包含用户名或密码/);
   });

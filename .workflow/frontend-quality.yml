@@ -21,6 +21,13 @@
 # 仍有未升级的高危 advisory（详见 admin/.harness/journal/2026-10-29-quality-gate-audit.md
 # §4.1）。在依赖升级完成前，本流水线会在此步骤失败——这是**真实失败**，
 # 不是配置错误，也不允许通过跳过检查来变绿。
+#
+# 2026-10-30 更正一处事实：上面那句「会红在 dependencies」此前**从未被验证过**。
+# 触发器修好后按 quality:check 的 11 步顺序实跑，先红在第 8 步
+# `quality:secret-scan`（api/__tests__/env.test.ts 的 BasicAuth 误报，已用单行
+# 定向抑制修掉），根本没走到 dependencies。也就是说「已知红在哪一步」这个结论
+# 本身就是没人跑过链条时的推测——和「有 yml 就等于有 CI」是同一类错误。
+# 修复后 11 步实跑结果：第 1–10 步全绿，唯一失败仍在第 11 步 quality:dependencies。
 # ============================================================
 version: "1.0"
 name: frontend-quality
