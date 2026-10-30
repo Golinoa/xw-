@@ -63,6 +63,14 @@ pnpm board:check     # 读 ../../../XW-ERP/dev-board.html，可用 BOARD_PATH �
 
 第一次跑这条命令就抓出两张 `blocked` 卡没写解锁条件（`a-integrate`、`a-accept`）——两个都是我自己写的卡。规则不机械执行时，最先违反的总是写规则的人。
 
+## Items waiting on the other end
+
+Anything blocked on the ops side is reported from the board's `COLLAB` list, not from memory and not from prose in the report. Rules in [`COLLABORATION.md`](COLLABORATION.md).
+
+- Give each item its own state: awaiting them, answered and awaiting me, closed with a locator. "Waiting on them" as a single blanket sentence is not a state report.
+- An item is closed only when the evidence can be located — a commit hash, a contract section, or a line number. A closed item whose evidence cannot be located is worse than an open one, because nobody goes back to check it.
+- When a milestone is reported, every `COLLAB` item whose `due` falls in that milestone gets its own line. The reader is deciding whether to chase someone; that decision needs per-item facts.
+
 ## Prohibited
 
 - A status report with text only, when the report has more than one work item.

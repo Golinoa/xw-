@@ -15,6 +15,12 @@
  *      或显式写明「无独立提交」「证据缺失」——后者是有意的例外，不是漏洞
  *   5. 非 done 不得有 end（不把估算当排期），progress 不得为 100
  *   6. blocked 必须在 desc 里写解锁条件（关键词：解锁 / 阻塞条件）
+ *   7. 协作事项（COLLAB）必须：id 唯一、状态与类型合法、need 写清具体动作、
+ *      blocks 指向真实任务卡、closed 必须有证据
+ *
+ * 第 7 项的理由：协作页是跨端「谁在等谁」的唯一真源。它一旦失准，比没有更糟——
+ * 人会照着过期的 waiting 去催一件对方早就做完的事，或者以为已闭环而实际没做。
+ * 所以「closed 要证据」「need 不许写空话」都得由命令来拦，不能靠自觉。
  *
  * 看板路径：默认 ../../../XW-ERP/dev-board.html（相对本文件），可用 BOARD_PATH 覆盖。
  * 文件不存在时按「跳过」处理并返回 0——看板在仓库外，CI 看不到它是正常情况，
@@ -72,6 +78,7 @@ const counts = { done: 0, todo: 0, doing: 0, blocked: 0 };
 const HASH = /[0-9a-f]{7,40}/;
 const EXEMPT = /无独立提交|证据缺失/;
 const UNLOCK = /解锁条件/;
+const LOCATOR = /[0-9a-f]{7,40}|§\s*\d|第\s*\d+\s*行|\bL\d+/;
 
 if (sandbox.seed.seedVersion !== seedVersion) {
   fail(`seed.seedVersion(${sandbox.seed.seedVersion}) 与 SEED_VERSION(${seedVersion}) 不一致`);
@@ -111,11 +118,80 @@ for (const task of tasks) {
 
 const summary = `看板 ${path.basename(boardPath)} · SEED_VERSION ${seedVersion} · ${tasks.length} 张卡（${counts.done} done / ${counts.doing} doing / ${counts.todo} todo / ${counts.blocked} blocked）`;
 
+/* ── 协作事项 ── */
+const collabMatch = html.match(/const COLLAB = \[[\s\S]*?\n\];/);
+let collabNote = '';
+if (!collabMatch) {
+  fail('解析不到 COLLAB 常量（双端协作页的数据源）');
+} else {
+  const collabSandbox = {};
+  vm.createContext(collabSandbox);
+  try {
+    vm.runInContext(
+      `var COLLAB;${collabMatch[0].replace('const COLLAB', 'COLLAB')}`,
+      collabSandbox,
+      { timeout: 5000 },
+    );
+  } catch (error) {
+    console.error(`board:check 失败 — COLLAB 求值出错：${error.message}`);
+    process.exit(1);
+  }
+
+  const collab = collabSandbox.COLLAB;
+  if (!Array.isArray(collab)) {
+    fail('COLLAB 不是数组');
+  } else {
+    const TASK_IDS = new Set(tasks.map((t) => t.id));
+    const DONE_IDS = new Set(tasks.filter((t) => t.status === 'done').map((t) => t.id));
+    const STATUSES = new Set(['blocking', 'waiting', 'answered', 'closed']);
+    const TYPES = new Set(['裁决', '确认', '验证', '回写']);
+    const EMPTY_NEED = /^(沟通|对齐|同步|看一下|留意)/;
+    const seenCollab = new Set();
+
+    for (const c of collab) {
+      const at = c.id || c.title || '(无 id 的协作项)';
+
+      if (!c.id) fail(`协作 ${at}: 缺 id`);
+      if (!c.title) fail(`协作 ${at}: 缺 title`);
+      if (!c.impact) fail(`协作 ${at}: 缺 impact（说不出影响的事不该登记）`);
+      if (!c.need) fail(`协作 ${at}: 缺 need（没写要对方做什么）`);
+      if (!c.due) fail(`协作 ${at}: 缺 due（何时需要，否则不知道急不急）`);
+      if (!c.evidence) fail(`协作 ${at}: 缺 evidence（依据，否则无从复核）`);
+
+      if (seenCollab.has(c.id)) fail(`协作 ${at}: id 重复`);
+      seenCollab.add(c.id);
+
+      if (!STATUSES.has(c.status)) fail(`协作 ${at}: 未知状态 ${c.status}`);
+      if (!TYPES.has(c.type)) fail(`协作 ${at}: 未知类型 ${c.type}`);
+
+      if (c.status !== 'closed' && EMPTY_NEED.test(String(c.need || '').trim())) {
+        fail(`协作 ${at}: need 是空话（以「沟通/对齐/同步」开头），要写成可照做的动作`);
+      }
+
+      for (const id of c.blocks || []) {
+        if (!TASK_IDS.has(id)) fail(`协作 ${at}: blocks 指向不存在的任务 ${id}`);
+        else if (c.status !== 'closed' && DONE_IDS.has(id)) {
+          fail(`协作 ${at}: 尚未闭环，却阻塞一张已 done 的卡 ${id}（状态自相矛盾）`);
+        }
+      }
+
+      // 「闭环要有证据」必须能定位：提交哈希、契约章节号、或具体行号。
+      // 第一版这里写的是 /已/，结果任何中文句子都能过 —— 变异测试当场把它打穿。
+      if (c.status === 'closed' && !LOCATOR.test(String(c.evidence))) {
+        fail(`协作 ${at}: closed 但证据定位不了（要提交哈希、§章节号 或 行号）`);
+      }
+    }
+
+    const openCount = collab.filter((c) => c.status !== 'closed').length;
+    collabNote = ` · 协作 ${collab.length} 项（${openCount} 未闭环 / ${collab.length - openCount} 已闭环）`;
+  }
+}
+
 if (problems.length > 0) {
   console.error(`board:check 失败 — ${problems.length} 处不一致\n`);
   for (const problem of problems) console.error(`  · ${problem}`);
-  console.error(`\n${summary}`);
+  console.error(`\n${summary}${collabNote}`);
   process.exit(1);
 }
 
-console.log(`board:check 通过 — ${summary}`);
+console.log(`board:check 通过 — ${summary}${collabNote}`);

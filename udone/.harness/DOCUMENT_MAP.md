@@ -24,6 +24,7 @@
 | [`TESTING_STANDARDS.md`](TESTING_STANDARDS.md)、[`ENGINEERING_STANDARDS.md`](ENGINEERING_STANDARDS.md) | 测试策略与工具链/依赖/CI/发布门禁。 |
 | [`FRONTEND.md`](FRONTEND.md)、[`SECURITY.md`](SECURITY.md)、[`RELIABILITY.md`](RELIABILITY.md)、[`QUALITY_SCORE.md`](QUALITY_SCORE.md) | 前端、安全、可靠性和质量评审补充规则。 |
 | [`REPORTING.md`](REPORTING.md) | 状态/进度汇报的约束：分端内联图、四态、数字取自当次观测输出。 |
+| [`COLLABORATION.md`](COLLABORATION.md) | 需要对方配合的事怎么记：唯一登记处、五字段、四态、不替对方改契约。数据在看板 `COLLAB`，由 `board:check` 校验。 |
 | [`LONG_RUN.md`](LONG_RUN.md) | 跨工作段的成批任务推进：单元切分、五步收口、全量门禁、变异抽查、断点协议、止损。 |
 | [`docs/product-specs/`](docs/product-specs/) | 产品规格检索索引；需求真源仍在 `Docs/REQUIREMENTS.md`。 |
 | [`docs/design-docs/`](docs/design-docs/) | 已确认的架构理由和专题设计。 |
