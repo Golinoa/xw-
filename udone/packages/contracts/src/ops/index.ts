@@ -8,3 +8,4 @@
  */
 export * from './identity';
 export * from './meta';
+export * from './session';

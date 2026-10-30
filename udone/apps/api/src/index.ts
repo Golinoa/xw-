@@ -13,6 +13,7 @@ import { orderRoutes } from './modules/orders/routes';
 import { supplierRoutes } from './modules/suppliers/routes';
 import { financeRoutes } from './modules/finance/routes';
 import { financeApplicationRoutes } from './modules/finance-applications/routes';
+import { opsIdentityRoutes } from './modules/ops/identity/routes';
 import { opsMetaRoutes } from './modules/ops/meta/routes';
 
 export const app = new Hono<ApiEnvironment>();
@@ -37,5 +38,6 @@ app.route('/', financeRoutes);
 app.route('/', financeApplicationRoutes);
 // 运营后台：路径自带 /api/v1/ops 前缀，鉴权是 requireOpsAuth 而不是 requireAuth。
 app.route('/', opsMetaRoutes);
+app.route('/', opsIdentityRoutes);
 
 export default app;

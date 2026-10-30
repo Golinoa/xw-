@@ -15,6 +15,7 @@ import {
 } from './customers';
 import type { HttpMethod } from './http';
 import { opsMetaResponseSchema } from './ops/meta';
+import { opsPermissionListResponseSchema, opsSessionResponseSchema } from './ops/session';
 import {
   createFinanceApplicationRequestSchema,
   decideFinanceApplicationRequestSchema,
@@ -284,6 +285,16 @@ export const OPS_ROUTES = {
     method: 'GET',
     path: '/api/v1/ops/meta',
     response: opsMetaResponseSchema,
+  }),
+  getOpsSession: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/session',
+    response: opsSessionResponseSchema,
+  }),
+  listOpsPermissions: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/permissions',
+    response: opsPermissionListResponseSchema,
   }),
 } as const satisfies Record<string, RouteContract>;
 
