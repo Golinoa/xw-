@@ -22,15 +22,15 @@
 | `format:check` | 通过 |
 | `format:sql:check` | 25 个文件通过 |
 | `lint` + CSS token | 通过 |
-| `schema:check` | 与 13 个迁移一致 |
+| `schema:check` | 与 14 个迁移一致 |
 | `check:deploy` | 通过 |
 | `typecheck` | 通过（`vue-tsc`，含 `.vue`，见 A2） |
-| `test` | 38 个文件 / 260 用例通过 |
+| `test` | 39 个文件 / 272 用例通过（并发上限 6，见 A4） |
 | `build` | 通过（主 chunk 1,638.00 kB / gzip 506.52 kB，见 D1） |
-| `db:local:verify` | 重放 13 个迁移，11 个 pgTAP 文件 **189 断言**全过 |
-| `db:local:http` | 真实 PostgREST 16.5 + 原生 PostgreSQL，**15 条** HTTP 集成用例全过 |
+| `db:local:verify` | 重放 14 个迁移，11 个 pgTAP 文件 **189 断言**全过 |
+| `db:local:http` | 真实 PostgREST 16.5 + 原生 PostgreSQL，**23 条** HTTP 集成用例全过 |
 
-规模：13 迁移 / 31 个契约端点 / 6 个 API 模块 / 5 个前端业务模块。
+规模：14 迁移 / 31 个契约端点 / 6 个 API 模块 / 5 个前端业务模块。
 
 **E2E 现状**：`tests/e2e/` 2 个 spec、6 个用例，全部是登录与成员邀请（`auth.spec.ts`、`member-onboarding.spec.ts`），客户、订单、收付款主线**一条都没覆盖**；`.workflow/ci.yml` 里没有任何 Playwright 步骤。
 
@@ -45,7 +45,7 @@
 | A1 | 前端主线 E2E（Playwright + 网络拦截） | P0 | M | — |
 | A2 | `.vue` 纳入类型检查（`vue-tsc`） | P0 | S/M | ✅ 已完成 |
 | A3 | 服务端 HTTP 集成（PostgREST 假设） | P0 | L | 需决策 |
-| A4 | vitest worker 超时定位 | P1 | S | — |
+| A4 | vitest worker 超时定位 | P1 | S | ✅ 已完成 |
 | A5 | 供应商模块行为测试 | P1 | S | — |
 | B1 | 审批历史不随明细行删除消失 | P0 | M | — |
 | B2 | 客户回收站与 `restore` 权限 | P1 | M | — |
@@ -119,15 +119,17 @@
 
 **决策结果:** 采用方案 a。方案 b 只能覆盖一半：PostgREST 的 416、206、`Content-Range` 与 SQLSTATE→状态码映射都不在 pg 直连里，而这些正是这次抓到的 bug 所在。
 
-### A4 vitest worker 超时定位
+### A4 vitest worker 超时定位 — 已完成
 
-- [ ] 连续 5 次全绿，或给出根因与规避配置
+- [x] 连续 5 次全绿，或给出根因与规避配置
 
-**现状证据:** 已复现 3 次（34 文件 214 用例 + 1 error、34 文件 233 用例 + 2 error、一次首跑），每次复跑都干净；三次都发生在刚跑完数据库重放之后。怀疑 CPU 争用，**无证据**，config 未改。
+**根因（2026-10-30）:** 不是「worker 在测试中超时」，是 **fork worker 启动失败**：`Failed to start forks worker` → `Timeout waiting for worker to respond`。默认并发是 `cpus-1`，本机 16 核 → 15 个并发 Node 进程，Windows 上把 worker 启动压到超时。
 
-**做法:** 复现时同时抓进程列表与 CPU；对比 `pool: 'forks'` 与 `'threads'`；若确认资源争用，固定配置并把结论写进 `.harness/TESTING_STANDARDS.md`。
+**最关键的一点（比我原来的判断严重）:** 被吞掉的那个文件的用例**根本没跑**，而汇总仍然报 `Test Files 38 passed (38)`，只有末尾一个 `Errors 1 error`。实测同一份代码连跑两次：先 6 秒 272 用例通过，紧接着 61 秒 **257** 用例 + 1 error。也就是说默认并发下这个门禁每两次就有一次在漏跑 15 条断言，而信号看起来像抖动。
 
-**验收标准:** 连续 5 次稳定全绿，或根因 + 规避配置 + 书面记录。
+**规避配置:** `vitest.config.ts` 加 `maxWorkers: 6`。改后连续 4 次 4~5 秒、39 文件 272 用例全绿（比失败那次的 61 秒快十倍——说明 61 秒是争用，不是工作量）。
+
+**教训（已写进 `.harness/ENGINEERING_STANDARDS.md`）:** `Errors N error` 一律按失败处理，且要看用例总数是否与上次一致；总数变少而没有失败用例 = 有断言被跳过。
 
 **规模:** S
 
@@ -280,7 +282,7 @@
 1. ~~A2~~ —— ✅ 2026-10-30 完成，`.vue` 类型盲区已关闭。
 2. A1 —— 把前端从「未验证」变成「已验证」，这是当前最大的一块空白。
 3. B1 —— 数据完整性，越晚做积累的历史数据越多，迁移越麻烦。
-4. A5 + A4 —— 小成本补证据、去噪声。
+4. A5 —— 小成本补证据（A4 已于 2026-10-30 完成）。
 5. B2 → C1 → C3 → C2 → C4 → C5 —— 业务功能按依赖推进。
 6. ~~A3~~ —— ✅ 2026-10-29 完成（方案 a，真实 PostgREST）。
 7. D2 → D1。

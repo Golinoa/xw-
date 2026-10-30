@@ -50,8 +50,8 @@
 
 | 波次 | 编号 | 内容 | 规模 | 依赖 |
 |---|---|---|---|---|
-| 0 | 0.1 | 幂等键命名空间 + `ops.idempotency_records` | S + M | — |
-| 0 | 0.2 | PostgREST 暴露 `ops`（config.toml / local-db / rest-client 三处） | S | — |
+| 0 | ~~0.1~~ | 幂等键命名空间 + `ops.idempotency_records` ✅ `3df4fe2` / `fe4e184` | S + M | 落库部分依赖 0.2 |
+| 0 | ~~0.2~~ | PostgREST 暴露 `ops`（config.toml / local-db / rest-client 三处）✅ `9aba9ce` | S | — |
 | 0 | 0.3 | 契约双注册表（`respond` / `RouteKey` / route-parity） | S | — |
 | 0 | 0.4 | 认证代理（GoTrue）+ 受控 CORS 凭证 | M | 0.2 完成后才能验成员判定 |
 | 1 | T-01 | 契约包与路由骨架 + `GET /meta` | M | 0.3 |
@@ -61,12 +61,14 @@
 
 Wave 1 只做到「前端登录、菜单、403/404 能对着真 API 跑通」，不碰业务域——理由与报告 §10 一致：这三项决定后面所有授权是否正确，返工代价最高。
 
+**执行顺序修正（2026-10-30）:** 原表把 0.1 排在 0.2 前面，实际 **0.2 必须先做**。理由：0.1 的落库部分要写 `ops.idempotency_records`，而 `ops` 没被 PostgREST 暴露时那条写入在真实链路里就是 406；0.2 的验收（跨 schema 往返）又需要有表可读写。两项互相咬住，所以先建 schema 与表、再暴露、最后接 store。已按此顺序完成。
+
 ## Wave 0：前置纠正（我方）
 
-### 0.1 幂等：先修命名空间，再落库
+### 0.1 幂等：先修命名空间，再落库 — 已完成（`3df4fe2` + `fe4e184`）
 
-- [ ] 键改为 `sha256(authorization) : method : path : key`
-- [ ] 新增 `ops.idempotency_records` 存储实现，含 `request_hash`
+- [x] 键改为 `sha256(authorization) : 组织 : method : path : key`
+- [x] 新增 `ops.idempotency_records` 存储实现，含 `request_hash`
 
 **现状证据:** `middleware/idempotency.ts` 直接拿原始 header 值查缓存；`lib/idempotency-store.ts` 是 isolate 内存 Map，注释自承「跨 Worker 实例不生效」。三个后果都是真的：同一 key 换个端点会重放另一端点响应体；两个用户撞同一 key 会把 A 的响应给 B；多实例下重放失效。
 
@@ -74,17 +76,24 @@ Wave 1 只做到「前端登录、菜单、403/404 能对着真 API 跑通」，
 
 **验收标准:** 单测覆盖三种碰撞（跨端点 / 跨用户 / 跨 request_hash）；`db:local:http` 增加一条「同 key 重放返回同体 + `Idempotent-Replay`」；31 个现有端点回归全绿。
 
+**完成情况:** 三条碰撞各一条断言（单测 9 条 + 集成 4 条），两轮变异验证（key 退回原始 header 值 → 跨端点/跨用户红；去掉指纹比对 → 改 body 那条红；`set()` 变空操作 → 两条重放红）。集成测试还断言了「库里那条记录的 `scope_key` 必须等于中间件派生出来的值」，把派生算法与落库内容绑在一起。
+
+**遗留（写进代码注释，未当作已解决）:** ① 不是预留式幂等——并发双请求可能都执行一遍再靠唯一约束决定谁留下；契约 §2.5 只定义了「命中即回放 / 不同指纹 409」，没有定义「执行中」的返回语义，**T-08 收款端点开工前必须定下这个语义**。② 过期行没有清理任务。
+
 **规模:** S（命名空间）+ M（表与存储）
 
-### 0.2 PostgREST 暴露 `ops` schema
+### 0.2 PostgREST 暴露 `ops` schema — 已完成（`9aba9ce`）
 
-- [ ] `config.toml` 的 `[api] schemas` 加 `ops`
-- [ ] `scripts/db/local-db.mjs` 的 `db-schemas` 加 `ops`
-- [ ] `lib/rest-client.ts` 支持 `profile`（GET/DELETE 发 `Accept-Profile`，写方法另发 `Content-Profile`）
+- [x] `config.toml` 的 `[api] schemas` 加 `ops`
+- [x] `scripts/db/local-db.mjs` 的 `db-schemas` 加 `ops`
+- [x] `lib/rest-client.ts` 支持 `profile`（GET/HEAD/DELETE 发 `Accept-Profile`，写方法另发 `Content-Profile`；DELETE 两个都发，因为它先读后删）
+- [x] 顺带修正：`rest()` 不再把「2xx 空 body」当成 JSON 解析失败（`Prefer: return=minimal` 是 201 + 空正文）
 
 **现状证据:** `config.toml` 是 `["public","graphql_public"]`；本地 harness 硬编码 `db-schemas = "public"`；`rest-client.ts` 把路径固定拼成 `/rest/v1/`，没有任何 schema 选择能力。三处任缺一处，ops 表在真实链路里都读不到。
 
 **验收标准:** 跨 schema 读写往返在 `db:local:http` 里跑通；现有 15 条集成用例 + 31 个端点全部回归通过（这是共用出口，改动必须带全量回归）。
+
+**完成情况:** 新增 `tests/integration/ops-schema.test.ts` 4 条：service_role 经 profile 往返、不带 profile 时表不可见（404 `PGRST205`）、客户端令牌被拒（`42501 permission denied`）、`request_hash` 长度约束生效。变异验证：把 `ops` 从本地 `db-schemas` 拿掉，往返用例立刻报 `PGRST106 Invalid schema: ops`——正是这组配置存在的理由。`rest-client` 另加 5 条单测覆盖头映射（只发该发的、DELETE 发两个、service_role 双头一致）。
 
 **规模:** S
 
