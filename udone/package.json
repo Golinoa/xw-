@@ -14,7 +14,7 @@
     "test": "vitest run",
     "build": "pnpm --filter @erp/web --filter @erp/api build",
     "check:deploy": "tsx scripts/check-deploy-config.ts",
-    "deps:audit": "pnpm audit --registry=https://registry.npmjs.org --json",
+    "deps:audit": "node scripts/check-deps-audit.mjs",
     "licenses:check": "pnpm licenses list --json | node scripts/check-license-policy.mjs",
     "secrets:check": "secretlint --maskSecrets --no-color \"**/*\"",
     "secrets:canary:check": "node scripts/check-secret-canary.mjs",
@@ -26,7 +26,8 @@
     "db:local:http": "node scripts/db/local-db.mjs http",
     "smoke": "playwright test --config playwright.smoke.config.ts",
     "wrangler": "pnpm --filter @erp/api exec wrangler --config ../../wrangler.toml",
-    "board:check": "node scripts/check-board.mjs"
+    "board:check": "node scripts/check-board.mjs",
+    "deps:audit:raw": "pnpm audit --registry=https://registry.npmjs.org --json"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -43,6 +44,6 @@
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "typescript-eslint": "8.71.0",
-    "vitest": "4.1.11"
+    "vitest": "4.1.12"
   }
 }

@@ -93,6 +93,46 @@ describe('repository engineering gates', () => {
     expect(result.status, result.stderr).toBe(0);
   });
 
+  /**
+   * 场景：`a-deps-biz`。此前 `deps:audit` 只是个脚本、不在门禁里，于是业务端
+   * 11 道门禁全绿而实际带 7 条 high——「没发现问题」与「没去查」显示成一样。
+   *
+   * 这三条一起才有意义：脚本存在、它真的会红、白名单必须带到期日。
+   */
+  it('routes deps:audit through the allowlist policy instead of a raw audit dump', () => {
+    const scripts = JSON.parse(read('package.json')).scripts as Record<string, string>;
+
+    expect(scripts['deps:audit']).toContain('check-deps-audit.mjs');
+    // 原始输出仍然可用（排障要看得懂全量），但它不再是门禁本身。
+    expect(scripts['deps:audit:raw']).toContain('pnpm audit');
+  });
+
+  it('fails the dependency gate on an unlisted high severity advisory', () => {
+    const result = spawnSync(process.execPath, ['scripts/check-deps-audit.mjs', '--self-test'], {
+      cwd: new URL('../../', import.meta.url),
+      encoding: 'utf8',
+    });
+
+    // 自测里包含「critical 不在白名单 → 红」「已到期 → 红」「条目失效 → 红」
+    // 与「moderate 不阻断」四条；它们一起说明这个门禁既会红也会放行。
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toContain('critical 不在白名单 → 红');
+    expect(result.stdout).toContain('high 在白名单但已到期 → 红');
+  });
+
+  it('requires an expiry date on every dependency allowlist entry', () => {
+    const allowlist = JSON.parse(read('scripts/deps-allowlist.json')) as {
+      policyNote?: string;
+      entries?: { module?: string; reason?: string; expires?: string }[];
+    };
+
+    expect(allowlist.policyNote).toBeTruthy();
+    for (const entry of allowlist.entries ?? []) {
+      expect(entry.expires).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(entry.reason).toBeTruthy();
+    }
+  });
+
   it('rejects a synthetic unapproved license expression', () => {
     const result = spawnSync(
       process.execPath,

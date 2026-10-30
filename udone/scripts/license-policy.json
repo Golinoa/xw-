@@ -24,12 +24,12 @@
     },
     {
       "name": "@img/sharp-win32-x64",
-      "version": "0.35.4",
+      "version": "0.35.5",
       "license": "Apache-2.0 AND LGPL-3.0-or-later",
       "scope": "Development-only. Windows-only optional package reached through Wrangler/Miniflare tooling; not imported by application code.",
       "decision": "Approved only for this exact development-tool package, version, and scope under explicit user delegation.",
       "approver": "Project owner (explicit user delegation)",
-      "decisionDate": "2026-10-05",
+      "decisionDate": "2026-10-30",
       "obligations": "Do not bundle or redistribute this optional package without a separate license review; if distribution is approved, preserve Apache notices and evaluate applicable LGPL source, relinking, and notice obligations."
     },
     {

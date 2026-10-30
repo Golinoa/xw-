@@ -21,7 +21,7 @@
 | 1 入口 | 读最近一份 journal 的 `## 断点`；`pnpm board:check`；`git status` 干净 | 断点缺失先补断点，不动代码 |
 | 2 实施 | 只碰单元声明的文件 | 越界即停 |
 | 3 单元验证 | 只跑本单元的 pgTAP / 单测 / 集成 | 红则改实现 |
-| 4 全量门禁 | 11 道一起跑（§3） | 红则定位 |
+| 4 全量门禁 | 13 道一起跑（§3） | 红则定位 |
 | 5 收口 | 1 提交 + 看板状态 + 实测数字 + journal `## 断点` | 四者缺一不算收口 |
 
 一个提交对应一个单元。**不允许「顺手把下一单元也改了」**——那会让回退失去边界。
@@ -30,9 +30,14 @@
 
 ```
 pnpm board:check && pnpm format:check && pnpm format:sql:check && pnpm lint \
-  && pnpm schema:check && pnpm check:deploy && pnpm typecheck && pnpm test \
-  && pnpm build && pnpm db:local:verify && pnpm db:local:http
+  && pnpm schema:check && pnpm check:deploy && pnpm deps:audit && pnpm licenses:check \
+  && pnpm typecheck && pnpm test && pnpm build && pnpm db:local:verify && pnpm db:local:http
 ```
+
+`deps:audit` 与 `licenses:check` 是 2026-10-30 补进来的（`a-deps-biz`）。此前它们
+只是脚本、不在门禁里，于是业务端 11 道全绿而实际带 7 条 high——**「没发现问题」与
+「没去查」在输出上完全一样**。补进门的顺序也有讲究：放在 `schema:check` 之后、
+`typecheck` 之前，因为它们是「不跑构建就能判定」的那一类，越早红越省时间。
 
 - 不许跑子集后宣布通过。**.vue 文件不在 `tsc` 覆盖范围内**，只有 `vue-tsc` 才看得见模板类型错误。
 - 数字取自当次输出。引用历史数字等同于编造。

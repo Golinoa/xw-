@@ -7,3 +7,17 @@ allowBuilds:
   workerd: true
 minimumReleaseAgeExclude:
   - '@cloudflare/workers-types@5.20261002.1'
+
+# 传递依赖的安全下限（a-deps-biz）。
+#
+# 这三条都藏在工具链深处（wrangler > miniflare > undici / sharp，ajv > fast-uri），
+# 不写在这里就只能等上游发布新版本把修复带上来；而它们恰好全部属于「有修复版」
+# 那一类，没有理由等。
+#
+# 只写最小修复版本而不是 latest：override 的本意是把已知漏洞抬到安全线，不是
+# 顺手把整条工具链升到最新——后者会让「这次为什么红」变成一次考古。
+# pnpm 11 起不再读 package.json 的 pnpm.overrides，只认这份文件。
+overrides:
+  undici: '>=7.30.1'
+  sharp: '>=0.35.5'
+  fast-uri: '>=3.1.9'
