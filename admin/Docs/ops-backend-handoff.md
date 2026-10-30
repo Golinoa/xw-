@@ -491,3 +491,22 @@ e2e 里有一条旧断言被我改了：它原先断言首页是占位页文案�
 ### 15.11 前端行为一行没改
 
 契约定稿 ≠ 后端返回。`version` 缺失仍然禁用编辑、字典项缺 `id` 仍然只读，**判断逻辑一行没动**，改的只有提示文案：从「契约缺口，等确认」改成「已定稿，等后端实现」。等你的列表真带上字段，这些降级自动解除，不需要我再发一版。
+
+### 15.12 补齐三条「有状态机没端点」的缺口（U-25 ~ U-27）
+
+上一版契约里有一类系统性问题：**状态机写了，驱动它的端点没写**。这类缺口最隐蔽——表格看起来很全，但页面永远停在初始状态，而且报错不是 404 而是「按钮点了没反应」。这轮补齐三处，正文已改：
+
+| 原缺口（本交接书编号） | 契约新编号 | 补的端点 |
+| --- | --- | --- |
+| U-05 订阅/授权 transition | U-25 | `POST /subscriptions/{id}/transition`、`POST /licenses/{id}/transition` |
+| U-06 权益快照历史 | U-26 | `GET /entitlement-snapshots`（按 `subjectType`+`subjectId`，`validFrom` 倒序） |
+| D-01 部署 transition | U-27 | `POST /deployments/{id}/transition` |
+| U-07a / U-08 工单字段 | U-27 | `GET /tickets` 补 `isOverdue`；详情回带 `assignableOperators`；另补 `GET /tickets/assignable-operators` |
+
+三点实现要求，请按正文做，不要各写一套：
+
+1. **不新增状态**。`transition` 的动作集就是 §3.5 / §3.7 状态机里的动作，`details.allowedActions` 由服务端算，前端只渲染不自造。
+2. **`isOverdue` 必须服务端算**，依据 `settings.ticket.dueHours` + `meta.timezone`。前端自己比时间是明确禁止项：本机时钟/时区不一致会产生假逾期，这类误报比不显示更难排查。
+3. **`GET /tickets/assignable-operators` 的静态路由要排在 `GET /tickets/{ticketId}` 之前**，否则 `assignable-operators` 会被当成 `ticketId` 直接 404，而且看起来像「参数校验没做」。
+
+关于编号：这几条在本交接书里一直是 U-05/U-06/D-01/U-07a/U-08，而契约 §11 的 U-05/U-06 早已被「编号生成规则」和「幂等存储」占用——**两份文档同一编号指两件事**，本身就是漂移源。以后一律以契约 §11 编号为准，本交接书的旧编号只作历史引用。

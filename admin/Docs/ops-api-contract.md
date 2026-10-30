@@ -611,14 +611,21 @@ ops 域只持久化「软件提供方与旅行社之间的商业关系、交付�
 | `POST /subscriptions` | `entitlement.request` | `customerId`、`contractItemId`、`billingCycle`、`startsOn`、`endsOn?`、`autoRenewIntent?`、`features[]` | `subscription{status='draft'}`、`snapshot{id}` | 409 `STATE_CONFLICT`（合同未生效/条目不属于该合同）、409 `CONFLICT`（重复开通同条目） | 必填 |
 | `GET /subscriptions/{subscriptionId}` | `entitlement.read` | — | `subscription{...}`、`snapshot{...}`、`changeRequests[]`、`tenantMapping?` | 404 | — |
 | `POST /subscriptions/{subscriptionId}/change-requests` | `entitlement.request` | `changeType`、`reason`、`proposedFeatures[]`、`effectiveOn?` | `changeRequest{status='pending_approval'}`、`diff{before,after}` | 404、409 `STATE_CONFLICT`（订阅非 `active`/`suspended`） | 必填 |
+| `POST /subscriptions/{subscriptionId}/transition` | 按 `action` 映射：`submit`→`entitlement.request`；`approve`/`reject`→`entitlement.approve`；`suspend`/`resume`/`revoke`/`mark_expired`→`entitlement.execute` | `action`、`reason`、`version` | `subscription{status}`；`suspend`/`resume`/`revoke` 需下发租户命令，返回 202 与 `command{id,status}` | 403、404、409 `STATE_CONFLICT`（动作不被当前状态允许，`details.allowedActions` 给出可用动作）、409 `CONFLICT`（`version` 不匹配） | 必填 |
 | `GET /licenses` | `entitlement.read` | `customerId`、`status[]`、`expiringInDays`、`deploymentInstanceId` | `items[{id,licenseNo,customer{...},licenseMode,validFrom,validTo,maintenanceUntil,status}]` | 403 | — |
 | `POST /licenses` | `entitlement.request` | `customerId`、`contractItemId`、`deploymentInstanceId`、`licenseMode`、`validFrom`、`validTo?`、`maintenanceUntil?`、`features[]` | `license{status='draft'}`、`snapshot{id}` | 404、409 `STATE_CONFLICT`（永久授权缺 `validTo` 反向约束） | 必填 |
 | `GET /licenses/{licenseId}` | `entitlement.read` | — | `license{...}`、`snapshot{...}`、`changeRequests[]`、`deployment?` | 404 | — |
 | `POST /licenses/{licenseId}/change-requests` | `entitlement.request` | 同订阅 | `changeRequest{...}`、`diff{...}` | 404、409 `STATE_CONFLICT` | 必填 |
+| `POST /licenses/{licenseId}/transition` | 同 `POST /subscriptions/{id}/transition` 的动作映射 | `action`、`reason`、`version` | `license{status}`；`suspend`/`resume`/`revoke` 返回 202 与 `command{id,status}` | 403、404、409 `STATE_CONFLICT`（`details.allowedActions`）、409 `CONFLICT` | 必填 |
 | `GET /entitlement-change-requests` | `entitlement.read` | `subjectType`、`status[]`、`customerId`、`requestedBy` | `items[{id,subjectType,subjectId,changeType,status,requestedBy,approvedBy,createdAt}]` | 403 | — |
 | `GET /entitlement-change-requests/{changeRequestId}` | `entitlement.read` | — | `changeRequest{...}`、`diff{...}`、`command?` | 404 | — |
 | `POST /entitlement-change-requests/{changeRequestId}/transition` | `approve`/`reject`→`entitlement.approve`；`execute`/`retry`/`cancel`→`entitlement.execute`（`retry` 另需 `tenant.retry`） | `action`、`reason`、`version` | `changeRequest{status}`、`command{id,status}`（`execute` 返回 202） | 403、409 `STATE_CONFLICT`（`APPROVAL_REQUIRED`/`PERMANENT_ERROR`）、409 `CONFLICT` | 必填 |
+| `GET /entitlement-snapshots` | `entitlement.read` | `subjectType`、`subjectId`、`validFromFrom`、`validFromTo`、`sourceType`、`page`、`pageSize` | `items[{id,sourceType,sourceId,targetScope,validFrom,validTo,contentHash,lineCount,createdAt}]`（按 `validFrom` 倒序） | 403 | — |
 | `GET /entitlement-snapshots/{snapshotId}` | `entitlement.read` | — | `snapshot{id,sourceType,sourceId,targetScope,validFrom,validTo,contentHash}`、`lines[{featureKey,enabled,quota,termMonths,displayNameSnapshot}]` | 404 | — |
+
+> **订阅/授权 `transition` 的口径**（2026-10-30 补写，原为 U-05 缺口）：动作集与 §3.5「订阅/授权状态机」一一对应，**不新增状态**，也不允许前端自造状态机——界面只渲染 `details.allowedActions`。守卫由服务端判定：`submit` 需已有 `proposed_snapshot_id`；未审批即执行 → 409 `STATE_CONFLICT`（`details.reason='APPROVAL_REQUIRED'`）；`mark_expired` 需 `valid_to < today`；`revoke` 属高风险动作，需 `reason` 与二次确认。
+>
+> `GET /entitlement-snapshots` 是快照的**历史列表**（原 U-06 缺口）：只读、按 `validFrom` 倒序，不提供删除或修改——快照是授权的证据链，一旦写出即不可变。列表项字段是「详情去掉 `lines` 后 + `lineCount`」，`lineCount` 属推导（列表不返回明细，但界面要显示「几项权益」），后端若已在快照上冗余该计数可直接返回，否则 `COUNT(lines)` 亦可。
 
 ### 5.7 tenant-integration
 
@@ -643,17 +650,23 @@ ops 域只持久化「软件提供方与旅行社之间的商业关系、交付�
 | `POST /deployments` | `deployment.write` | `customerId`、`name`、`deploymentType`、`environmentRef?`、`currentVersion?`、`goLiveOn?`、`maintenanceUntil?`、`ownerOperatorId?`、`licenseId?` | `deployment{status='planned'}` | 404、409 `CONFLICT`（同客户同名） | 必填 |
 | `GET /deployments/{deploymentId}` | `deployment.read` | — | `deployment{...}`、`versionRecords[]`、`licenses[]`、`tickets[]` | 404 | — |
 | `PATCH /deployments/{deploymentId}` | `deployment.write` | 可编辑字段、`version` | `deployment{...}` | 404、409 `CONFLICT` | 可选 |
+| `POST /deployments/{deploymentId}/transition` | `deployment.write` | `action`（`go_live`/`start_maintenance`/`end_maintenance`/`retire`）、`reason`、`goLiveOn?`、`version` | `deployment{status,goLiveOn}` | 403、404、409 `STATE_CONFLICT`（动作不被当前状态允许，`details.allowedActions`）、400（`go_live` 缺 `goLiveOn`；`retire` 缺 `reason`）、409 `CONFLICT` | 必填 |
 | `POST /deployments/{deploymentId}/version-records` | `deployment.write` | `fromVersion`、`toVersion`、`executedOn`、`result`、`impactNote?`、`rollbackNote?` | `versionRecord{id}`、`deployment{currentVersion}` | 404、409 `STATE_CONFLICT`（`fromVersion` 与当前版本不符→`VERSION_MISMATCH`） | 必填 |
 | `GET /deployments/{deploymentId}/version-records` | `deployment.read` | — | `items[{fromVersion,toVersion,executedOn,executedBy,result,impactNote,rollbackNote}]` | 404 | — |
-| `GET /tickets` | `ticket.read` | `customerId`、`status[]`、`priority[]`、`assigneeOperatorId`、`productId`、`updatedFrom`、`overdueOnly` | `items[{id,ticketNo,subject,customer{...},priority,status,assignee{...},updatedAt,dueAt}]` | 403 | — |
+| `GET /tickets` | `ticket.read` | `customerId`、`status[]`、`priority[]`、`assigneeOperatorId`、`productId`、`updatedFrom`、`overdueOnly` | `items[{id,ticketNo,subject,customer{...},priority,status,assignee{...},updatedAt,dueAt,isOverdue}]` | 403 | — |
+| `GET /tickets/assignable-operators` | `ticket.read` | `keyword?` | `items[{id,displayName,status}]`（仅 `active` 成员；供分派下拉，不暴露邮箱） | 403 | — |
 | `POST /tickets` | `ticket.create` | `customerId`、`subject`、`description`、`issueType`、`priority`、`productId?`、`contractId?`、`tenantMappingId?`、`deploymentInstanceId?` | `ticket{status='new'}` | 404、400（引用不属于该客户→`REFERENCE_CUSTOMER_MISMATCH`） | 必填 |
-| `GET /tickets/{ticketId}` | `ticket.read` | — | `ticket{...}`、`timeline[]`、`references[]`、`allowedActions[]` | 404 | — |
+| `GET /tickets/{ticketId}` | `ticket.read` | — | `ticket{...}`、`timeline[]`、`references[]`、`allowedActions[]`、`assignableOperators[{id,displayName,status}]` | 404 | — |
 | `PATCH /tickets/{ticketId}` | `ticket.update` | `subject?`、`description?`、`issueType?`、`priority?`、`version` | `ticket{...}` | 404、409 `CONFLICT` | 可选 |
 | `POST /tickets/{ticketId}/assign` | `ticket.assign` | `assigneeOperatorId`、`reason?`、`version` | `ticket{status,assignee}`、`event{id}` | 403、404、409 `STATE_CONFLICT`（`closed` 不可直接分派） | 必填 |
 | `POST /tickets/{ticketId}/transition` | `ticket.update`（`start`/`wait`/`resume`/`resolve`）；`ticket.close`（`close`/`reopen`） | `action`、`waitingOn?`、`resolutionSummary?`、`reason?`、`version` | `ticket{status}`、`event{id}` | 403、409 `STATE_CONFLICT`（`details.allowedActions`） | 必填 |
 | `GET /tickets/{ticketId}/timeline` | `ticket.read` | `page`/`pageSize` | `items[{id,eventType,fromStatus,toStatus,actor{...},body,waitingOn,createdAt}]`（只增不改） | 404 | — |
 | `POST /tickets/{ticketId}/events` | `ticket.update` | `body`（内部说明/沟通摘要） | `event{id,eventType='comment'}` | 404、409 `STATE_CONFLICT`（`closed` 只允许 `reopen`） | 可选 |
 | `POST /tickets/{ticketId}/references` | `ticket.update` | `refType`、`refId` | `reference{...}` | 404、409 `CONFLICT`（重复关联）、400（引用不存在） | 可选 |
+
+> **`isOverdue` 与 `assignableOperators`**（2026-10-30 补写，原 U-07a/U-08）：
+> `isOverdue` 是**服务端算好的布尔值**，依据 `settings.ticket.dueHours` 与 `meta.timezone`（`Asia/Shanghai`）判定 `dueAt < now` 且未关闭。**前端禁止自行比较时间**——本机时钟与时区不一致会产生假逾期告警，这类误报比不显示更难排查，属于明确禁止项。
+> `assignableOperators` 内联在详情响应里，是因为售后角色通常没有 `operator.read`，若让前端另调 `GET /operators` 会 403。`GET /tickets/assignable-operators` 供**创建页**使用（此时还没有工单可取详情）；实现上须保证该静态路由先于 `GET /tickets/{ticketId}` 匹配，否则 `assignable-operators` 会被当作 `ticketId`。
 
 ### 5.9 overview / reports / settings / export
 
@@ -1109,6 +1122,9 @@ GRANT EXECUTE ON FUNCTION ops.transition_contract(uuid, text, integer, text) TO 
 | U-22 | `GET /roles` 是否返回 `description` | **已定稿 2026-10-30**：返回 `description`（可空字符串） | [推导·原文不一致] `POST /roles` 收 `description`、`PATCH /roles/{roleId}` 也能改它，唯独列表不返回，等于「能写不能读」。补上是零成本的读侧对齐 |
 | U-23 | `/meta` 的 `supportedCurrencies` 与 U-12「允许任意 ISO-4217」如何并存 | **已定稿 2026-10-30**：v1 白名单只 `['CNY']`，端点侧同白名单校验；放开币种时 `/meta` 与端点校验同一次变更 | [推导]。U-12 说的是「能力上允许外币记账」，不等于「v1 就开出外币入口」。两处若不同步，会出现「/meta 只报 CNY、POST /contracts 却收了 USD」的漂移——这类不一致最难查，因为两边都「没错」 |
 | U-24 | 幂等记录的 `scope` 是否要含调用者 | **已定稿 2026-10-30**：`scope` 由（调用者、组织、方法、路径）唯一决定；`actor_id` 更名 `actor_user_id`，语义为 `operators.user_id` | [推导·修回退] 原示例只写 `method + path`，会让两个成员撞同一幂等键时共享缓存槽，后到者读到他者响应体（`3df4fe2` 修的就是这个）。列名改 `actor_user_id` 是因为审计表已用 `actor_operator_id`/`actor_user_id` 两列区分，同词两义会让排障 join 错表 |
+| U-25 | 订阅/授权的状态推进没有端点 | **已定稿 2026-10-30**：补 `POST /subscriptions/{id}/transition` 与 `POST /licenses/{id}/transition`，动作集复用 §3.5 状态机 | [推导·缺口] §3.5 写了完整状态机（`draft→pending_approval→active`、`suspend`/`resume`/`revoke`/`mark_expired`），§5.6 却只有 `change-requests` 的 transition——草稿期无法提交审批，页面只能只读。此处**不新增状态**，只补驱动端点 |
+| U-26 | 权益快照没有历史列表 | **已定稿 2026-10-30**：补 `GET /entitlement-snapshots`（按 `subjectType`+`subjectId` 过滤，`validFrom` 倒序） | [推导·缺口] 原先只有 `GET /entitlement-snapshots/{snapshotId}`，快照历史退化为「仅当前快照」，授权变更无法回溯。快照只读、不可删除——它是授权的证据链 |
+| U-27 | 部署实例状态机没有驱动端点；工单缺 `isOverdue` 与可指派成员 | **已定稿 2026-10-30**：补 `POST /deployments/{id}/transition`；`GET /tickets` 列表项补 `isOverdue`（服务端算）；`GET /tickets/{id}` 回带 `assignableOperators`，另补 `GET /tickets/assignable-operators` 供创建页 | [推导·缺口] §3.7 状态机（`planned→active→maintenance→retired`）无端点，实例状态永远停在 `planned`。`isOverdue` **必须**服务端按 `settings.ticket.dueHours` + `Asia/Shanghai` 算：前端自算会因时钟/时区产生假逾期。`assignableOperators` 内联是因为售后角色没有 `operator.read` |
 
 ---
 
