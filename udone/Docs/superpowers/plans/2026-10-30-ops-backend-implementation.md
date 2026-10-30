@@ -31,7 +31,10 @@
 
 规模现状：13 迁移 / 31 个契约端点 / 6 个 API 模块。ops 侧目标是 **+43 张表 / +112 个端点**，约为现有后端的 3.6 倍。
 
-**契约数字已逐项核对（不是引用报告）:** 43 张表、112 个端点、39 个权限动作码、9 个域（前端实现 6 个业务域 + identity 仅会话）、前端 47 个测试文件、6 例 e2e —— 全部吻合。
+**契约数字已逐项核对（不是引用报告）:** 43 张表、112 个端点、**39** 个权限动作码、9 个域（契约 §3.1~§3.9 = **8 个业务域 + identity-audit**）、前端 47 个测试文件、6 例 e2e —— 全部吻合。
+
+> 两处口径纠正（2026-10-30 二次核对）：① 原写「6 个业务域」，按契约目录逐节数是 8 个，错在我；② 权限码是 **39**：逐行提取运营端 `constants/permissions.ts` 得 39 个码，与契约 §4 一一对应，此前看板写的「48 条动作码」无出处，已废。
+> 差异裁决与执行顺序见 `2026-10-30-ops-alignment.md`（DIF-01~15、N1~N8）。
 
 **与报告不符的一处:** 报告 §9 写「8 个迁移」。本分支是 **13 个**（多 `soft_delete_visibility`、`order_write_grants`、`order_line_upsert`、`line_write_state_guard`、`finance_applications`）。原因是报告按 `feat/ops-console`（`c6facfe`）写成，而本分支比它**多 24 个提交**。迁移序号与「现有表」的假设一律按 13 个重算。
 
@@ -53,11 +56,16 @@
 | 0 | ~~0.1~~ | 幂等键命名空间 + `ops.idempotency_records` ✅ `3df4fe2` / `fe4e184` | S + M | 落库部分依赖 0.2 |
 | 0 | ~~0.2~~ | PostgREST 暴露 `ops`（config.toml / local-db / rest-client 三处）✅ `9aba9ce` | S | — |
 | 0 | ~~0.3~~ | 契约双注册表（`respond` / `RouteKey` / route-parity）✅ `36b2cc8` | S | — |
-| 0 | 0.4 | 认证代理（GoTrue）+ 受控 CORS 凭证 | M | 0.2 完成后才能验成员判定 |
-| 1 | T-01 | 契约包与路由骨架 + `GET /meta` | M | 0.3 |
-| 1 | T-02 | `ops` schema 引导、RLS 帮助函数、审计表 | M | 0.2 |
-| 1 | T-03 | 运营身份：`/session`、`/permissions`、`/operators*`、`/roles*`、`/audit-events` | L | 0.4、T-02 |
+| 1 | **N1 = T-02a** | ops 身份基座：`operators`/`roles`/`permissions`/`role_permissions`/`operator_roles` + `current_operator_id()` / `has_permission()` / `get_current_ops_context()` / `write_audit()` + 39 码 seed | M | 0.2 |
+| 1 | **N2 = T-01** | 契约包与路由骨架 + `GET /meta` | M | N1、0.3 |
+| 1 | **N3 = 0.4** | 认证代理（GoTrue）+ 受控 CORS 凭证 + 测试签发通道 | M | N1 |
+| 1 | **N4 = T-03a** | 运营身份读接口：`/session`、`/permissions` | S | N1、N2 |
+| 1 | **N5** | 可关桩里程碑（login → /meta → /session → 403 全绿才通知运营端） | — | N2+N3+N4 |
+| 1 | **N6 = T-03b** | 账号与角色管理：`/operators*`、`/roles*`、`/audit-events` + 邀请 RPC | L | N4 |
+| 1.5 | **N7 = T-02b** | 幂等列形状收敛为 `PK(scope, key)`（非阻塞，可插空） | S | N1 |
 | 2+ | T-04~T-14 | 按域推进（客户 → 产品 → 合同 → 应收 → 收款 → 权益 → 租户 → 部署 → 工单 → 报表 → 跨域回归） | L × 11 | 见契约 §8 依赖图 |
+
+**执行顺序（2026-10-30 二次修正，固定不再议）:** 原表把 0.4 放在 T-01 之前、T-02 放在 T-01 之后，运营端又建议「/meta 与 0.4 并行、T-02 最后」，两种排法都不成立——**`/meta`（权限＝「已认证运营成员」）与 `login`（要返 `OPS_MEMBER_MISSING`/`INACTIVE` 且不下发 cookie）都要查 `ops.operators`**，表在 T-02 里。所以 N1 必须在最前，顺序为 N1 → N2 → N3 → N4 → N5 → N6。裁决依据见 `2026-10-30-ops-alignment.md` DIF-01。
 
 Wave 1 只做到「前端登录、菜单、403/404 能对着真 API 跑通」，不碰业务域——理由与报告 §10 一致：这三项决定后面所有授权是否正确，返工代价最高。
 
