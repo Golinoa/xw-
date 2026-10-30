@@ -64,3 +64,24 @@
 typecheck 0 错 ｜ 单测 **53 文件 399 用例**（连跑两轮 exit 0）｜ lint 0 警告 303 文件 ｜
 format 1227 文件全匹配 ｜ build 11 tasks、`dist.zip` 1,554,364 字节、产物内桩夹具关键词 0 命中 ｜
 e2e **10 例**（连跑两轮 34.5s / 34.4s）。
+
+## 收尾：看板同步（2026-10-30）
+
+`dev-board.html` 的 SEED_VERSION 8 → 9，把本轮事实写进去。数字全部现取，不凭记忆：
+
+- 端点函数：`api/ops/**` 的 `export async function`，排除 `mock.ts` / `*.mock.ts` / `dev-stub.ts` /
+  `fixtures.ts` / `__stub__` → 合计 **109**（identity 12 → 19）。
+  这一步顺带纠正了两个旧口径错误：租户域原记 12（把 `normalizeAccepted`、`createCommandIdempotencyKey`
+  这类纯助手算进去了，实为 10）；首页横幅原记「104 个 API 函数」，现按可复现的方法改为 109。
+- 权限动作码：`constants/permissions.ts` 定义 **48** 条（横幅原写 38，是更早一轮「实际使用值」的数字）。
+- 文件规模：`api/ops` 86 个 .ts、`src` 下 101 个 .vue。
+- 单测第三次连跑：**53 文件 399 用例 exit 0**。
+- 收尾复跑 lint **0 警告 304 文件**、format **1228 文件全匹配**（上文「门禁实测」记的 303 / 1227 是交付当时的数，
+  两次之间没有代码改动，差的这一个文件从哪来我没查出原因——「都是绿的」不受影响，但数字按最新一次写）。
+
+两处措辞按事实修正：后端不再是「ops 代码 0 行」——`supabase/migrations` 已有第 14 个迁移
+`20261030000001_ops_schema_idempotency.sql`，Wave 0 三项前置（幂等表、schema 暴露、契约双注册表）
+都已提交，但 `/api/v1/ops` 下确实没有任何端点，故改为「ops 端点 0 个」。
+阻塞项三条也重写：原「P0-2 缺认证三端点」「3 条冲突等回写」均已闭环（§5.1 已有 login/refresh/logout，
+202 响应体已定稿为 `{commandId,status,idempotencyKey}`，`SYNC_VERSION_CONFLICT` 已并入
+`STATE_CONFLICT` + `details.reason`），置换成当前真实的三条。
