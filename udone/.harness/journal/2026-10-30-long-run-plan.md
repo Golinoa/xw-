@@ -4,7 +4,7 @@
 
 看板实测 89 卡 / 47 done / 40 todo / 2 blocked。40 张待办里 39 张归我方（`a-opsfix` 是运营端回写契约正文）。把这 39 张排成一条可连续推进的长链：
 
-- `Docs/superpowers/plans/2026-10-30-long-run.md`：39 卡 → 约 76 个推进单元；P1 可关桩 → P8 全量回归串行主线 + P9 业务 backlog 填缝；里程碑 M1~M8。
+- `Docs/superpowers/plans/2026-10-30-long-run.md`：39 卡 → 约 70 个推进单元；P1 可关桩 → P8 全量回归串行主线 + P9 业务 backlog 填缝；里程碑 M1~M8。
 - `.harness/LONG_RUN.md`：节奏与止损约束（单元五步、11 道全量门禁、变异抽查、断点协议、跨层禁并行）。
 - 索引挂载：`.harness/README.md`、`.harness/DOCUMENT_MAP.md`、`.harness/PLANS.md`、`exec-plans/active/README.md`。
 
