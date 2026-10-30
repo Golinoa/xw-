@@ -30,6 +30,25 @@ import {
   opsRoleUpdateResponseSchema,
 } from './ops/accounts';
 import { opsLoginRequestSchema, opsLogoutResponseSchema, opsTokenResponseSchema } from './ops/auth';
+import {
+  opsCustomerContactCreateRequestSchema,
+  opsCustomerContactDeleteResponseSchema,
+  opsCustomerContactListResponseSchema,
+  opsCustomerContactResponseSchema,
+  opsCustomerContactUpdateRequestSchema,
+  opsCustomerCreateRequestSchema,
+  opsCustomerCreateResponseSchema,
+  opsCustomerDetailResponseSchema,
+  opsCustomerDuplicateCheckRequestSchema,
+  opsCustomerDuplicateCheckResponseSchema,
+  opsCustomerListQuerySchema,
+  opsCustomerListResponseSchema,
+  opsCustomerOverviewResponseSchema,
+  opsCustomerTransitionRequestSchema,
+  opsCustomerTransitionResponseSchema,
+  opsCustomerUpdateRequestSchema,
+  opsCustomerUpdateResponseSchema,
+} from './ops/customers';
 import { opsMetaResponseSchema } from './ops/meta';
 import { opsPermissionListResponseSchema, opsSessionResponseSchema } from './ops/session';
 import {
@@ -381,6 +400,77 @@ export const OPS_ROUTES = {
     path: '/api/v1/ops/audit-events',
     request: opsAuditEventListQuerySchema,
     response: opsAuditEventListResponseSchema,
+  }),
+  /**
+   * 客户与联系人（契约 §5.2，十一个端点）。
+   *
+   * 顺序照契约表：集合 → 集合上的动作（查重）→ 单条 → 单条上的子资源。
+   * `duplicate-check` 排在 `:customerId` 之前不只是阅读顺序——它是 `/customers`
+   * 下的静态段，写在 `:customerId` 后面会让「查重」这条路径先被参数路由吃掉
+   * （Hono 按注册顺序匹配，静态段的优先级是它自己算的，但把静态段写在前是不需要
+   * 依赖那个规则的写法）。
+   */
+  listOpsCustomers: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/customers',
+    request: opsCustomerListQuerySchema,
+    response: opsCustomerListResponseSchema,
+  }),
+  createOpsCustomer: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/customers',
+    request: opsCustomerCreateRequestSchema,
+    response: opsCustomerCreateResponseSchema,
+  }),
+  checkOpsCustomerDuplicates: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/customers/duplicate-check',
+    request: opsCustomerDuplicateCheckRequestSchema,
+    response: opsCustomerDuplicateCheckResponseSchema,
+  }),
+  getOpsCustomer: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/customers/:customerId',
+    response: opsCustomerDetailResponseSchema,
+  }),
+  updateOpsCustomer: defineRoute({
+    method: 'PATCH',
+    path: '/api/v1/ops/customers/:customerId',
+    request: opsCustomerUpdateRequestSchema,
+    response: opsCustomerUpdateResponseSchema,
+  }),
+  transitionOpsCustomer: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/customers/:customerId/transition',
+    request: opsCustomerTransitionRequestSchema,
+    response: opsCustomerTransitionResponseSchema,
+  }),
+  getOpsCustomerOverview: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/customers/:customerId/overview',
+    response: opsCustomerOverviewResponseSchema,
+  }),
+  listOpsCustomerContacts: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/customers/:customerId/contacts',
+    response: opsCustomerContactListResponseSchema,
+  }),
+  createOpsCustomerContact: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/customers/:customerId/contacts',
+    request: opsCustomerContactCreateRequestSchema,
+    response: opsCustomerContactResponseSchema,
+  }),
+  updateOpsCustomerContact: defineRoute({
+    method: 'PATCH',
+    path: '/api/v1/ops/customers/:customerId/contacts/:contactId',
+    request: opsCustomerContactUpdateRequestSchema,
+    response: opsCustomerContactResponseSchema,
+  }),
+  deleteOpsCustomerContact: defineRoute({
+    method: 'DELETE',
+    path: '/api/v1/ops/customers/:customerId/contacts/:contactId',
+    response: opsCustomerContactDeleteResponseSchema,
   }),
 } as const satisfies Record<string, RouteContract>;
 

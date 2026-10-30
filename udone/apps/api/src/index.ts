@@ -15,6 +15,7 @@ import { financeRoutes } from './modules/finance/routes';
 import { financeApplicationRoutes } from './modules/finance-applications/routes';
 import { opsAccountRoutes } from './modules/ops/accounts/routes';
 import { opsAuthRoutes } from './modules/ops/auth/routes';
+import { opsCustomerRoutes } from './modules/ops/customers/routes';
 import { opsIdentityRoutes } from './modules/ops/identity/routes';
 import { opsMetaRoutes } from './modules/ops/meta/routes';
 
@@ -43,5 +44,6 @@ app.route('/', opsAuthRoutes);
 app.route('/', opsMetaRoutes);
 app.route('/', opsIdentityRoutes);
 app.route('/', opsAccountRoutes);
+app.route('/', opsCustomerRoutes);
 
 export default app;
