@@ -97,7 +97,41 @@ admin 发布刻意不跑 `quality:check`：它内含 `quality:dependencies`，�
 
 在这些验证完成前，`udone/.github/workflows/ci.yml`（从未执行过的 GitHub 工作流）不要删除，也不要声称 CI 已生效。
 
-## 8. 已知未覆盖
+## 8. Worker 的环境变量与密钥
+
+变量清单有**两处真源，键集合必须相同**，由 `pnpm check:deploy` 强制：
+
+| 文件 | 用途 | 是否入库 |
+| --- | --- | --- |
+| `udone/.env.example` | 文档：每个键为什么存在 | 是，值必须为空占位 |
+| `udone/.dev.vars.example` | 本地填法：`cp` 成 `.dev.vars` 后被 `wrangler dev` 加载 | 是，值必须为空占位 |
+| `udone/.dev.vars` | 本地实际值 | 否（`.gitignore`） |
+
+生产不走这三个文件，用 `wrangler secret put <NAME>` 注入；**`wrangler.toml` 只放 `APP_VERSION` 这类非密钥值**。
+
+### 8.1 必须由人提供的五个值
+
+| 变量 | 从哪取 | 缺失的后果 |
+| --- | --- | --- |
+| `SUPABASE_URL` | Supabase → Settings → API | Worker 起不来（类型上必填） |
+| `SUPABASE_PUBLISHABLE_KEY` | 同上 | 同上 |
+| `SUPABASE_SERVICE_ROLE_KEY` | 同上 | 同上；**只给 Worker，绝不许下发到浏览器** |
+| `SUPABASE_JWT_SECRET` | 同上，JWT Secret | 能起服务，但幂等命名空间退化为令牌哈希：access token 一刷新，同一笔重复提交就落两行 |
+| `APP_BASE_URL` | 部署域名 | 邀请接口不返回可点链接 |
+
+`SUPABASE_JWT_SECRET` 在类型上是可选的（本地无 GoTrue 也要能起服务），所以它**不会**在启动时失败——这正是它被写进 `check:deploy` 清单的原因：名字一旦从样例里消失，门禁红，而不是等到线上出现重复单。
+
+### 8.2 有可用默认的策略值
+
+`ALLOWED_ORIGINS`（默认两条 localhost，**禁通配符**，留空即拒绝所有跨域）、`RATE_LIMIT_PER_MINUTE`（默认 60）、`ALLOW_LOCAL_JWT_AUTH`（样例必须 `false`）。
+
+`ALLOW_LOCAL_JWT_AUTH` 的两条硬约束：`.env.example` 里必须是 `false`；`wrangler.toml` 里**出现这个名字就失败**，不看值——关掉的写法有很多种，而「配了没生效」与「配了且生效」在部署日志里长得一样。
+
+### 8.3 真栈冒烟专用
+
+`SMOKE_*` 七个键只在 `pnpm smoke` 指向已部署环境时填，且必须用专用测试账号与一个专门的组织——不要指向生产数据。本地 `db:local:*` 用夹具，不需要这些键。
+
+## 9. 已知未覆盖
 
 - **没有自动部署**。发布只做构建与归档，部署仍是手动动作。
 - **`deps:audit` / `licenses:check` 未纳入发布门禁**，原因见第 6 节与 `.harness/CONTRACTS.md`。
