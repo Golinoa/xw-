@@ -9,4 +9,5 @@
 - [安全规范](SECURITY.md)
 - [可靠性规范](RELIABILITY.md)
 - [状态汇报规范](REPORTING.md)
+- [长任务推进协议](LONG_RUN.md)
 - [活跃执行计划](docs/exec-plans/active/README.md)
