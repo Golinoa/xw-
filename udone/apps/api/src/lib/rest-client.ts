@@ -173,8 +173,13 @@ export function createRestClient(
   return {
     async rest<T>(path: string, init: RestInit = {}): Promise<T> {
       const response = await restFetch(path, init);
+      // 204 与「2xx 但 body 为空」是同一件事：这个调用没有返回值。
+      // 只判 204 不够——`Prefer: return=minimal` 的写入是 201 + 空 body，
+      // 直接 response.json() 会抛一个看起来像「上游坏了」的解析错误。
       if (response.status === 204) return undefined as T;
-      return response.json() as Promise<T>;
+      const text = await response.text();
+      if (!text) return undefined as T;
+      return JSON.parse(text) as T;
     },
 
     async restPage<T>(path: string, init: RestInit = {}): Promise<RestPage<T>> {

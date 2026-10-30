@@ -122,6 +122,8 @@ export function apiEnv(overrides: Partial<ApiEnvironment['Bindings']> = {}) {
   return {
     SUPABASE_URL: REST_URL,
     SUPABASE_PUBLISHABLE_KEY: 'integration-publishable-key',
+    // 没有它，幂等中间件会退回内存 store，落库那条链路就永远不会被测到。
+    SUPABASE_SERVICE_ROLE_KEY: signServiceToken(),
     // 默认 60/分钟不够用：一个文件里几十次请求会自己把自己限流。
     RATE_LIMIT_PER_MINUTE: '100000',
     AUTH_VERIFIER: verifier(),
@@ -131,6 +133,11 @@ export function apiEnv(overrides: Partial<ApiEnvironment['Bindings']> = {}) {
 
 export interface CallOptions {
   actor?: keyof typeof USERS;
+  /**
+   * 固定令牌。默认每次调用现签一个，而现签的令牌带 iat——跨秒的两次请求
+   * 会得到不同令牌，幂等命名空间跟着变，重放就测不出来了。
+   */
+  token?: string;
   method?: string;
   body?: unknown;
   query?: Record<string, string>;
@@ -162,7 +169,7 @@ export async function call<T = unknown>(
   }
 
   const headers: Record<string, string> = {
-    Authorization: `Bearer ${signToken(USERS[actor])}`,
+    Authorization: `Bearer ${options.token ?? signToken(USERS[actor])}`,
     'X-Organization-ID': options.organizationId ?? ORG_ID,
     'Content-Type': 'application/json',
     ...(method === 'GET' ? {} : { 'Idempotency-Key': crypto.randomUUID() }),

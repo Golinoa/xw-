@@ -1,8 +1,10 @@
-import type { MiddlewareHandler } from 'hono';
+import type { Context, MiddlewareHandler } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { ERROR_CODES } from '@erp/contracts';
 import { idempotencyStorageKey, requestFingerprint } from '../lib/idempotency-key';
 import { createMemoryIdempotencyStore, type IdempotencyStore } from '../lib/idempotency-store';
+import { createOpsIdempotencyStore } from '../lib/ops-idempotency-store';
+import { createServiceRestClient } from '../lib/rest-client';
 import type { ApiEnvironment } from './auth';
 import { ApiHttpError } from './error-handler';
 
@@ -13,8 +15,39 @@ export interface IdempotencyOptions {
   store?: IdempotencyStore;
 }
 
-/** Shared across requests in this isolate; see the store for the multi-instance caveat. */
+/** 只有本 isolate 有效；见 idempotency-store.ts 的说明。 */
 const defaultStore = createMemoryIdempotencyStore();
+
+/** 降级只提示一次，否则每个写请求都会刷一行日志把真问题淹掉。 */
+let warnedAboutMemoryStore = false;
+
+/**
+ * 选了哪个 store。
+ *
+ * 配了 service_role 就用落库的，否则退回内存并显式警告一次。这个降级是刻意的：
+ * 本地开发与单测没有 service_role，不该因此跑不起来；生产没有配就等于
+ * 「幂等只在单个 isolate 内有效」，必须在日志里说得清清楚楚。
+ *
+ * 这里不吞异常：幂等表读不到时让请求直接失败，而不是悄悄退回内存再假装成功。
+ * 业务写入本来就依赖同一个 PostgREST，它不可用时写入也成功不了；把「幂等失效
+ * 但写入成功」这种半好状态藏起来，比报错危险。
+ */
+function resolveStore(context: Context<ApiEnvironment>): IdempotencyStore {
+  if (!context.env.SUPABASE_SERVICE_ROLE_KEY) {
+    if (!warnedAboutMemoryStore) {
+      warnedAboutMemoryStore = true;
+      console.warn(
+        JSON.stringify({
+          event: 'idempotency_store_degraded',
+          reason: 'SUPABASE_SERVICE_ROLE_KEY is not configured',
+          effect: 'replays are only deduplicated within this worker isolate',
+        }),
+      );
+    }
+    return defaultStore;
+  }
+  return createOpsIdempotencyStore({ client: createServiceRestClient(context.env) });
+}
 
 /**
  * Replays a previously committed response for a repeated write request.
@@ -27,8 +60,6 @@ const defaultStore = createMemoryIdempotencyStore();
  * 对会动钱的端点来说，这比直接报错严重得多。
  */
 export function idempotency(options: IdempotencyOptions = {}): MiddlewareHandler<ApiEnvironment> {
-  const store = options.store ?? defaultStore;
-
   return async (context, next) => {
     if (!WRITE_METHODS.has(context.req.method)) {
       await next();
@@ -40,6 +71,8 @@ export function idempotency(options: IdempotencyOptions = {}): MiddlewareHandler
       await next();
       return;
     }
+
+    const store = options.store ?? resolveStore(context);
 
     if (!KEY_PATTERN.test(key)) {
       throw new ApiHttpError(
