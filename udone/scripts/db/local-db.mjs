@@ -70,6 +70,15 @@ const OPS_OPERATOR_ID = 'a2000000-0000-4000-8000-000000000001';
 const OPS_DISABLED_USER_ID = 'a1000000-0000-4000-8000-0000000000f2';
 const OPS_DISABLED_OPERATOR_ID = 'a2000000-0000-4000-8000-000000000002';
 
+// 只读账号。`ops_viewer` 没有 `operator.read`，但有 `audit.read`——这一对差异
+// 让「按动作码判定」与「按是不是运营成员判定」在集成层就能分开。
+const OPS_VIEWER_USER_ID = 'a1000000-0000-4000-8000-0000000000f3';
+const OPS_VIEWER_OPERATOR_ID = 'a2000000-0000-4000-8000-000000000003';
+
+// 待邀请对象：auth 用户已存在、没有运营行。邀请端点要先把人建进 auth.users，
+// 才有 user_id 可以写进 ops.operators——本地没有 GoTrue，这个 id 由替身返回。
+const OPS_INVITEE_USER_ID = 'a1000000-0000-4000-8000-0000000000f4';
+
 let serverProcess = null;
 let postgrestProcess = null;
 let gatewayServer = null;
@@ -504,15 +513,22 @@ INSERT INTO public.organization_members (organization_id, user_id, role) VALUES
 
 INSERT INTO auth.users (id, email) VALUES
   ('${OPS_USER_ID}', 'ops-admin@integration.test'),
-  ('${OPS_DISABLED_USER_ID}', 'ops-disabled@integration.test');
+  ('${OPS_DISABLED_USER_ID}', 'ops-disabled@integration.test'),
+  ('${OPS_VIEWER_USER_ID}', 'ops-viewer@integration.test'),
+  ('${OPS_INVITEE_USER_ID}', 'ops-invitee@integration.test');
 
 INSERT INTO ops.operators (id, user_id, email, display_name, status) VALUES
   ('${OPS_OPERATOR_ID}', '${OPS_USER_ID}', 'ops-admin@integration.test', 'Integration Ops', 'active'),
-  ('${OPS_DISABLED_OPERATOR_ID}', '${OPS_DISABLED_USER_ID}', 'ops-disabled@integration.test', 'Integration Ops (disabled)', 'disabled');
+  ('${OPS_DISABLED_OPERATOR_ID}', '${OPS_DISABLED_USER_ID}', 'ops-disabled@integration.test', 'Integration Ops (disabled)', 'disabled'),
+  ('${OPS_VIEWER_OPERATOR_ID}', '${OPS_VIEWER_USER_ID}', 'ops-viewer@integration.test', 'Integration Ops (viewer)', 'active');
 
 INSERT INTO ops.operator_roles (operator_id, role_id, granted_by)
 SELECT '${OPS_OPERATOR_ID}', role.id, '${OPS_OPERATOR_ID}'
 FROM ops.roles AS role WHERE role.code = 'platform_admin';
+
+INSERT INTO ops.operator_roles (operator_id, role_id, granted_by)
+SELECT '${OPS_VIEWER_OPERATOR_ID}', role.id, '${OPS_OPERATOR_ID}'
+FROM ops.roles AS role WHERE role.code = 'ops_viewer';
 `,
     'utf8',
   );
@@ -552,6 +568,8 @@ async function http(...extra) {
           UDONE_TEST_FINANCE_ID: USER_IDS.finance,
           UDONE_TEST_OPS_USER_ID: OPS_USER_ID,
           UDONE_TEST_OPS_DISABLED_USER_ID: OPS_DISABLED_USER_ID,
+          UDONE_TEST_OPS_VIEWER_USER_ID: OPS_VIEWER_USER_ID,
+          UDONE_TEST_OPS_INVITEE_USER_ID: OPS_INVITEE_USER_ID,
         },
       },
     );
@@ -622,6 +640,8 @@ function test() {
     const passed = (output.match(/^ok \d+/gm) ?? []).length;
     const failed = (output.match(/^not ok \d+/gm) ?? []).length;
     const crashed = result.status !== 0;
+    const plannedMatch = output.match(/^1\.\.(\d+)\s*$/m);
+    const planned = plannedMatch ? Number.parseInt(plannedMatch[1], 10) : null;
     if (failed === 0 && passed === 0) {
       failures += 1;
       console.log(`FAIL ${name}（没有产生任何断言，测试文件可能失效）`);
@@ -637,6 +657,18 @@ function test() {
         .filter((line) => /^not ok|# |ERROR|FATAL|DETAIL|CONTEXT|HINT/.test(line))
         .slice(0, 40);
       console.log(relevant.join('\n'));
+    } else if (planned !== null && planned !== passed + failed) {
+      // 计划数必须与实际断言数相等。
+      //
+      // pgTAP 对不上时只打一行 `# Looks like you planned 49 tests but ran 48`：它既不是
+      // `not ok`，也不改 psql 的退出码。所以「文件里少跑了一条断言」在本脚本看来与
+      // 「全绿」完全同形——而少跑往往意味着某个断言被提前 return 跳过，或写作时漏了。
+      //
+      // 这一段放在 `failed/crashed` 之后：执行中途报错时，真正的原因往往不是数字
+      // 对不上，而是某个断言根本没能跑（例如上一句把仅有的管理员停用了）。
+      // 先说「报错了」再说「少了几条」，排查顺序才对。
+      failures += 1;
+      console.log(`FAIL ${name}（计划 ${planned} 条，实际 ${passed + failed} 条）`);
     } else {
       console.log(`ok   ${name}（${passed} 个断言）`);
     }
