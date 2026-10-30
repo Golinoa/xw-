@@ -84,17 +84,52 @@ describe('corsMiddleware', () => {
     expect(allowedHeaders).toContain('idempotency-key');
   });
 
-  it('allows nothing when no allowlist is configured', async () => {
+  it('grants credentials to an allowed origin, with Vary: Origin', async () => {
+    const response = await get(ALLOWED, ALLOWED);
+
+    expect(response.headers.get('access-control-allow-origin')).toBe(ALLOWED);
+    expect(response.headers.get('access-control-allow-credentials')).toBe('true');
+    // Without Vary a shared cache may hand this response to another origin,
+    // which is how a credentials grant leaks.
+    expect(response.headers.get('vary') ?? '').toContain('Origin');
+  });
+
+  it('never grants credentials to an origin outside the allowlist', async () => {
+    // This is the assertion that matters most: hono's `credentials: true` sets
+    // the header unconditionally, so a blocked origin would be told to send
+    // cookies. The response must not claim what the browser will refuse.
+    const response = await get(BLOCKED, ALLOWED);
+
+    expect(response.headers.get('access-control-allow-origin')).toBeNull();
+    expect(response.headers.get('access-control-allow-credentials')).toBeNull();
+  });
+
+  it('ignores a wildcard allowlist entry instead of echoing any origin', async () => {
+    for (const allowlist of ['*', `*,${ALLOWED}`]) {
+      const response = await get(BLOCKED, allowlist);
+
+      expect(response.headers.get('access-control-allow-origin')).toBeNull();
+      expect(response.headers.get('access-control-allow-credentials')).toBeNull();
+    }
+  });
+
+  it('grants credentials on the preflight too', async () => {
+    const response = await preflight(ALLOWED, ALLOWED);
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get('access-control-allow-credentials')).toBe('true');
+    expect(response.headers.get('vary') ?? '').toContain('Origin');
+  });
+
+  it('grants nothing when no allowlist is configured', async () => {
     expect((await get(ALLOWED, undefined)).headers.get('access-control-allow-origin')).toBeNull();
     expect((await get(ALLOWED, '')).headers.get('access-control-allow-origin')).toBeNull();
     expect(
       (await preflight(ALLOWED, undefined)).headers.get('access-control-allow-origin'),
     ).toBeNull();
-  });
-
-  it('does not grant credentials, since auth travels as a bearer token', async () => {
-    const response = await get(ALLOWED, ALLOWED);
-
-    expect(response.headers.get('access-control-allow-credentials')).toBeNull();
+    expect(
+      (await get(ALLOWED, undefined)).headers.get('access-control-allow-credentials'),
+    ).toBeNull();
+    expect((await get(ALLOWED, '')).headers.get('access-control-allow-credentials')).toBeNull();
   });
 });
