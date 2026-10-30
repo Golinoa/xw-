@@ -25,7 +25,8 @@
     "db:local:verify": "node scripts/db/local-db.mjs verify",
     "db:local:http": "node scripts/db/local-db.mjs http",
     "smoke": "playwright test --config playwright.smoke.config.ts",
-    "wrangler": "pnpm --filter @erp/api exec wrangler --config ../../wrangler.toml"
+    "wrangler": "pnpm --filter @erp/api exec wrangler --config ../../wrangler.toml",
+    "board:check": "node scripts/check-board.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

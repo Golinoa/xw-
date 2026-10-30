@@ -54,7 +54,7 @@
 
 | 序 | 任务 | 规模 | 依赖 | 状态 | 验收（可执行断言） |
 |---|---|---|---|---|---|
-| N1 | **T-02a** ops 身份基座：5 表 + 4 函数 + 39 码 seed | M | — | 未开始 | pgTAP：P1 `anon` 无 USAGE；P2 租户成员查 ops 表 0 行；P4 `invited`/`disabled` 0 行；全部函数 `search_path=''` 且无 `public`/`anon` EXECUTE；39 码与契约 §4 对账；6 角色 seed 抽样矩阵（`support_agent` 无任何 `receivable.*`、`ops_viewer` 无 `write`） |
+| N1 | **T-02a** ops 身份基座：**六**表 + 四函数 + 39 码 seed | M | — | 未开始 | pgTAP：P1 `anon` 无 USAGE；P2 租户成员查 ops 表 0 行；P4 `invited`/`disabled` 0 行；全部函数 `search_path=''` 且无 `public`/`anon` EXECUTE；39 码与契约 §4 对账；6 角色 seed 抽样矩阵（`support_agent` 无任何 `receivable.*`、`ops_viewer` 无 `write`） |
 | N2 | **T-01** 契约包 + `GET /meta` | M | N1 | 未开始 | route-parity 双向 + 前缀；匿名 401；租户用户 403；`contractVersion` 匹配 `^\d+\.\d+\.\d+$` 且等于常量；`serverTime` 以 `Z` 结尾；两个常量数组内容与长度断言 |
 | N3 | **W0.4** 登录代理 + 受控凭证 | M | N1 | 未开始 | 「非运营成员 → 403 + 无 `Set-Cookie`」「停用 → 403 `OPS_MEMBER_INACTIVE`」「坏凭证 → 401」「连失败 → 429」「refresh 轮换旧 cookie 失效」；CORS：`*` 被忽略、命中来源有 ACAO+ACAC+`Vary: Origin`、未命中来源**无** ACAC；测试签发通道仅在 `ALLOW_LOCAL_JWT_AUTH=1` 时可用，`check:deploy` 断言生产禁用 |
 | N4 | **T-03a** `/session` + `/permissions` | S | N1、N2 | 未开始 | `/session` 的 `permissions[]` 与 `ops.has_permission()` 抽样一致（≥3 码）；`permissionVersion` 单调递增（改角色后严格变大）；`/permissions` 返回 39 条且 `isHighRisk` 与契约 §4 高风险清单一致（14 个） |
@@ -64,6 +64,14 @@
 | N8 | Wave 2：T-04 → T-14 | L×11 | N6 | 未开始 | 按契约 §8 依赖图，一域一轮：迁移 → RPC → 端点 → pgTAP → 集成 → 提交 |
 
 **并行约束：** N1 与其余全部串行（迁移串行追加，一个节点一个迁移）。N7 可在任意空闲窗口插入，不阻塞 N2~N6。
+
+### 3.1 复核补正（2026-10-30 第二次过表，三处原表写错）
+
+| 原写法 | 实际 | 为什么 |
+|---|---|---|
+| N1「五表」 | **六表**：`operators`、`roles`、`permissions`、`role_permissions`、`operator_roles`、**`audit_events`** | `write_audit()` 是 N1 的交付物之一，表不在同一次迁移里它写不了。漏的是审计表 |
+| `permission_version` 列没写在 N1 | 写进 N1 迁移（`ops.operators.permission_version bigint NOT NULL DEFAULT 1`） | N4 的 `/session` 要读它。放到 N4 才加列等于多一次迁移，而且中间态 `/session` 无从返回值 |
+| N3 验收写「非运营成员 → 403」 | 拆开：GoTrue 上游用**注入替身**，`ops.get_current_ops_context()` 走**真实 PostgREST** | 本地没有 GoTrue（DIF-14）。不写清这条，验收看着像不可能完成；写清了才知道「403 判定」这段是真跑过的，「密码校验」那段是替身 |
 
 **业务端 backlog 位置不变：** A1（主线 E2E）、A5（供应商测试）、B1/B2、C1–C12、D1/D2 继续挂起，理由同计划文档 §与既有 backlog 的关系——ops 是当前唯一有外部等待方的工作。
 
@@ -174,3 +182,4 @@ jwt.ts 验签已就位，W0.4 里补签发入口。开关用独立的 ALLOW_LOCA
 | 日期 | 变更 |
 |---|---|
 | 2026-10-30 | 建立本台账。15 条差异裁决；六项运营端待办；执行顺序 N1~N8；三处形状定稿提案 |
+| 2026-10-30 | 复核过表：N1 由「五表」改「六表」（漏了 `audit_events`，而 `write_audit()` 要靠它）、`permission_version` 挪进 N1 迁移、N3 验收拆成「GoTrue 替身 + 真实 ops 表」两段。见 §3.1 |

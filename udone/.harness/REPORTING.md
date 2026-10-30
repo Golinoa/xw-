@@ -40,6 +40,29 @@ The HTML board at `D:/MYC/Coding/XW-ERP/dev-board.html` (outside this repository
 
 A "done" claim in the conversation that the board does not show is a reporting defect; fix the board first, then speak.
 
+## Completion is a two-part act
+
+完成为「两半」：代码落库（提交存在）+ 看板同步。只有其一，一律按未完成处理。这条不是流程建议，是判定标准——判断一项工作是否完成时看这两个条件，不看聊天里说过什么。
+
+- **同一次编辑里移状态。** 不允许「先写代码，回头补看板」：回头补的那次一定会漏，而漏掉的那张卡在下次汇总时会以「未完成」出现，等于白干一遍，或者反过来被当成已完成而从未验证。
+- **一个提交可以关多张卡，但每张卡都要写清是哪一次提交。** 写「已完成」不算证据；写 `cf8c265 + 517e297` 才算。同一次纵切提交承载多张卡时如实并列，不要为了好看拆成假哈希。
+- **确实没有独立提交的要写明原因，而不是空着。** 例如「初始合并 8ccd36e，审计结论在 journal 内，无独立提交」——豁免标记是 `无独立提交` 或 `证据缺失`，机械检查认这两个词。
+- **状态只向前。** `todo` → `doing` → `done`；回退必须在该卡 `desc` 里写原因（例如「原以为交付，复核发现断言是替身」），否则下一个人只会看到状态莫名其妙地倒退。
+- **未完成不许有 `end`。** 有开始日期可以，有结束日期就等于对外承诺。
+- **`blocked` 必须带 `解锁条件：` 四个字。** 只描述「现在是阻塞的」没有用，读的人要知道做完什么它才会解除。
+
+## The board has a mechanical check
+
+```
+pnpm board:check     # 读 ../../../XW-ERP/dev-board.html，可用 BOARD_PATH 覆盖
+```
+
+它校验六件事：`SEED_VERSION` 与 `seed.seedVersion` 一致；卡片 id 唯一；`versionId` 引用存在；`done` 有 `start`、`progress=100` 且 `desc` 能指回提交（7–40 位十六进制）或写明豁免；非 `done` 没有 `end`、`progress` 不到 100；`blocked` 写了 `解锁条件`。
+
+看板在仓库外、CI 看不到它，所以脚本在文件缺失时打印 `skipped` 并返回 0——**本地跑绿是义务，CI 里跳过不是豁免**。检查失败时的处置是改看板，不是改脚本：这条命令存在的意义就是把「看板可信」变成可执行的东西，放宽它等于取消它。
+
+第一次跑这条命令就抓出两张 `blocked` 卡没写解锁条件（`a-integrate`、`a-accept`）——两个都是我自己写的卡。规则不机械执行时，最先违反的总是写规则的人。
+
 ## Prohibited
 
 - A status report with text only, when the report has more than one work item.
