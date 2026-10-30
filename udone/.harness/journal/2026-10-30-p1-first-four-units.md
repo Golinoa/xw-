@@ -71,3 +71,30 @@ db:local:verify 12 文件 223 断言 ✓   db:local:http 4 文件 29 条 ✓
 - 下一单元：U05 —— `apps/api/src/modules/ops/auth/`（login/refresh/logout）
 - 阻塞：无。U05 的 GoTrue 上游本地仍是替身，验收必须拆两段写，不许合成「登录已验证」
 - 环境：迁移 16 个；pgTAP 12 文件 223 断言；集成 4 文件 29 条
+
+## 追加：U06（2026-10-30 15:0x，提交 `f172e05`）
+
+`/session` 与 `/permissions` 落地，`o-t03` 移到 `doing`（60%）。
+
+- `/session` 只投影 `requireOpsAuth` 已取回的上下文，**不回库第二次**——身份查一次、
+  权限再查一次的写法，会在角色刚被改过的那几秒产出自相矛盾的响应。
+- `roles` 由 RPC 的 `role_codes` / `role_names` 两个平行数组按 index 配对，两者都由
+  `order by role.code` 生成。长度不一致时退回显示 code：靠顺序对齐的数组是脆的，
+  错位时至少要退化得可读，而不是把某个角色的名字安到另一个角色头上。
+- `/permissions` 先判 `operator.read` 再查表。只用 RLS 也能拒（返回 0 行），但空列表
+  读起来像「目录没配置」，会把排查引到错的人身上；契约写的是 403。
+
+变异两枪：去掉 `operator.read` 判定 → 单测红；`isHighRisk` 恒 false → 集成红
+（集成那条数是**对 seed 表数出来的 14**，不是对夹具）。
+
+当次门禁：`test` 43 文件 **316** 用例；`db:local:http` 5 文件 **33** 条；其余同上。
+看板 `SEED_VERSION 23`：92 卡 / 55 done / 2 doing / 33 todo。
+
+## 断点（2026-10-30 15:0x）
+
+- 本单元：U01~U04 + U06 已收口；U05 未开始
+- 已完成：身份基座、`/meta`、CORS 凭证、测试签发、`/session`、`/permissions`
+- 未完成：**U05 登录代理**（GoTrue 上游 + HttpOnly cookie + 429），它也是 M1 的最后一块
+- 下一单元：U05 —— `apps/api/src/modules/ops/auth/{login,refresh,logout}`
+- 阻塞：无。U05 的 GoTrue 上游本地无实现，验收必须拆成「上游替身 + 成员判定真实」两段
+- 环境：迁移 16 个；pgTAP 12 文件 223 断言；集成 5 文件 33 条；端点 3 个（meta/session/permissions）
