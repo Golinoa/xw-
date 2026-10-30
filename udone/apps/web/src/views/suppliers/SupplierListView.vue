@@ -10,6 +10,7 @@ import {
   type Supplier,
 } from '@erp/contracts';
 import { ApiClientError } from '../../lib/api-client';
+import { lookup } from '../../lib/display';
 import { formatDateTime } from '../../lib/format';
 import { useAuthStore } from '../../stores/auth';
 import SupplierFormModal from './SupplierFormModal.vue';
@@ -203,7 +204,7 @@ const showTotal = (count: number) => `共 ${count} 个供应商`;
         >
           <template #bodyCell="{ column, record }">
             <template v-if="column.key === 'type'">
-              {{ SUPPLIER_TYPE_LABELS[record.type] }}
+              {{ lookup(SUPPLIER_TYPE_LABELS, record.type) }}
             </template>
             <template v-else-if="column.key === 'contactName'">
               {{ record.contactName ?? '—' }}
@@ -212,7 +213,7 @@ const showTotal = (count: number) => `共 ${count} 个供应商`;
               {{ record.phone ?? '—' }}
             </template>
             <template v-else-if="column.key === 'settlement'">
-              {{ SUPPLIER_SETTLEMENT_LABELS[record.settlement] }}
+              {{ lookup(SUPPLIER_SETTLEMENT_LABELS, record.settlement) }}
             </template>
             <template v-else-if="column.key === 'isActive'">
               <a-tag :bordered="false" :color="record.isActive ? 'green' : 'default'">

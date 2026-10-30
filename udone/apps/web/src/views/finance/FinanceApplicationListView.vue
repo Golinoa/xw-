@@ -12,6 +12,7 @@ import {
   type SortOrder,
 } from '@erp/contracts';
 import { ApiClientError } from '../../lib/api-client';
+import { lookup } from '../../lib/display';
 import { formatDateTime, formatMoney } from '../../lib/format';
 import { useAuthStore } from '../../stores/auth';
 import {
@@ -530,7 +531,7 @@ const showTotal = (count: number) => `共 ${count} 条申请`;
         >
           <template #bodyCell="{ column, record }">
             <template v-if="column.key === 'kind'">
-              {{ APPLICATION_KIND_LABELS[record.kind] }}
+              {{ lookup(APPLICATION_KIND_LABELS, record.kind) }}
             </template>
             <template v-else-if="column.key === 'orderNumber'">
               <RouterLink
@@ -544,12 +545,12 @@ const showTotal = (count: number) => `共 ${count} 条申请`;
               {{ formatMoney(record.amount) }}
             </template>
             <template v-else-if="column.key === 'method'">
-              {{ PAYMENT_METHOD_LABELS[record.method] }}
+              {{ lookup(PAYMENT_METHOD_LABELS, record.method) }}
             </template>
             <template v-else-if="column.key === 'status'">
               <a-space direction="vertical" :size="2">
-                <a-tag :color="APPLICATION_STATUS_TAG_COLORS[record.status]">
-                  {{ APPLICATION_STATUS_LABELS[record.status] }}
+                <a-tag :color="lookup(APPLICATION_STATUS_TAG_COLORS, record.status, 'default')">
+                  {{ lookup(APPLICATION_STATUS_LABELS, record.status) }}
                 </a-tag>
                 <span class="stage-hint">{{ applicationStageLabel(record) }}</span>
               </a-space>

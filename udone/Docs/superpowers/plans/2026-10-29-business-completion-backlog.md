@@ -24,8 +24,8 @@
 | `lint` + CSS token | 通过 |
 | `schema:check` | 与 13 个迁移一致 |
 | `check:deploy` | 通过 |
-| `typecheck` | 通过（**仅 `tsc --noEmit`，不含 `.vue`**，见 A2） |
-| `test` | 37 个文件 / 256 用例通过 |
+| `typecheck` | 通过（`vue-tsc`，含 `.vue`，见 A2） |
+| `test` | 38 个文件 / 260 用例通过 |
 | `build` | 通过（主 chunk 1,638.00 kB / gzip 506.52 kB，见 D1） |
 | `db:local:verify` | 重放 13 个迁移，11 个 pgTAP 文件 **189 断言**全过 |
 | `db:local:http` | 真实 PostgREST 16.5 + 原生 PostgreSQL，**15 条** HTTP 集成用例全过 |
@@ -43,7 +43,7 @@
 | 编号 | 任务 | 优先级 | 规模 | 依赖 |
 |---|---|---|---|---|
 | A1 | 前端主线 E2E（Playwright + 网络拦截） | P0 | M | — |
-| A2 | `.vue` 纳入类型检查（`vue-tsc`） | P0 | S/M | — |
+| A2 | `.vue` 纳入类型检查（`vue-tsc`） | P0 | S/M | ✅ 已完成 |
 | A3 | 服务端 HTTP 集成（PostgREST 假设） | P0 | L | 需决策 |
 | A4 | vitest worker 超时定位 | P1 | S | — |
 | A5 | 供应商模块行为测试 | P1 | S | — |
@@ -81,17 +81,23 @@
 
 **规模:** M
 
-### A2 `.vue` 纳入类型检查
+### A2 `.vue` 纳入类型检查 — 已完成
 
-- [ ] 安装 `vue-tsc`，`@erp/web` 的 `typecheck` 改为 `vue-tsc --noEmit`
+- [x] 安装 `vue-tsc`，`@erp/web` 的 `typecheck` 改为 `vue-tsc --noEmit`
 
-**现状证据:** `vue-tsc` 未安装；根 `typecheck` 是 `pnpm --filter @erp/web --filter @erp/api typecheck`，而 web 侧跑的是 `tsc --noEmit`，`.vue` 的 script 与 template 类型错误不进这道门禁。改一个 prop 名字，编译期不会报，运行时才知道。
+**完成情况（2026-10-30）:** 首次运行暴露 **10 条**真实错误（4 个视图文件），零 `@ts-nocheck`：
 
-**做法:** 装依赖并换脚本；首次运行暴露的真实错误逐个修，**不允许用 `// @ts-nocheck` 抹平**——抹平等于把门禁换成装饰。
+| 错误 | 数量 | 根因 |
+|---|---|---|
+| `TS7053` 用 `any` 索引 `Record<枚举, string>` | 9 | `a-table` 的 `#bodyCell` 插槽把 `record` 标成 `any`，模板里直接拿它索引标签表 |
+| `TS2345` `'order.read'` 不可赋给 `never` | 1 | `authorizationForRole` 返回 `as const` 元组联合，与 `[]` 兜底求交后参数类型塌成 `never` |
 
-**验收标准:** 门禁绿；journal 记录首次运行暴露的错误数量与类型（这是「盲区有多大」的唯一证据）。
+两处都按根因修，没有逐行加断言：
+- 新增 `apps/web/src/lib/display.ts` 的 `lookup()`，同时解决类型收窄与「服务端新增枚举值时单元格空白」两个问题（回退值让「不认识」可见）；4 条断言覆盖未知值、非字符串、原型链键。
+- `authorizationForRole` 显式声明返回 `RoleAuthorization`，字面量类型留在内部矩阵。此前 3 个视图靠手写 `computed<readonly Permission[]>` 躲过此坑，漏写的那个就报错——错因与真实原因毫无关系，属于会反复踩的形态。
+- 变异验证：把一处模板改回 `MAP[record.x]` 报 `TS7053`；往 `.vue` 塞 `const bad: number = 'x'` 报 `TS2322`。确认 `vue-tsc` 真的在检查模板与脚本段，不是静默跳过。
 
-**规模:** S/M（取决于首次运行错误量）
+之后 `pnpm typecheck` 覆盖 `.vue`；`lint`/`test`(38 文件 260 用例)/`build`/`db:local:verify`/`db:local:http` 全绿。
 
 ### A3 服务端 HTTP 集成（PostgREST 假设）— 已完成
 
@@ -271,14 +277,16 @@
 
 **建议顺序（先便宜的先做，先风险高的先做）:**
 
-1. A2 —— 最便宜，先把 `.vue` 类型盲区关掉。
+1. ~~A2~~ —— ✅ 2026-10-30 完成，`.vue` 类型盲区已关闭。
 2. A1 —— 把前端从「未验证」变成「已验证」，这是当前最大的一块空白。
 3. B1 —— 数据完整性，越晚做积累的历史数据越多，迁移越麻烦。
 4. A5 + A4 —— 小成本补证据、去噪声。
 5. B2 → C1 → C3 → C2 → C4 → C5 —— 业务功能按依赖推进。
-6. A3 —— 需决策，可与上面并行。
+6. ~~A3~~ —— ✅ 2026-10-29 完成（方案 a，真实 PostgREST）。
 7. D2 → D1。
 8. C6–C12 按业务优先级排。
+
+**注:** 运营后台（`feat/ops-console` → 本分支）的 T-01~T-14 与 Wave 0 前置纠正已另立计划 `2026-10-30-ops-backend-implementation.md`，优先级高于本文件第 2 项之后的全部条目——它一开，A1 的 E2E 基线会跟着变，先做 A1 要返工。
 
 **每个任务的完成定义（缺一不可）:**
 

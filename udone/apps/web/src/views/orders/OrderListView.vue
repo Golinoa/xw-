@@ -17,6 +17,7 @@ import {
   type SortOrder,
 } from '@erp/contracts';
 import { ApiClientError } from '../../lib/api-client';
+import { lookup } from '../../lib/display';
 import { formatDateTime, formatMoney } from '../../lib/format';
 import { useAuthStore } from '../../stores/auth';
 import OrderDetailDrawer from './OrderDetailDrawer.vue';
@@ -613,12 +614,15 @@ async function onChanged() {
               {{ record.routeName ?? '—' }}
             </template>
             <template v-else-if="column.key === 'status'">
-              <a-tag :bordered="false" :color="ORDER_STATUS_TAG_COLORS[record.status]">
-                {{ ORDER_STATUS_LABELS[record.status] }}
+              <a-tag
+                :bordered="false"
+                :color="lookup(ORDER_STATUS_TAG_COLORS, record.status, 'default')"
+              >
+                {{ lookup(ORDER_STATUS_LABELS, record.status) }}
               </a-tag>
             </template>
             <template v-else-if="column.key === 'orderType'">
-              {{ ORDER_TYPE_LABELS[record.orderType] }}
+              {{ lookup(ORDER_TYPE_LABELS, record.orderType) }}
             </template>
             <template v-else-if="column.key === 'departureDate'">
               <span class="trip-date">出团 {{ record.departureDate ?? '—' }}</span>
