@@ -171,9 +171,12 @@ opsAccountRoutes.get(OPS_ROUTES.listOpsOperators.path, requireOpsAuth(), async (
  *
  * 代价必须写明白：这是**跨系统的两阶段写，不原子**。GoTrue 建了账号、ops 行却被
  * 拒（角色码在两次调用之间被删、并发邀请同一邮箱），会留下一个没有运营身份的
- * auth 用户。清理不了它——Worker 没有删除 auth 用户的路径。所以这里不打「已回滚」
- * 的幌子，而是落一条 `ops_invitation_orphan_user` 日志，把 userId 交给运维。
+ * auth 用户。D-04 的答案是失败即补偿删除：删成功就是一次对管理员干净的失败，
+ * 删不掉才落一条 `ops_invitation_orphan_user` 日志，把 userId 交给运维。
  * 之所以可接受：下次对同一邮箱重试会走到 `email_exists`，运维据此知道要处理残留。
+ *
+ * 补偿路径的验收边界：本地没有 GoTrue，所以能证明的只有「补偿被调用了」与
+ * 「补偿失败时日志仍在」，证明不了「auth 用户真的被删掉了」——后者要真实项目。
  */
 opsAccountRoutes.post(OPS_ROUTES.inviteOpsOperator.path, requireOpsAuth(), async (context) => {
   requireOpsPermission(context, 'operator.manage');
@@ -204,6 +207,7 @@ opsAccountRoutes.post(OPS_ROUTES.inviteOpsOperator.path, requireOpsAuth(), async
       p_role_codes: body.roleCodes,
       p_reason: body.reason,
       p_request_id: context.get('requestId'),
+      p_display_name: body.displayName ?? null,
     },
     inviteEnvelopeSchema,
   );
@@ -220,16 +224,43 @@ opsAccountRoutes.post(OPS_ROUTES.inviteOpsOperator.path, requireOpsAuth(), async
     );
   }
 
-  // 走到这里说明 auth 用户已经建好、ops 行没写成。日志记 userId 而不是邮箱：
-  // 邮箱是个人信息，而清理残留需要的只是 id。
-  console.error(
-    JSON.stringify({
-      event: 'ops_invitation_orphan_user',
-      userId: outcome.userId,
-      reason: result.status,
-      requestId: context.get('requestId'),
-    }),
-  );
+  // 走到这里说明 auth 用户已经建好、ops 行没写成。先补偿删除（D-04），
+  // 再回原来的业务错误——响应形状与错误码不因为补偿而改变：管理员看到的仍然
+  // 是「邀请失败」，而不是「失败了一半」。
+  //
+  // 补偿失败不是异常分支：`deleteUser` 的契约是不抛异常，但注入的替身可能违反
+  // 它。这里兜一层，否则一次补偿异常会把已经确定的 409/400 变成 500，而那是
+  // 另一类故障的形态。
+  const requestId = context.get('requestId');
+  let compensated: boolean;
+  try {
+    compensated = await upstream.deleteUser(outcome.userId);
+  } catch {
+    compensated = false;
+  }
+
+  if (compensated) {
+    // 记 userId 而不是邮箱：邮箱是个人信息，而清理残留需要的只是 id。
+    console.error(
+      JSON.stringify({
+        event: 'ops_invitation_compensated',
+        userId: outcome.userId,
+        reason: result.status,
+        requestId,
+      }),
+    );
+  } else {
+    // 补偿也失败：这份日志是运维手工清理的唯一入口，别删。
+    console.error(
+      JSON.stringify({
+        event: 'ops_invitation_orphan_user',
+        userId: outcome.userId,
+        reason: result.status,
+        requestId,
+        compensation: 'failed',
+      }),
+    );
+  }
 
   switch (result.status) {
     case 'email_exists':
@@ -275,6 +306,7 @@ opsAccountRoutes.patch(OPS_ROUTES.updateOpsOperator.path, requireOpsAuth(), asyn
       p_mfa_required: body.mfaRequired ?? null,
       p_reason: body.reason,
       p_request_id: context.get('requestId'),
+      p_display_name: body.displayName ?? null,
     },
     operatorUpdateEnvelopeSchema,
   );

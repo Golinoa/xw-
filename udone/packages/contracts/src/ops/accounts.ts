@@ -74,6 +74,11 @@ export type OpsOperatorListResponse = z.infer<typeof opsOperatorListResponseSche
  */
 export const opsOperatorInvitationRequestSchema = z.object({
   email: z.string().trim().min(3).max(200),
+  /**
+   * 可选显示名（D-02）。不传就落 NULL，账号列表与审计日志里继续显示邮箱；
+   * 传了就按值写入，前后空白由数据库 `btrim` 收掉。
+   */
+  displayName: z.string().trim().max(80).optional(),
   roleCodes: z.array(z.string().min(1)).min(1).max(20),
   reason: z.string().trim().min(1).max(500),
 });
@@ -98,6 +103,16 @@ export type OpsOperatorInvitationResponse = z.infer<typeof opsOperatorInvitation
 
 export const opsOperatorUpdateRequestSchema = z.object({
   status: opsOperatorStatusSchema.optional(),
+  /**
+   * 显示名（D-02）。**不传 = 不改；空串 = 清空**。
+   *
+   * 不用 `nullable` 是因为 `null` 在这条 RPC 上已经是「不改」的哨兵
+   * （`p_status`、`p_role_codes`、`p_mfa_required` 全是这个约定）。再让 `null`
+   * 承担「清空」，两个语义就撞在同一个值上：想清空的人传 `null`，服务端按
+   * 「不改」处理，界面上什么都没发生，而请求看起来是成功的。空串没有这个歧义，
+   * 也正好是「把输入框删空」在 JSON 里的自然形态。
+   */
+  displayName: z.string().trim().max(80).optional(),
   /**
    * 刻意**允许空数组**。
    *

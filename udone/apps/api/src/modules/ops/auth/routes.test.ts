@@ -38,17 +38,55 @@ function bindings(upstream: OpsAuthUpstream) {
   } as ApiEnvironment['Bindings'];
 }
 
-/** `resolveMemberState` 走的是全局 fetch（成员判定必须真打到 PostgREST）。 */
-function stubMemberState(state: string) {
-  const fetchMock = vi.fn(
-    async () =>
-      new Response(JSON.stringify(state), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }),
-  );
+function json(value: unknown, status = 200) {
+  return new Response(JSON.stringify(value), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+/**
+ * 登录链路上的三条 RPC 共用全局 fetch（成员判定、激活、写 last_login 都必须
+ * 真打到 PostgREST 形态的端点），所以替身按 URL 里的函数名分发，并按调用顺序
+ * 记下来——「先判定、再激活、再写时间」这个顺序本身也要被断言，不只是结果。
+ */
+interface DirectoryReplies {
+  state?: string;
+  /**
+   * 第二次及以后 `login_member_state` 的回答。
+   *
+   * 只有「激活没生效」那条分支会问第二次（激活返回 `unchanged` 时要区分
+   * 「并发登录已经激活了」与「被停用了」），而这两者的差别全在这个字段上。
+   */
+  stateAfter?: string;
+  activation?: string;
+  lastLogin?: string;
+  activationStatus?: number;
+}
+
+function stubDirectory(replies: DirectoryReplies = {}) {
+  const calls: string[] = [];
+  let stateReads = 0;
+  const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    const name = url.split('/rpc/')[1] ?? '';
+    calls.push(name);
+    if (name === 'login_member_state') {
+      const answer =
+        stateReads === 0
+          ? (replies.state ?? 'active')
+          : (replies.stateAfter ?? replies.state ?? 'active');
+      stateReads += 1;
+      return json(answer);
+    }
+    if (name === 'activate_invited_member') {
+      return json(replies.activation ?? 'activated', replies.activationStatus ?? 200);
+    }
+    if (name === 'touch_last_login') return json(replies.lastLogin ?? 'ok');
+    throw new Error(`unexpected rpc: ${name}`);
+  });
   vi.stubGlobal('fetch', fetchMock);
-  return fetchMock;
+  return calls;
 }
 
 function login(app: Hono<ApiEnvironment>, body: unknown, env: ApiEnvironment['Bindings']) {
@@ -70,7 +108,7 @@ afterEach(() => {
 describe('POST /api/v1/ops/auth/login', () => {
   it('issues an access token and an HttpOnly refresh cookie for an active operator', async () => {
     const upstream = fakeUpstream();
-    stubMemberState('active');
+    const calls = stubDirectory({ state: 'active' });
     const app = buildApp();
 
     const response = await login(
@@ -88,10 +126,13 @@ describe('POST /api/v1/ops/auth/login', () => {
     expect(cookie).toContain('Secure');
     expect(cookie).toContain('SameSite=Strict');
     expect(cookie).toContain('Path=/api/v1/ops/auth');
+
+    // 已经是 active 的账号不该被「激活」一次：那会白涨一格乐观锁版本。
+    expect(calls).toEqual(['login_member_state', 'touch_last_login']);
   });
 
   it('never echoes the refresh token in the body', async () => {
-    stubMemberState('active');
+    stubDirectory({ state: 'active' });
     const app = buildApp();
 
     const response = await login(
@@ -108,7 +149,7 @@ describe('POST /api/v1/ops/auth/login', () => {
     const upstream = fakeUpstream({
       signInWithPassword: vi.fn(async () => ({ kind: 'rejected' }) as OpsTokenGrant),
     });
-    const fetchMock = stubMemberState('active');
+    const calls = stubDirectory({ state: 'active' });
     const app = buildApp();
 
     const response = await login(
@@ -121,11 +162,11 @@ describe('POST /api/v1/ops/auth/login', () => {
     await expect(response.json()).resolves.toMatchObject({ code: 'AUTH_REQUIRED' });
     expect(response.headers.get('set-cookie')).toBeNull();
     // 先验密码再查名单：反过来的话，未验证身份的人就能拿这个端点探测运营邮箱。
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(calls).toEqual([]);
   });
 
   it('answers 403 OPS_MEMBER_MISSING and withholds the cookie', async () => {
-    stubMemberState('missing');
+    stubDirectory({ state: 'missing' });
     const app = buildApp();
 
     const response = await login(
@@ -143,7 +184,7 @@ describe('POST /api/v1/ops/auth/login', () => {
   });
 
   it('answers 403 OPS_MEMBER_INACTIVE for a disabled operator', async () => {
-    stubMemberState('disabled');
+    stubDirectory({ state: 'disabled' });
     const app = buildApp();
 
     const response = await login(
@@ -159,11 +200,69 @@ describe('POST /api/v1/ops/auth/login', () => {
   });
 
   /**
-   * 契约只有两个 reason，`invited` 必须映射到其中一个。归到 INACTIVE 而不是
-   * MISSING：账号是存在的，说「还没被加入」会让人去重复开户。
+   * D-01：受邀者第一次登录就转 active，不再 403。
+   *
+   * 顺序也要断言：判定 → 激活 → 写 last_login。把激活放在写 last_login 之后，
+   * 那个函数会看到 invited 行并返回 missing（它只写 active 行），于是「最近登录」
+   * 对新账号永远是空——功能在，但只对老账号生效。
    */
-  it('folds an invited operator into OPS_MEMBER_INACTIVE', async () => {
-    stubMemberState('invited');
+  it('activates an invited operator on first sign-in and issues the cookie (D-01)', async () => {
+    const calls = stubDirectory({ state: 'invited', activation: 'activated' });
+    const app = buildApp();
+
+    const response = await login(
+      app,
+      { email: 'invited@example.test', password: 'pw' },
+      bindings(fakeUpstream()),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ accessToken: 'access-token' });
+    expect(response.headers.get('set-cookie')).toContain('ops_refresh=refresh-token');
+    expect(calls).toEqual(['login_member_state', 'activate_invited_member', 'touch_last_login']);
+  });
+
+  /**
+   * 激活返回 `unchanged` 有两种含义，处置相反，所以要看第二次读到的状态：
+   *
+   *   - 已经 `active`：另一次并发的登录刚把它激活了。这是成功——把它当 503，
+   *     用户会看到「第二次点击失败」，而账号其实已经开通。
+   *   - 已经 `disabled`：判定与激活之间被停用了。这才是失败。
+   */
+  it('treats unchanged-then-active as a concurrent activation, not a failure', async () => {
+    const calls = stubDirectory({
+      state: 'invited',
+      stateAfter: 'active',
+      activation: 'unchanged',
+    });
+    const app = buildApp();
+
+    const response = await login(
+      app,
+      { email: 'invited@example.test', password: 'pw' },
+      bindings(fakeUpstream()),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('set-cookie')).toContain('ops_refresh=refresh-token');
+    expect(calls).toEqual([
+      'login_member_state',
+      'activate_invited_member',
+      'login_member_state',
+      'touch_last_login',
+    ]);
+  });
+
+  /**
+   * 激活没成立就不发 cookie：发出去的令牌会被 `get_current_ops_context()` 的
+   * `status = 'active'` 挡回 403，用户看到「登录成功但进不去」，且每次刷新重演。
+   */
+  it('answers 403 INACTIVE when the account was disabled between the check and the activation', async () => {
+    const calls = stubDirectory({
+      state: 'invited',
+      stateAfter: 'disabled',
+      activation: 'unchanged',
+    });
     const app = buildApp();
 
     const response = await login(
@@ -174,12 +273,75 @@ describe('POST /api/v1/ops/auth/login', () => {
 
     expect(response.status).toBe(403);
     await expect(response.json()).resolves.toMatchObject({
+      code: 'FORBIDDEN',
       details: { reason: 'OPS_MEMBER_INACTIVE' },
     });
+    expect(response.headers.get('set-cookie')).toBeNull();
+    // 激活没成立就不该去写 last_login：那会把「还没进来」的人记成「刚登录过」。
+    expect(calls).toEqual(['login_member_state', 'activate_invited_member', 'login_member_state']);
+  });
+
+  it('answers 503 without a cookie when the row is still invited after activation', async () => {
+    const calls = stubDirectory({
+      state: 'invited',
+      stateAfter: 'invited',
+      activation: 'unchanged',
+    });
+    const app = buildApp();
+
+    const response = await login(
+      app,
+      { email: 'invited@example.test', password: 'pw' },
+      bindings(fakeUpstream()),
+    );
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({ code: 'INTERNAL_ERROR' });
+    expect(response.headers.get('set-cookie')).toBeNull();
+    expect(calls).toEqual(['login_member_state', 'activate_invited_member', 'login_member_state']);
+  });
+
+  it('answers 503 without a cookie when the activation RPC itself fails', async () => {
+    stubDirectory({ state: 'invited', activation: 'activated', activationStatus: 500 });
+    const app = buildApp();
+
+    const response = await login(
+      app,
+      { email: 'invited@example.test', password: 'pw' },
+      bindings(fakeUpstream()),
+    );
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get('set-cookie')).toBeNull();
+  });
+
+  /**
+   * 与上一条相反：`last_login_at` 只是展示字段，写失败不该让登录失败。
+   * 它不参与任何鉴权判定，把它变成登录可用性的单点没有收益。
+   */
+  it('still signs in when writing last_login fails, and logs the failure', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    stubDirectory({ state: 'active', lastLogin: 'unexpected-word' });
+    const app = buildApp();
+
+    const response = await login(
+      app,
+      { email: 'ops@example.test', password: 'pw' },
+      bindings(fakeUpstream()),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('set-cookie')).toContain('ops_refresh=refresh-token');
+    expect(
+      error.mock.calls
+        .map(([line]) => String(line))
+        .some((line) => line.includes('ops_last_login_write_failed')),
+    ).toBe(true);
+    error.mockRestore();
   });
 
   it('answers 400 for a body that is not an email and a password', async () => {
-    stubMemberState('active');
+    stubDirectory({ state: 'active' });
     const app = buildApp();
 
     const response = await login(app, { email: '', password: '' }, bindings(fakeUpstream()));
@@ -192,7 +354,7 @@ describe('POST /api/v1/ops/auth/login', () => {
     const upstream = fakeUpstream({
       signInWithPassword: vi.fn(async () => ({ kind: 'rejected' }) as OpsTokenGrant),
     });
-    stubMemberState('active');
+    stubDirectory({ state: 'active' });
     const app = buildApp();
     const env = bindings(upstream);
     const attempt = () => login(app, { email: 'spray@example.test', password: 'guess' }, env);

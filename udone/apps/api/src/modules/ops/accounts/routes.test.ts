@@ -77,11 +77,20 @@ function json(body: unknown, status = 200) {
   });
 }
 
+/**
+ * 每次 RPC 调用的请求体。契约字段（如 `p_display_name`）是否真的透传下去，
+ * 只能从请求体看出来——响应正确但参数被吞掉，是最容易漏的一类回归。
+ *
+ * 它是模块级的而不是某一次 `stubFetch` 的返回值：同一个用例里会换几套响应
+ * （一次传 displayName、一次不传），而请求体要跨这些替换累积下来。
+ */
+const rpcBodies: Array<{ name: string; body: Record<string, unknown> }> = [];
+
 function stubFetch(options: StubOptions = {}) {
   const permissions = options.permissions ?? ALL_PERMISSIONS;
   const called: string[] = [];
 
-  const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
     const rpcName = url.split('/rpc/')[1]?.split('?')[0];
 
@@ -89,6 +98,10 @@ function stubFetch(options: StubOptions = {}) {
     if (!rpcName) throw new Error(`unexpected request: ${url}`);
 
     called.push(rpcName);
+    rpcBodies.push({
+      name: rpcName,
+      body: JSON.parse(String(init?.body ?? '{}')) as Record<string, unknown>,
+    });
     if (!(rpcName in (options.rpc ?? {}))) {
       throw new Error(`rpc ${rpcName} was not expected`);
     }
@@ -146,6 +159,7 @@ async function call(path: string, options: CallOptions = {}) {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  rpcBodies.length = 0;
 });
 
 describe('GET /api/v1/ops/operators', () => {
@@ -206,14 +220,27 @@ describe('GET /api/v1/ops/operators', () => {
 });
 
 describe('POST /api/v1/ops/operators/invitations', () => {
-  const upstream = (outcome: 'invited' | 'email_taken' | 'unavailable'): OpsInviteUpstream => ({
-    invite: async () =>
-      outcome === 'invited'
-        ? { kind: 'invited', userId: '00000000-0000-4000-8000-000000000030' }
-        : outcome === 'email_taken'
-          ? { kind: 'email_taken' }
-          : { kind: 'unavailable' },
-  });
+  /**
+   * `deletion` 是补偿删除（D-04）的替身行为：默认成功，`false` 是「上游没删掉」，
+   * `'throws'` 是「替身违反了不抛异常的契约」。
+   */
+  function upstream(
+    outcome: 'invited' | 'email_taken' | 'unavailable',
+    deletion: boolean | 'throws' = true,
+  ): OpsInviteUpstream {
+    return {
+      invite: async () =>
+        outcome === 'invited'
+          ? { kind: 'invited', userId: '00000000-0000-4000-8000-000000000030' }
+          : outcome === 'email_taken'
+            ? { kind: 'email_taken' }
+            : { kind: 'unavailable' },
+      deleteUser: vi.fn(async () => {
+        if (deletion === 'throws') throw new Error('delete blew up');
+        return deletion;
+      }),
+    };
+  }
 
   it('returns 201 with only the id and status when the invitation succeeds', async () => {
     const called = stubFetch({
@@ -240,6 +267,43 @@ describe('POST /api/v1/ops/operators/invitations', () => {
     expect(called).toEqual(['invite_operator']);
   });
 
+  it('passes displayName through, and sends null when it is omitted (D-02)', async () => {
+    const rpc = {
+      invite_operator: {
+        status: 'ok',
+        operator: operatorRow({ status: 'invited', version: 1, roles: [] }),
+        invitation_expires_at: '2026-10-31T11:00:00+00:00',
+      },
+    };
+
+    stubFetch({ rpc });
+    await call('/api/v1/ops/operators/invitations', {
+      method: 'POST',
+      body: {
+        email: 'member@example.test',
+        displayName: '张三',
+        roleCodes: ['finance_ops'],
+        reason: '入职',
+      },
+      upstream: upstream('invited'),
+    });
+
+    stubFetch({ rpc });
+    await call('/api/v1/ops/operators/invitations', {
+      method: 'POST',
+      body: { email: 'member@example.test', roleCodes: ['finance_ops'], reason: '入职' },
+      upstream: upstream('invited'),
+    });
+
+    const bodies = rpcBodies
+      .filter((entry) => entry.name === 'invite_operator')
+      .map((entry) => entry.body);
+    expect(bodies).toHaveLength(2);
+    expect(bodies[0]).toMatchObject({ p_display_name: '张三' });
+    // 不传就是 null：库里的「不改/不填」哨兵统一用 NULL，不用 undefined 区分。
+    expect(bodies[1]).toMatchObject({ p_display_name: null });
+  });
+
   it('does not reach the database when GoTrue already knows the email', async () => {
     const called = stubFetch({ rpc: {} });
 
@@ -254,14 +318,19 @@ describe('POST /api/v1/ops/operators/invitations', () => {
     expect(called).toEqual([]);
   });
 
-  it('logs the orphaned auth user when the directory refuses the row', async () => {
+  /**
+   * D-04：写成员行失败时先补偿删除刚建的 auth 用户。管理员看到的错误码不变——
+   * 补偿是收尾，不是另一种结果。
+   */
+  it('deletes the just-created auth user and keeps the business error (D-04)', async () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
     stubFetch({ rpc: { invite_operator: { status: 'unknown_role', codes: ['ghost'] } } });
+    const fake = upstream('invited');
 
     const response = await call('/api/v1/ops/operators/invitations', {
       method: 'POST',
       body: { email: 'member@example.test', roleCodes: ['ghost'], reason: '入职' },
-      upstream: upstream('invited'),
+      upstream: fake,
     });
 
     expect(response.status).toBe(400);
@@ -269,12 +338,51 @@ describe('POST /api/v1/ops/operators/invitations', () => {
       code: 'VALIDATION_ERROR',
       details: { codes: ['ghost'] },
     });
-    // GoTrue 已经建好了 auth 用户。不打这条日志，就没有人知道要清理它。
+    expect(fake.deleteUser).toHaveBeenCalledWith('00000000-0000-4000-8000-000000000030');
+
+    const lines = error.mock.calls.map(([line]) => String(line));
+    const compensated = lines.find((line) => line.includes('ops_invitation_compensated'));
+    expect(compensated).toBeDefined();
+    expect(compensated).toContain('00000000-0000-4000-8000-000000000030');
+    // 删掉了就不该再打孤儿日志：那会让运维去后台找一个已经不存在的账号。
+    expect(lines.some((line) => line.includes('ops_invitation_orphan_user'))).toBe(false);
+    error.mockRestore();
+  });
+
+  it('keeps the orphan log when the compensation itself fails (D-04)', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    stubFetch({ rpc: { invite_operator: { status: 'email_exists' } } });
+
+    const response = await call('/api/v1/ops/operators/invitations', {
+      method: 'POST',
+      body: { email: 'member@example.test', roleCodes: ['finance_ops'], reason: '入职' },
+      upstream: upstream('invited', false),
+    });
+
+    expect(response.status).toBe(409);
+    expect(response.body).toMatchObject({ code: 'CONFLICT' });
+
     const orphan = error.mock.calls
       .map(([line]) => String(line))
       .find((line) => line.includes('ops_invitation_orphan_user'));
     expect(orphan).toBeDefined();
-    expect(orphan).toContain('00000000-0000-4000-8000-000000000030');
+    expect(orphan).toContain('"compensation":"failed"');
+    error.mockRestore();
+  });
+
+  /** 替身抛异常也必须回原错误码：补偿失败不该把 400 变成 500。 */
+  it('still answers the business error when the compensation throws', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    stubFetch({ rpc: { invite_operator: { status: 'roles_required' } } });
+
+    const response = await call('/api/v1/ops/operators/invitations', {
+      method: 'POST',
+      body: { email: 'member@example.test', roleCodes: [], reason: '入职' },
+      upstream: upstream('invited', 'throws'),
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({ code: 'VALIDATION_ERROR' });
     error.mockRestore();
   });
 
@@ -344,6 +452,35 @@ describe('PATCH /api/v1/ops/operators/{operatorId}', () => {
       operator: { version: 3 },
       permissionsChanged: { added: ['receipt.approve'], removed: ['ticket.read'] },
     });
+  });
+
+  it('passes displayName through on PATCH and keeps the null sentinel when omitted (D-02)', async () => {
+    const rpc = {
+      update_operator: {
+        status: 'ok',
+        operator: operatorRow({ display_name: '李四', version: 3 }),
+        permissions_changed: { added: [], removed: [] },
+      },
+    };
+
+    stubFetch({ rpc });
+    await call(path, { method: 'PATCH', body: { ...body, displayName: '李四' } });
+
+    stubFetch({ rpc });
+    await call(path, { method: 'PATCH', body });
+
+    // 空串是「清空」，不是「没传」：schema 的 trim 会让它保持空串，路由原样下传，
+    // 库里再按「空串 → NULL」处理。这一条盯的正是「没被 ?? null 吃掉」。
+    stubFetch({ rpc });
+    await call(path, { method: 'PATCH', body: { ...body, displayName: '' } });
+
+    const bodies = rpcBodies
+      .filter((entry) => entry.name === 'update_operator')
+      .map((entry) => entry.body);
+    expect(bodies).toHaveLength(3);
+    expect(bodies[0]).toMatchObject({ p_display_name: '李四' });
+    expect(bodies[1]).toMatchObject({ p_display_name: null });
+    expect(bodies[2]).toMatchObject({ p_display_name: '' });
   });
 
   it('fails closed when the RPC returns a shape outside the contract', async () => {

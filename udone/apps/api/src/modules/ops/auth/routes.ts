@@ -10,7 +10,11 @@ import { parseJson, respond, respondNoContent } from '../../../lib/contract';
 import { createFixedWindowRateLimiter } from '../../../lib/rate-limit-store';
 import type { ApiEnvironment } from '../../../middleware/auth';
 import { ApiHttpError } from '../../../middleware/error-handler';
-import { resolveMemberState, type OpsMemberState } from '../../../middleware/ops-auth';
+import {
+  activateInvitedMember,
+  resolveMemberState,
+  touchLastLogin,
+} from '../../../middleware/ops-auth';
 import { clientKey } from '../../../middleware/rate-limit';
 import { clearRefreshCookie, readRefreshToken, writeRefreshCookie } from './cookie';
 import { createGoTrueUpstream, type OpsAuthUpstream } from './upstream';
@@ -41,22 +45,31 @@ function upstreamFor(context: { env: ApiEnvironment['Bindings'] }): OpsAuthUpstr
 }
 
 /**
- * 契约只认两个原因。
+ * 契约只认两个原因，而能走到 403 的只剩两种状态。
  *
- * `invited` 与 `disabled` 都归到 `OPS_MEMBER_INACTIVE`：对使用者来说都是「这个
- * 账号现在不能用」，而「你还没接受邀请」与「你被停用」的区分若要做，只能靠
- * 更多信息换取，那不是未登录时该给的东西。具体状态由 `/operators` 列表负责说清。
+ * D-01 之后 `invited` 不再 403：它在同一个请求里被激活（见下面的登录流程），
+ * 所以 `OPS_MEMBER_INACTIVE` 只剩「被停用」一种含义——这正是选 A 换来的收益。
+ * `missing` 仍是 `OPS_MEMBER_MISSING`：那不是停用，是根本没有运营行。
  */
-function memberReasonFor(state: OpsMemberState): OpsMemberReason {
+function memberReasonFor(state: 'disabled' | 'missing'): OpsMemberReason {
   return state === 'missing' ? 'OPS_MEMBER_MISSING' : 'OPS_MEMBER_INACTIVE';
 }
 
 /**
  * `POST /api/v1/ops/auth/login`
  *
- * 三步，顺序不能换：先用 GoTrue 换令牌，再用那个令牌问 PostgREST「这个账号是
- * 不是有效运营成员」，最后才下发 cookie。反过来（先查成员再验密码）等于允许
- * 未验证身份的人探测运营名单。
+ * 顺序固定：GoTrue 换令牌 → 成员判定 → 激活（仅 invited）→ 写 last_login →
+ * 下发 cookie。先验密码是底线：反过来等于允许未验证身份的人探测运营名单。
+ *
+ * **失败策略不对称，这是刻意的**：
+ *   - 激活失败 → 503，本次登录不成立。发出去的令牌会被 `get_current_ops_context()`
+ *     的 `status = 'active'` 挡回 403，用户看到「登录成功但进不去」，且每次刷新
+ *     重演一遍；不如在这里就失败一次，让他重试登录。
+ *   - `last_login_at` 写失败 → 只记一条日志，登录照常成功。它是展示字段，
+ *     不该成为登录可用性的单点：为了「最近登录时间」这个列，把一个能正常登录的
+ *     人挡在门外，代价明显不成比例。
+ *
+ * 任何失败态都不得先下发 cookie：发了再回 403，前端会先进「已登录」再被打回。
  */
 opsAuthRoutes.post(OPS_ROUTES.postOpsLogin.path, async (context) => {
   const body = await parseJson(context, opsLoginRequestSchema);
@@ -77,12 +90,60 @@ opsAuthRoutes.post(OPS_ROUTES.postOpsLogin.path, async (context) => {
   }
 
   const state = await resolveMemberState(context.env, grant.accessToken);
-  if (state !== 'active') {
-    // 不下发 cookie。发了再回 403 的话，前端会先进入「已登录」状态再被 403 打回，
-    // 于是每一次刷新都会重演一遍这个来回，而真正的事实是「没登录」。
+  if (state === 'missing' || state === 'disabled') {
     throw new ApiHttpError(403, ERROR_CODES.FORBIDDEN, 'An active operator account is required', {
       reason: memberReasonFor(state),
     });
+  }
+
+  if (state === 'invited') {
+    const activation = await activateInvitedMember(context.env, grant.accessToken);
+    if (activation !== 'activated') {
+      // 走到这里只有两种可能，而它们的处置完全相反，所以必须再问一次真实状态，
+      // 不能拿 `unchanged` 当「失败」一刀切：
+      //   - 另一个并发的登录已经把同一行激活了（两次点击 / 两个标签页）。那是成功，
+      //     回 503 会让人以为第二次点击出错了，而事实是账号刚被他自己的另一次登录
+      //     激活——这次登录完全有效。
+      //   - 判定与激活之间被管理员停用或删除了。那才是失败，令牌发出去下一次请求
+      //     就会被 `status = 'active'` 挡回 403。
+      const settled = await resolveMemberState(context.env, grant.accessToken);
+      if (settled !== 'active') {
+        console.error(
+          JSON.stringify({
+            event: 'ops_activation_not_applied',
+            result: activation,
+            state: settled,
+            requestId: context.get('requestId'),
+          }),
+        );
+        if (settled === 'disabled' || settled === 'missing') {
+          throw new ApiHttpError(
+            403,
+            ERROR_CODES.FORBIDDEN,
+            'An active operator account is required',
+            { reason: memberReasonFor(settled) },
+          );
+        }
+        // 还是 invited：激活函数没生效（迁移漂移或权限问题），不能装作成功。
+        throw new ApiHttpError(
+          503,
+          ERROR_CODES.INTERNAL_ERROR,
+          'The operator account could not be activated',
+        );
+      }
+    }
+  }
+
+  try {
+    await touchLastLogin(context.env, grant.accessToken);
+  } catch (cause) {
+    console.error(
+      JSON.stringify({
+        event: 'ops_last_login_write_failed',
+        message: cause instanceof Error ? cause.message : 'unknown',
+        requestId: context.get('requestId'),
+      }),
+    );
   }
 
   writeRefreshCookie(context, grant.refreshToken);

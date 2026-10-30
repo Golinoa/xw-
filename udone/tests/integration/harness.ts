@@ -69,6 +69,15 @@ export const OPS_VIEWER_USER = requiredEnv('UDONE_TEST_OPS_VIEWER_USER_ID');
  */
 export const OPS_INVITEE_USER = requiredEnv('UDONE_TEST_OPS_INVITEE_USER_ID');
 
+/**
+ * 待激活账号（`ops.operators.status = 'invited'`）。
+ *
+ * 与上面的待邀请对象分开，因为它们是两条不同的登录分支：`invited` 会被激活
+ * （D-01），而没有运营行的那个必须继续 403 `OPS_MEMBER_MISSING`。用同一个人
+ * 把两者合起来，激活一次之后「没有行」那条路径就再也没法在集成层验证了。
+ */
+export const OPS_INVITED_USER = requiredEnv('UDONE_TEST_OPS_INVITED_USER_ID');
+
 /** 三个固定账号，与 scripts/db/local-db.mjs 的夹具一一对应。 */
 export const USERS = {
   admin: requiredEnv('UDONE_TEST_ADMIN_ID'),

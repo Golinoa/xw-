@@ -7,6 +7,7 @@
  * 而两者恰好同名，是最容易串的一处。
  */
 export * from './accounts';
+export * from './audit-actions';
 export * from './auth';
 export * from './identity';
 export * from './meta';

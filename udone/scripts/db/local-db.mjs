@@ -79,6 +79,12 @@ const OPS_VIEWER_OPERATOR_ID = 'a2000000-0000-4000-8000-000000000003';
 // 才有 user_id 可以写进 ops.operators——本地没有 GoTrue，这个 id 由替身返回。
 const OPS_INVITEE_USER_ID = 'a1000000-0000-4000-8000-0000000000f4';
 
+// 待激活账号：auth 用户存在、运营行 status='invited'。与上面的待邀请对象分开，
+// 因为「有 invited 行」和「没有行」是两条不同的登录分支（D-01 的 activated /
+// missing），共用一个人就没法在同一次登录里分别断言。
+const OPS_INVITED_USER_ID = 'a1000000-0000-4000-8000-0000000000f5';
+const OPS_INVITED_OPERATOR_ID = 'a2000000-0000-4000-8000-000000000005';
+
 let serverProcess = null;
 let postgrestProcess = null;
 let gatewayServer = null;
@@ -515,12 +521,14 @@ INSERT INTO auth.users (id, email) VALUES
   ('${OPS_USER_ID}', 'ops-admin@integration.test'),
   ('${OPS_DISABLED_USER_ID}', 'ops-disabled@integration.test'),
   ('${OPS_VIEWER_USER_ID}', 'ops-viewer@integration.test'),
-  ('${OPS_INVITEE_USER_ID}', 'ops-invitee@integration.test');
+  ('${OPS_INVITEE_USER_ID}', 'ops-invitee@integration.test'),
+  ('${OPS_INVITED_USER_ID}', 'ops-invited@integration.test');
 
 INSERT INTO ops.operators (id, user_id, email, display_name, status) VALUES
   ('${OPS_OPERATOR_ID}', '${OPS_USER_ID}', 'ops-admin@integration.test', 'Integration Ops', 'active'),
   ('${OPS_DISABLED_OPERATOR_ID}', '${OPS_DISABLED_USER_ID}', 'ops-disabled@integration.test', 'Integration Ops (disabled)', 'disabled'),
-  ('${OPS_VIEWER_OPERATOR_ID}', '${OPS_VIEWER_USER_ID}', 'ops-viewer@integration.test', 'Integration Ops (viewer)', 'active');
+  ('${OPS_VIEWER_OPERATOR_ID}', '${OPS_VIEWER_USER_ID}', 'ops-viewer@integration.test', 'Integration Ops (viewer)', 'active'),
+  ('${OPS_INVITED_OPERATOR_ID}', '${OPS_INVITED_USER_ID}', 'ops-invited@integration.test', 'Integration Ops (invited)', 'invited');
 
 INSERT INTO ops.operator_roles (operator_id, role_id, granted_by)
 SELECT '${OPS_OPERATOR_ID}', role.id, '${OPS_OPERATOR_ID}'
@@ -528,6 +536,10 @@ FROM ops.roles AS role WHERE role.code = 'platform_admin';
 
 INSERT INTO ops.operator_roles (operator_id, role_id, granted_by)
 SELECT '${OPS_VIEWER_OPERATOR_ID}', role.id, '${OPS_OPERATOR_ID}'
+FROM ops.roles AS role WHERE role.code = 'ops_viewer';
+
+INSERT INTO ops.operator_roles (operator_id, role_id, granted_by)
+SELECT '${OPS_INVITED_OPERATOR_ID}', role.id, '${OPS_OPERATOR_ID}'
 FROM ops.roles AS role WHERE role.code = 'ops_viewer';
 `,
     'utf8',
@@ -570,6 +582,7 @@ async function http(...extra) {
           UDONE_TEST_OPS_DISABLED_USER_ID: OPS_DISABLED_USER_ID,
           UDONE_TEST_OPS_VIEWER_USER_ID: OPS_VIEWER_USER_ID,
           UDONE_TEST_OPS_INVITEE_USER_ID: OPS_INVITEE_USER_ID,
+          UDONE_TEST_OPS_INVITED_USER_ID: OPS_INVITED_USER_ID,
         },
       },
     );

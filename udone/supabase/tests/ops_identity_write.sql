@@ -108,7 +108,7 @@ SELECT
   ok (
     NOT has_function_privilege(
       'anon',
-      'ops.invite_operator(uuid,text,text[],text,text)',
+      'ops.invite_operator(uuid,text,text[],text,text,text)',
       'EXECUTE'
     ),
     'anon cannot invite operators'
@@ -119,7 +119,7 @@ SELECT
   ok (
     NOT has_function_privilege(
       'anon',
-      'ops.update_operator(uuid,integer,text,text[],boolean,text,text)',
+      'ops.update_operator(uuid,integer,text,text[],boolean,text,text,text)',
       'EXECUTE'
     ),
     'anon cannot update operators'

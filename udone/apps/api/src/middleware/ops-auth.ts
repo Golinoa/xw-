@@ -207,6 +207,119 @@ export async function resolveMemberState(
 }
 
 /**
+ * 登录链路里另外两条写库 RPC（D-01 / D-05）。
+ *
+ * 两条都是无参 `SECURITY DEFINER`，身份取自 `auth.uid()`——Worker 只把刚拿到的
+ * 令牌原样转给 PostgREST，既不传 userId，也没有「替别人激活」的入口。
+ *
+ * 失败策略不对称，由调用方（登录路由）决定，这里只负责把「上游说了什么」翻译成
+ * 一个可判定的结果：形状不认识就是迁移漂移，与 `ops_member_state_contract_violation`
+ * 同一个处理——打日志 + 503，绝不静默当成功。把「返回了空对象」当成
+ * 「大概是好了」，是这一层最容易犯的错。
+ */
+const ACTIVATE_RPC = '/rest/v1/rpc/activate_invited_member';
+const TOUCH_LOGIN_RPC = '/rest/v1/rpc/touch_last_login';
+
+export const OPS_ACTIVATION_RESULTS = ['activated', 'unchanged', 'missing'] as const;
+export type OpsActivationResult = (typeof OPS_ACTIVATION_RESULTS)[number];
+
+export const OPS_LAST_LOGIN_RESULTS = ['ok', 'missing'] as const;
+export type OpsLastLoginResult = (typeof OPS_LAST_LOGIN_RESULTS)[number];
+
+async function callIdentityWriteRpc(
+  environment: Pick<ApiEnvironment['Bindings'], 'SUPABASE_URL' | 'SUPABASE_PUBLISHABLE_KEY'>,
+  token: string,
+  rpc: string,
+  fetcher: typeof fetch,
+): Promise<unknown> {
+  const baseUrl = environment.SUPABASE_URL?.replace(/\/$/, '');
+  const publishableKey = environment.SUPABASE_PUBLISHABLE_KEY;
+  if (!baseUrl || !publishableKey) {
+    throw new ApiHttpError(
+      503,
+      ERROR_CODES.INTERNAL_ERROR,
+      'Authentication service is not configured',
+    );
+  }
+
+  const response = await fetcher(`${baseUrl}${rpc}`, {
+    method: 'POST',
+    headers: {
+      apikey: publishableKey,
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      // 同 `resolveMemberState`：RPC 是 POST，靠 `Content-Profile` 选 schema。
+      'Content-Profile': 'ops',
+    },
+    body: '{}',
+    signal: AbortSignal.timeout(5_000),
+  });
+
+  // 令牌是刚在同一个请求里换来的，被拒说明 GoTrue 与 PostgREST 认的不是同一个
+  // JWT secret。回 401 会让人去重输密码，而重启服务之后症状依旧。
+  if (!response.ok) {
+    throw new ApiHttpError(
+      503,
+      ERROR_CODES.INTERNAL_ERROR,
+      'The operator directory is unavailable',
+    );
+  }
+
+  return response.json();
+}
+
+export async function activateInvitedMember(
+  environment: Pick<ApiEnvironment['Bindings'], 'SUPABASE_URL' | 'SUPABASE_PUBLISHABLE_KEY'>,
+  token: string,
+  fetcher: typeof fetch = fetch,
+): Promise<OpsActivationResult> {
+  const payload = await callIdentityWriteRpc(environment, token, ACTIVATE_RPC, fetcher);
+  if (
+    typeof payload !== 'string' ||
+    !(OPS_ACTIVATION_RESULTS as readonly string[]).includes(payload)
+  ) {
+    console.error(
+      JSON.stringify({
+        event: 'ops_activation_contract_violation',
+        value: typeof payload === 'string' ? payload : typeof payload,
+      }),
+    );
+    throw new ApiHttpError(
+      503,
+      ERROR_CODES.INTERNAL_ERROR,
+      'The operator directory is unavailable',
+    );
+  }
+  return payload as OpsActivationResult;
+}
+
+export async function touchLastLogin(
+  environment: Pick<ApiEnvironment['Bindings'], 'SUPABASE_URL' | 'SUPABASE_PUBLISHABLE_KEY'>,
+  token: string,
+  fetcher: typeof fetch = fetch,
+): Promise<OpsLastLoginResult> {
+  const payload = await callIdentityWriteRpc(environment, token, TOUCH_LOGIN_RPC, fetcher);
+  if (
+    typeof payload !== 'string' ||
+    !(OPS_LAST_LOGIN_RESULTS as readonly string[]).includes(payload)
+  ) {
+    console.error(
+      JSON.stringify({
+        event: 'ops_last_login_contract_violation',
+        value: typeof payload === 'string' ? payload : typeof payload,
+      }),
+    );
+    throw new ApiHttpError(
+      503,
+      ERROR_CODES.INTERNAL_ERROR,
+      'The operator directory is unavailable',
+    );
+  }
+  return payload as OpsLastLoginResult;
+}
+
+/**
  * 契约 §5.1：其余端点全部要求 `Authorization`，`/auth/*` 三个例外。
  * 没有令牌 401；令牌有效但不是 active 运营成员 403。
  */

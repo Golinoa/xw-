@@ -27,6 +27,9 @@ const AUDIT = '/api/v1/ops/audit-events';
 /** 邀请上游的替身：只做一件事——把一个已经存在的 auth 用户 id 交回来。 */
 const inviteUpstream = {
   invite: async () => ({ kind: 'invited' as const, userId: OPS_INVITEE_USER }),
+  // 这里的用例都走「邀请成功」或「拒绝发生在 RPC 之前」，补偿删除不该被调用；
+  // 真被调用时返回 false，让孤儿日志把这件事说出来，而不是假装删掉了。
+  deleteUser: async () => false,
 };
 
 async function operatorByEmail(token: string, email: string) {
