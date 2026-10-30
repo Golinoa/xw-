@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { idempotencyStorageKey } from '../../apps/api/src/lib/idempotency-key';
+
 import {
   ORG_ID,
   REST_URL,
@@ -7,6 +7,7 @@ import {
   call,
   expectStatus,
   restRequest,
+  expectedScopeKey,
   signServiceToken,
   signToken,
 } from './harness';
@@ -61,20 +62,25 @@ describe('idempotent writes through PostgREST', () => {
     // 库里只有一条记录，且它的 scope_key 必须就是中间件算出来的那个。
     // 这条断言把「派生算法」与「落库内容」绑在一起：两边各自改了都不会被发现，
     // 只有它们对不上时才会红。
-    const expectedScopeKey = await idempotencyStorageKey({
-      authorization: `Bearer ${token}`,
+    const scopeKey = await expectedScopeKey({
+      token,
       organizationId: ORG_ID,
       method: 'POST',
       path: PATH,
       key: idempotencyKey,
     });
-    const rows = await restRequest<{ scope_key: string; status: number }[]>(
-      `idempotency_records?scope_key=eq.${encodeURIComponent(expectedScopeKey)}&select=scope_key,status`,
+    const rows = await restRequest<
+      { scope_key: string; response_status: number; actor_id: string | null }[]
+    >(
+      `idempotency_records?scope_key=eq.${encodeURIComponent(scopeKey)}` +
+        '&select=scope_key,response_status,actor_id',
       { profile: 'ops', token: SERVICE_TOKEN },
     );
     expectStatus(rows, 200);
     expect(rows.body).toHaveLength(1);
-    expect(rows.body[0]?.status).toBe(201);
+    expect(rows.body[0]?.response_status).toBe(201);
+    // actor_id 是契约 §3 要求的列。它不参与派生，所以只能靠这条断言确认真的写进去了。
+    expect(rows.body[0]?.actor_id).toBe(USERS.admin);
   });
 
   it('answers 409 when the same key carries a different body', async () => {
@@ -141,5 +147,39 @@ describe('idempotent writes through PostgREST', () => {
 
     expect(rows.status).toBeGreaterThanOrEqual(400);
     expect(REST_URL).toContain('127.0.0.1');
+  });
+
+  /**
+   * 令牌刷新之后重试仍然算同一次写入。
+   *
+   * 这条走的是真实 PostgREST：命名空间由验签后的 sub 派生，落库的记录因此
+   * 命中同一格。若派生回到 sha256(Authorization)，两个令牌会各写一行，
+   * 收款端点会重复记账——而「网关超时后重试」正是最容易跨过刷新点的场景。
+   */
+  it('replays after the access token is rotated', async () => {
+    const earlier = signToken(USERS.admin, -1800);
+    const later = signToken(USERS.admin, -900);
+    expect(earlier).not.toBe(later);
+
+    const idempotencyKey = crypto.randomUUID();
+    const body: CustomerBody = { name: customerName(idempotencyKey.slice(0, 8)) };
+
+    const first = await call<{ customer: { id: string } }>(PATH, {
+      method: 'POST',
+      body,
+      token: earlier,
+      headers: { 'Idempotency-Key': idempotencyKey },
+    });
+    expectStatus(first, 201);
+
+    const second = await call<{ customer: { id: string } }>(PATH, {
+      method: 'POST',
+      body,
+      token: later,
+      headers: { 'Idempotency-Key': idempotencyKey },
+    });
+
+    expect(second.headers.get('idempotent-replay')).toBe('true');
+    expect(second.body.customer.id).toBe(first.body.customer.id);
   });
 });

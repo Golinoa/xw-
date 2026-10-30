@@ -27,6 +27,14 @@ export interface ApiEnvironment {
     SUPABASE_URL?: string;
     SUPABASE_PUBLISHABLE_KEY?: string;
     SUPABASE_SERVICE_ROLE_KEY?: string;
+    /**
+     * 项目 JWT secret，只用于两件事：幂等中间件验签取 `sub`（它跑在 `requireAuth`
+     * 之前，拿不到已认证身份），以及本地/CI 的测试签发通道。
+     *
+     * 不配置时幂等命名空间退化为令牌哈希——同一个人的下一次刷新会换一格，
+     * 幂等随之失效。生产必须配。
+     */
+    SUPABASE_JWT_SECRET?: string;
     APP_BASE_URL?: string;
     APP_VERSION?: string;
     ALLOWED_ORIGINS?: string;

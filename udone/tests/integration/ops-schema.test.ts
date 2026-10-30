@@ -31,21 +31,21 @@ describe('ops schema exposure', () => {
       body: {
         scope_key: scopeKey,
         request_hash: HASH,
-        status: 201,
-        body: { id: 'replayed-response' },
+        response_status: 201,
+        response_body: { id: 'replayed-response' },
         expires_at: new Date(Date.now() + 60_000).toISOString(),
       },
     });
     expectStatus(created, 201);
     expect(created.body[0]?.scope_key).toBe(scopeKey);
 
-    const read = await restRequest<{ scope_key: string; status: number }[]>(
+    const read = await restRequest<{ scope_key: string; response_status: number }[]>(
       `idempotency_records?scope_key=eq.${encodeURIComponent(scopeKey)}`,
       { profile: 'ops', token: SERVICE_TOKEN },
     );
     expectStatus(read, 200);
     expect(read.body).toHaveLength(1);
-    expect(read.body[0]?.status).toBe(201);
+    expect(read.body[0]?.response_status).toBe(201);
   });
 
   it('refuses the table when no profile is given', async () => {
@@ -81,8 +81,8 @@ describe('ops schema exposure', () => {
       body: {
         scope_key: uniqueScope('short-hash'),
         request_hash: 'too-short',
-        status: 200,
-        body: {},
+        response_status: 200,
+        response_body: {},
         expires_at: new Date(Date.now() + 60_000).toISOString(),
       },
     });

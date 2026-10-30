@@ -8,6 +8,7 @@ import {
 } from '@erp/contracts';
 import app from '../../apps/api/src/index';
 import type { ApiEnvironment } from '../../apps/api/src/middleware/auth';
+import { idempotencyStorageKey, resolveCaller } from '../../apps/api/src/lib/idempotency-key';
 
 /**
  * 让 API 真的打到 PostgREST 上。
@@ -59,8 +60,33 @@ function base64url(value: string): string {
  * 少了它 RLS 会按 anon 走，所有断言都会以「读不到数据」的形式失败，
  * 而失败原因看起来会像业务逻辑坏了。
  */
-export function signToken(userId: string): string {
-  return signJwt({ sub: userId, role: 'authenticated', aud: 'authenticated' });
+export function signToken(userId: string, issuedAtOffsetSeconds = 0): string {
+  return signJwt(
+    { sub: userId, role: 'authenticated', aud: 'authenticated' },
+    issuedAtOffsetSeconds,
+  );
+}
+
+/**
+ * 从中间件视角算出存储 key，用于断言「库里那条记录的 scope_key 与派生算法一致」。
+ *
+ * 走真实的 `resolveCaller`，所以「令牌刷新后 sub 不变」这件事也一并被验证到。
+ */
+export async function expectedScopeKey(input: {
+  token: string;
+  organizationId: string;
+  method: string;
+  path: string;
+  key: string;
+}): Promise<string> {
+  const caller = await resolveCaller(`Bearer ${input.token}`, JWT_SECRET);
+  return idempotencyStorageKey({
+    caller: caller.storageKey,
+    organizationId: input.organizationId,
+    method: input.method,
+    path: input.path,
+    key: input.key,
+  });
 }
 
 /**
@@ -71,8 +97,8 @@ export function signServiceToken(): string {
   return signJwt({ role: 'service_role', aud: 'authenticated' });
 }
 
-function signJwt(claims: Record<string, unknown>): string {
-  const issuedAt = Math.floor(Date.now() / 1000);
+function signJwt(claims: Record<string, unknown>, issuedAtOffsetSeconds = 0): string {
+  const issuedAt = Math.floor(Date.now() / 1000) + issuedAtOffsetSeconds;
   const header = base64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
   const payload = base64url(JSON.stringify({ ...claims, iat: issuedAt, exp: issuedAt + 3600 }));
   const signature = createHmac('sha256', JWT_SECRET)
@@ -124,6 +150,8 @@ export function apiEnv(overrides: Partial<ApiEnvironment['Bindings']> = {}) {
     SUPABASE_PUBLISHABLE_KEY: 'integration-publishable-key',
     // 没有它，幂等中间件会退回内存 store，落库那条链路就永远不会被测到。
     SUPABASE_SERVICE_ROLE_KEY: signServiceToken(),
+    // 没有它，幂等命名空间退回 sha256(Authorization)，令牌一刷新幂等就失效。
+    SUPABASE_JWT_SECRET: JWT_SECRET,
     // 默认 60/分钟不够用：一个文件里几十次请求会自己把自己限流。
     RATE_LIMIT_PER_MINUTE: '100000',
     AUTH_VERIFIER: verifier(),

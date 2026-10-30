@@ -29,8 +29,8 @@ export interface OpsIdempotencyStoreOptions {
 }
 
 interface RecordRow {
-  status: number;
-  body: unknown;
+  response_status: number;
+  response_body: unknown;
   request_hash: string;
   expires_at: string;
 }
@@ -50,14 +50,14 @@ export function createOpsIdempotencyStore(options: OpsIdempotencyStoreOptions): 
       const rows = await client.rest<RecordRow[]>(
         `${TABLE}?scope_key=eq.${encodeURIComponent(key)}` +
           `&expires_at=gt.${encodeURIComponent(new Date(now()).toISOString())}` +
-          '&select=status,body,request_hash,expires_at',
+          '&select=response_status,response_body,request_hash,expires_at',
         { profile: 'ops' },
       );
       const row = rows[0];
       if (!row) return null;
       const record: IdempotencyRecord = {
-        status: row.status,
-        body: row.body,
+        status: row.response_status,
+        body: row.response_body,
         requestHash: row.request_hash,
         expiresAt: new Date(row.expires_at).getTime(),
       };
@@ -75,8 +75,10 @@ export function createOpsIdempotencyStore(options: OpsIdempotencyStoreOptions): 
         body: {
           scope_key: key,
           request_hash: record.requestHash,
-          status: record.status,
-          body: record.body,
+          response_status: record.status,
+          response_body: record.body,
+          // 验签失败时没有 sub，此列为空；它只是排障线索，不参与任何判定。
+          actor_id: record.actorId ?? null,
           expires_at: new Date(now() + ttlMs).toISOString(),
         },
       });

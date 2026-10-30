@@ -46,15 +46,15 @@ describe('createOpsIdempotencyStore', () => {
     expect(call.path).toContain('scope_key=eq.scope-key-1');
     // 过期行不能被当成命中，否则回放会越过 TTL 无限延长。
     expect(call.path).toContain(`expires_at=gt.${encodeURIComponent('2026-10-30T00:00:00.000Z')}`);
-    expect(call.path).toContain('select=status,body,request_hash,expires_at');
+    expect(call.path).toContain('select=response_status,response_body,request_hash,expires_at');
     expect(call.init?.profile).toBe('ops');
   });
 
   it('maps the database column names back to the store record', async () => {
     const { client } = fakeClient([
       {
-        status: 201,
-        body: { id: 'created' },
+        response_status: 201,
+        response_body: { id: 'created' },
         request_hash: 'abc',
         expires_at: '2026-10-31T00:00:00.000Z',
       },
@@ -99,9 +99,26 @@ describe('createOpsIdempotencyStore', () => {
     expect(call.init?.body).toEqual({
       scope_key: 'scope-key-1',
       request_hash: 'abc',
-      status: 200,
-      body: { ok: true },
+      response_status: 200,
+      response_body: { ok: true },
+      // 验签失败时没有 sub；这一列只是排障线索，缺失即写 null。
+      actor_id: null,
       expires_at: '2026-10-30T00:01:00.000Z',
     });
+  });
+
+  it('records the actor when the caller identity is known', async () => {
+    const { client, calls } = fakeClient();
+
+    await createOpsIdempotencyStore({ client, now: () => NOW }).set('scope-key-1', {
+      status: 201,
+      body: { id: 'created' },
+      requestHash: 'abc',
+      actorId: '9f1c2a7e-0000-4000-8000-000000000001',
+    });
+
+    expect((calls[0]!.init?.body as Record<string, unknown>).actor_id).toBe(
+      '9f1c2a7e-0000-4000-8000-000000000001',
+    );
   });
 });
