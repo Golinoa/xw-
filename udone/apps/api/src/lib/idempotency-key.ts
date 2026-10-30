@@ -22,7 +22,6 @@ export interface IdempotencyScope {
   organizationId: string | undefined;
   method: string;
   path: string;
-  key: string;
 }
 
 export interface CallerIdentity {
@@ -67,20 +66,20 @@ export async function resolveCaller(
 }
 
 /**
- * 存储 key。组织维度也要进来：同一个用户在切换组织后，两边的收付款申请可能
- * 内容完全相同，只有组织不同。
+ * 命名空间：由（调用者、组织、方法、路径）唯一决定（契约 §3「`scope` 的构成」，
+ * U-24 定稿）。
  *
- * 查询串刻意不参与：写请求的语义由路径与方法决定，把查询串算进去会让
- * 「同一次重试但客户端多带了一个无关参数」变成缓存未命中，反而重复执行。
+ * **客户端 key 不在这里**。它与 scope 是两列，合起来才是主键——把 key 拼进
+ * scope 会让「这个人用过哪些键」变成字符串前缀查询，也让排障时必须反解。
+ *
+ * 组织维度必须进来：同一个用户在切换组织后，两边的收付款申请可能内容完全相同，
+ * 只有组织不同。查询串刻意不参与：写请求的语义由路径与方法决定，把查询串算进去
+ * 会让「同一次重试但客户端多带了一个无关参数」变成缓存未命中，反而重复执行。
  */
-export function idempotencyStorageKey(scope: IdempotencyScope): string {
-  return [
-    scope.caller,
-    scope.organizationId ?? '-',
-    scope.method.toUpperCase(),
-    scope.path,
-    scope.key,
-  ].join(':');
+export function idempotencyScope(scope: IdempotencyScope): string {
+  return [scope.caller, scope.organizationId ?? '-', scope.method.toUpperCase(), scope.path].join(
+    ':',
+  );
 }
 
 /**

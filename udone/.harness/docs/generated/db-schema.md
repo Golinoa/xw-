@@ -3,7 +3,7 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 20
+- Migration sources scanned: 21
 - Tables discovered: 26
 - Functions discovered: 65
 - Indexes discovered: 37
@@ -32,3 +32,4 @@
 | `20261030000005_ops_identity_write.sql` | — | `ops.unknown_role_codes`, `ops.unknown_permission_codes`, `ops.operator_json`, `ops.role_json`, `ops.list_operators`, `ops.invite_operator`, `ops.update_operator`, `ops.list_roles`, `ops.create_role`, `ops.update_role`, `ops.list_audit_events` | — | — | — |
 | `20261030000006_ops_identity_alignment.sql` | — | `ops.activate_invited_member`, `ops.touch_last_login`, `ops.invite_operator`, `ops.update_operator` | — | — | — |
 | `20261030000007_ops_customer_domain.sql` | `ops.customers`, `ops.customer_contacts` | `ops.mask_phone`, `ops.mask_email`, `ops.customer_reference_counts`, `ops.customer_json`, `ops.customer_contact_json`, `ops.customer_list_json`, `ops.customer_duplicate_matches`, `ops.list_customers`, `ops.create_customer`, `ops.check_customer_duplicates`, `ops.get_customer`, `ops.update_customer`, `ops.transition_customer`, `ops.customer_overview`, `ops.list_customer_contacts`, `ops.create_customer_contact`, `ops.update_customer_contact`, `ops.delete_customer_contact` | `customers_status_created_idx`, `customers_owner_idx`, `customers_name_idx`, `customer_contacts_primary_idx`, `customer_contacts_customer_idx` | — | — |
+| `20261030000008_ops_idempotency_scope_key.sql` | — | — | — | — | — |

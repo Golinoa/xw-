@@ -20,15 +20,35 @@ export interface IdempotencyWrite {
   actorId?: string;
 }
 
+/**
+ * 一格缓存槽：命名空间 + 客户端 key，与 `ops.idempotency_records` 的
+ * `PK(scope, key)` 同构。
+ *
+ * 两列而不是一列拼接字符串：拼起来之后「按命名空间扫这个调用者用过的键」只能
+ * 靠前缀匹配，而分开存就是主键前缀扫描；排障时也不必反解分隔符。
+ */
+export interface IdempotencySlot {
+  scope: string;
+  key: string;
+}
+
 export interface IdempotencyStore {
-  get(key: string): Promise<IdempotencyRecord | null>;
-  set(key: string, record: IdempotencyWrite): Promise<void>;
+  get(slot: IdempotencySlot): Promise<IdempotencyRecord | null>;
+  set(slot: IdempotencySlot, record: IdempotencyWrite): Promise<void>;
 }
 
 export interface IdempotencyStoreOptions {
   ttlMs?: number;
   maxEntries?: number;
   now?: () => number;
+}
+
+/**
+ * 内存 Map 的键。用 NUL 连接：scope 里本来就有冒号（`user:<sub>:<org>:GET:/path`），
+ * 再用冒号拼会与它自己的分隔符混淆，而 NUL 在 HTTP header 里根本不可能出现。
+ */
+function slotMapKey(slot: IdempotencySlot): string {
+  return `${slot.scope}\u0000${slot.key}`;
 }
 
 /**
@@ -55,27 +75,29 @@ export function createMemoryIdempotencyStore(
   }
 
   return {
-    async get(key) {
-      const record = entries.get(key);
+    async get(slot) {
+      const mapKey = slotMapKey(slot);
+      const record = entries.get(mapKey);
       if (!record) return null;
       if (record.expiresAt <= now()) {
-        entries.delete(key);
+        entries.delete(mapKey);
         return null;
       }
       return record;
     },
 
-    async set(key, record) {
+    async set(slot, record) {
+      const mapKey = slotMapKey(slot);
       dropExpired();
       // Re-inserting keeps Map order meaningful: the oldest write is evicted first.
-      entries.delete(key);
+      entries.delete(mapKey);
       while (entries.size >= maxEntries) {
         const oldest = entries.keys().next();
         if (oldest.done) break;
         entries.delete(oldest.value);
       }
       // actorId 只对落库有意义，内存里没有排障价值，显式丢弃而不是靠展开带进来。
-      entries.set(key, {
+      entries.set(mapKey, {
         status: record.status,
         body: record.body,
         requestHash: record.requestHash,

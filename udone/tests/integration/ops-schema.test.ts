@@ -21,15 +21,16 @@ function uniqueScope(prefix: string): string {
 
 describe('ops schema exposure', () => {
   it('lets service_role write and read through the ops profile', async () => {
-    const scopeKey = uniqueScope('service');
+    const scope = uniqueScope('service');
 
-    const created = await restRequest<{ scope_key: string }[]>('idempotency_records', {
+    const created = await restRequest<{ scope: string; key: string }[]>('idempotency_records', {
       method: 'POST',
       profile: 'ops',
       token: SERVICE_TOKEN,
       prefer: 'return=representation',
       body: {
-        scope_key: scopeKey,
+        scope,
+        key: 'schema-probe-key',
         request_hash: HASH,
         response_status: 201,
         response_body: { id: 'replayed-response' },
@@ -37,15 +38,47 @@ describe('ops schema exposure', () => {
       },
     });
     expectStatus(created, 201);
-    expect(created.body[0]?.scope_key).toBe(scopeKey);
+    expect(created.body[0]?.scope).toBe(scope);
+    expect(created.body[0]?.key).toBe('schema-probe-key');
 
-    const read = await restRequest<{ scope_key: string; response_status: number }[]>(
-      `idempotency_records?scope_key=eq.${encodeURIComponent(scopeKey)}`,
+    const read = await restRequest<{ scope: string; response_status: number }[]>(
+      `idempotency_records?scope=eq.${encodeURIComponent(scope)}`,
       { profile: 'ops', token: SERVICE_TOKEN },
     );
     expectStatus(read, 200);
     expect(read.body).toHaveLength(1);
     expect(read.body[0]?.response_status).toBe(201);
+  });
+
+  it('refuses a second row with the same (scope, key)', async () => {
+    // 主键是幂等的最后一道保险：两个并发同 key 请求里只有一个能插进来。
+    // 这条对着真实 PostgREST，证明约束真的建在 (scope, key) 上而不是某一列上。
+    const scope = uniqueScope('primary-key');
+    const row = {
+      scope,
+      key: 'duplicate-probe',
+      request_hash: HASH,
+      response_status: 200,
+      response_body: {},
+      expires_at: new Date(Date.now() + 60_000).toISOString(),
+    };
+
+    const first = await restRequest('idempotency_records', {
+      method: 'POST',
+      profile: 'ops',
+      token: SERVICE_TOKEN,
+      body: row,
+    });
+    expectStatus(first, 201);
+
+    const second = await restRequest('idempotency_records', {
+      method: 'POST',
+      profile: 'ops',
+      token: SERVICE_TOKEN,
+      body: row,
+    });
+    expect(second.status).toBeGreaterThanOrEqual(400);
+    expect(second.status).not.toBe(401);
   });
 
   it('refuses the table when no profile is given', async () => {
@@ -79,7 +112,8 @@ describe('ops schema exposure', () => {
       profile: 'ops',
       token: SERVICE_TOKEN,
       body: {
-        scope_key: uniqueScope('short-hash'),
+        scope: uniqueScope('short-hash'),
+        key: 'schema-probe-key',
         request_hash: 'too-short',
         response_status: 200,
         response_body: {},

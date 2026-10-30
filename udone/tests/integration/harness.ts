@@ -8,7 +8,7 @@ import {
 } from '@erp/contracts';
 import app from '../../apps/api/src/index';
 import type { ApiEnvironment } from '../../apps/api/src/middleware/auth';
-import { idempotencyStorageKey, resolveCaller } from '../../apps/api/src/lib/idempotency-key';
+import { idempotencyScope, resolveCaller } from '../../apps/api/src/lib/idempotency-key';
 
 /**
  * 让 API 真的打到 PostgREST 上。
@@ -110,24 +110,25 @@ export function signToken(userId: string, issuedAtOffsetSeconds = 0): string {
 }
 
 /**
- * 从中间件视角算出存储 key，用于断言「库里那条记录的 scope_key 与派生算法一致」。
+ * 从中间件视角算出命名空间，用于断言「库里那条记录的 scope 与派生算法一致」。
+ *
+ * 只算 scope，不算 key：两者是 `PK(scope, key)` 的两列，把客户端 key 也拼进来
+ * 就回到了 o-t02b 之前的单列形状，这条断言也就测不到「命名空间」本身了。
  *
  * 走真实的 `resolveCaller`，所以「令牌刷新后 sub 不变」这件事也一并被验证到。
  */
-export async function expectedScopeKey(input: {
+export async function expectedIdempotencyScope(input: {
   token: string;
   organizationId: string;
   method: string;
   path: string;
-  key: string;
 }): Promise<string> {
   const caller = await resolveCaller(`Bearer ${input.token}`, JWT_SECRET);
-  return idempotencyStorageKey({
+  return idempotencyScope({
     caller: caller.storageKey,
     organizationId: input.organizationId,
     method: input.method,
     path: input.path,
-    key: input.key,
   });
 }
 

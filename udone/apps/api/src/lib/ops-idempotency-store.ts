@@ -46,9 +46,10 @@ export function createOpsIdempotencyStore(options: OpsIdempotencyStoreOptions): 
   const now = options.now ?? Date.now;
 
   return {
-    async get(key) {
+    async get(slot) {
       const rows = await client.rest<RecordRow[]>(
-        `${TABLE}?scope_key=eq.${encodeURIComponent(key)}` +
+        `${TABLE}?scope=eq.${encodeURIComponent(slot.scope)}` +
+          `&key=eq.${encodeURIComponent(slot.key)}` +
           `&expires_at=gt.${encodeURIComponent(new Date(now()).toISOString())}` +
           '&select=response_status,response_body,request_hash,expires_at',
         { profile: 'ops' },
@@ -64,21 +65,22 @@ export function createOpsIdempotencyStore(options: OpsIdempotencyStoreOptions): 
       return record;
     },
 
-    async set(key, record) {
+    async set(slot, record) {
       await client.rest<void>(TABLE, {
         method: 'POST',
         profile: 'ops',
-        // ignore-duplicates：并发下由唯一约束决定谁留下，输的一方不报错。
+        // ignore-duplicates：并发下由主键 (scope, key) 决定谁留下，输的一方不报错。
         // 这一条请求已经回复给了调用方，此时再抛 409 会把一个成功的写入
         // 报成失败——比丢一条重放记录严重得多。
         headers: { Prefer: 'return=minimal,resolution=ignore-duplicates' },
         body: {
-          scope_key: key,
+          scope: slot.scope,
+          key: slot.key,
           request_hash: record.requestHash,
           response_status: record.status,
           response_body: record.body,
           // 验签失败时没有 sub，此列为空；它只是排障线索，不参与任何判定。
-          actor_id: record.actorId ?? null,
+          actor_user_id: record.actorId ?? null,
           expires_at: new Date(now() + ttlMs).toISOString(),
         },
       });

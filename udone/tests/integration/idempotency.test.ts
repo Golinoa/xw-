@@ -7,7 +7,7 @@ import {
   call,
   expectStatus,
   restRequest,
-  expectedScopeKey,
+  expectedIdempotencyScope,
   signServiceToken,
   signToken,
 } from './harness';
@@ -59,28 +59,32 @@ describe('idempotent writes through PostgREST', () => {
     expect(second.body).toEqual(first.body);
     expect(second.headers.get('idempotent-replay')).toBe('true');
 
-    // 库里只有一条记录，且它的 scope_key 必须就是中间件算出来的那个。
+    // 库里只有一条记录，且它的 scope 必须就是中间件算出来的那个。
     // 这条断言把「派生算法」与「落库内容」绑在一起：两边各自改了都不会被发现，
     // 只有它们对不上时才会红。
-    const scopeKey = await expectedScopeKey({
+    //
+    // `key` 单独断言：它与 scope 是主键的两列，若实现又把它拼回 scope，
+    // 这里仍会命中（scope 里含 key），所以必须显式看这一列的原文。
+    const scope = await expectedIdempotencyScope({
       token,
       organizationId: ORG_ID,
       method: 'POST',
       path: PATH,
-      key: idempotencyKey,
     });
     const rows = await restRequest<
-      { scope_key: string; response_status: number; actor_id: string | null }[]
+      { scope: string; key: string; response_status: number; actor_user_id: string | null }[]
     >(
-      `idempotency_records?scope_key=eq.${encodeURIComponent(scopeKey)}` +
-        '&select=scope_key,response_status,actor_id',
+      `idempotency_records?scope=eq.${encodeURIComponent(scope)}` +
+        `&key=eq.${encodeURIComponent(idempotencyKey)}` +
+        '&select=scope,key,response_status,actor_user_id',
       { profile: 'ops', token: SERVICE_TOKEN },
     );
     expectStatus(rows, 200);
     expect(rows.body).toHaveLength(1);
     expect(rows.body[0]?.response_status).toBe(201);
-    // actor_id 是契约 §3 要求的列。它不参与派生，所以只能靠这条断言确认真的写进去了。
-    expect(rows.body[0]?.actor_id).toBe(USERS.admin);
+    expect(rows.body[0]?.key).toBe(idempotencyKey);
+    // actor_user_id 是契约 §3 要求的列。它不参与派生，所以只能靠这条断言确认真的写进去了。
+    expect(rows.body[0]?.actor_user_id).toBe(USERS.admin);
   });
 
   it('answers 409 when the same key carries a different body', async () => {
@@ -137,10 +141,42 @@ describe('idempotent writes through PostgREST', () => {
     expect(supplier.body.supplier.id).not.toBe(customer.body.customer.id);
   });
 
+  /**
+   * 同一个客户端 key、同一个端点、**不同调用者**，不能命中同一格。
+   *
+   * 幂等键由客户端生成，两个运营成员之间没有任何协调，撞同一个值是常态而不是
+   * 攻击。命名空间若不含调用者，后到者会拿到前一个人的响应体——看起来像
+   * 「建成功了」，实际读的是别人的那条记录。这条正是 `o-t02b` 把 scope 与 key
+   * 拆成两列、且 scope 必须内含调用者的原因。
+   */
+  it('does not replay across callers that reuse the same key', async () => {
+    const idempotencyKey = crypto.randomUUID();
+    const body: CustomerBody = { name: customerName('shared-key') };
+
+    const first = await call<{ customer: { id: string } }>(PATH, {
+      method: 'POST',
+      body,
+      actor: 'admin',
+      headers: { 'Idempotency-Key': idempotencyKey },
+    });
+    expectStatus(first, 201);
+
+    const second = await call<{ customer: { id: string } }>(PATH, {
+      method: 'POST',
+      body,
+      actor: 'operator',
+      headers: { 'Idempotency-Key': idempotencyKey },
+    });
+
+    expectStatus(second, 201);
+    expect(second.headers.get('idempotent-replay')).toBeNull();
+    expect(second.body.customer.id).not.toBe(first.body.customer.id);
+  });
+
   it('keeps the records table closed to a normal user token', async () => {
     // 幂等记录里存的是别人的响应体。API 用 service_role 读写，客户端令牌
     // 连 schema 的 USAGE 都没有——这条边界属于「一旦破了没人会发现」的那类。
-    const rows = await restRequest('idempotency_records?select=scope_key', {
+    const rows = await restRequest('idempotency_records?select=scope', {
       profile: 'ops',
       token: signToken(USERS.admin),
     });

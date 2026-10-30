@@ -1,7 +1,7 @@
 import type { Context, MiddlewareHandler } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { ERROR_CODES, OPS_ROUTES } from '@erp/contracts';
-import { idempotencyStorageKey, requestFingerprint, resolveCaller } from '../lib/idempotency-key';
+import { idempotencyScope, requestFingerprint, resolveCaller } from '../lib/idempotency-key';
 import { createMemoryIdempotencyStore, type IdempotencyStore } from '../lib/idempotency-store';
 import { createOpsIdempotencyStore } from '../lib/ops-idempotency-store';
 import { createServiceRestClient } from '../lib/rest-client';
@@ -135,15 +135,17 @@ export function idempotency(options: IdempotencyOptions = {}): MiddlewareHandler
       );
     }
     const caller = await resolveCaller(authorization, jwtSecret);
-    const storageKey = idempotencyStorageKey({
-      caller: caller.storageKey,
-      organizationId: context.req.header('X-Organization-ID'),
-      method: context.req.method,
-      path: context.req.path,
+    const slot = {
+      scope: idempotencyScope({
+        caller: caller.storageKey,
+        organizationId: context.req.header('X-Organization-ID'),
+        method: context.req.method,
+        path: context.req.path,
+      }),
       key,
-    });
+    };
 
-    const replay = await store.get(storageKey);
+    const replay = await store.get(slot);
     if (replay) {
       if (replay.requestHash !== requestHash) {
         throw new ApiHttpError(
@@ -170,6 +172,6 @@ export function idempotency(options: IdempotencyOptions = {}): MiddlewareHandler
       .catch(() => null);
     if (body === null) return;
 
-    await store.set(storageKey, { status, body, requestHash, actorId: caller.subject });
+    await store.set(slot, { status, body, requestHash, actorId: caller.subject });
   };
 }
