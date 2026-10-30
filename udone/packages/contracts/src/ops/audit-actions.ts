@@ -36,6 +36,31 @@ export const OPS_AUDIT_ACTIONS = [
     description:
       '改角色权限：PATCH /roles/{id} 改变了权限集合时落这个词（同时改了名字也只落它，不再重复落 role.updated）。',
   },
+  // 客户域，o-t04 新增，待运营端回写契约正文 §6.4。
+  //
+  // 四个词按「改的是哪一类东西」切开，不是按端点切：`customer.updated` 只覆盖
+  // 客户主档的可编辑字段，状态迁移单独一个词（它带 from/to，按 `customer.updated`
+  // 筛会把「改了备注」与「终止了客户」混在一起）。
+  {
+    code: 'customer.created',
+    description:
+      '新建客户：POST /customers 成功写入客户行（含内嵌联系人）时落这个词，摘要带 customerNo / name / status / contactCount。',
+  },
+  {
+    code: 'customer.updated',
+    description:
+      '改客户主档：PATCH /customers/{id} 改名称、信用代码、区域或备注时落这个词，前后摘要带 name / unifiedSocialCreditCode / regionCode / status / ownerOperatorId。状态与责任人不在可改范围内。',
+  },
+  {
+    code: 'customer.transitioned',
+    description:
+      '客户状态迁移：POST /customers/{id}/transition 的每一条合法边都落这个词，前后摘要带 from/to 的 status 与 action（start_onboarding / activate / suspend / resume / terminate）。',
+  },
+  {
+    code: 'customer.contact_changed',
+    description:
+      '联系人变更：联系人的新建、编辑、删除都落这个词，`entity_type` 为 `customer_contact`，摘要只带姓名与 isPrimary，不带电话/邮箱原值。',
+  },
 ] as const;
 
 /** 动作码的平铺列表。给筛选下拉、日志白名单这类「只要字符串」的地方用。 */
