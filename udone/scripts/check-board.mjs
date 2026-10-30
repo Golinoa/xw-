@@ -80,10 +80,19 @@ if (!Array.isArray(tasks) || !Array.isArray(versions)) {
 const versionIds = new Set(versions.map((version) => version.id));
 const seen = new Set();
 const counts = { done: 0, todo: 0, doing: 0, blocked: 0 };
-const HASH = /[0-9a-f]{7,40}/;
+// 提交哈希与迁移文件名的时间戳前缀共用十六进制字符集，区别只在长度段：项目里的
+// 短哈希是 7 位（看板现有 23 处证据全部落在 7–8 位），完整哈希 40 位；而迁移文件名
+// 开头是 14 位纯数字（YYYYMMDDHHMMSS，例如 20261030000002）。
+//
+// 旧版写 {7,40}，于是「20261030000002」这种日期前缀被当成了短哈希：一张 done 卡只
+// 要在 desc 里提一句迁移编号，「指不出提交」就通过了；一条 closed 的协作项只写
+// 「看迁移文件 20261030000002」，「证据定位不了」也通过了——而这两处都定位不到任何
+// 提交或任何一行。变异实测：把 C-95 的证据换成只剩那串数字，旧版绿、新版红。
+const HASH_SHAPE = '\\b(?:[0-9a-f]{7,12}|[0-9a-f]{40})\\b';
+const HASH = new RegExp(HASH_SHAPE);
 const EXEMPT = /无独立提交|证据缺失/;
 const UNLOCK = /解锁条件/;
-const LOCATOR = /[0-9a-f]{7,40}|§\s*\d|第\s*\d+\s*行|\bL\d+/;
+const LOCATOR = new RegExp(`${HASH_SHAPE}|§\\s*\\d|第\\s*\\d+\\s*行|\\bL\\d+`);
 
 // 两端共用一个看板，第一人称在这里没有唯一指代：读的人容易把「我」读成自己，
 // 而「对方」把工程分歧写成了私人往来。只认「业务端」「运营端」。
