@@ -1,5 +1,5 @@
 import type { MiddlewareHandler } from 'hono';
-import type { AuthContext, Permission } from '@erp/contracts';
+import type { AuthContext, OpsContext, Permission } from '@erp/contracts';
 import { ERROR_CODES } from '@erp/contracts';
 import type { OrganizationRepository } from '../services/organization-service';
 import type { CustomerRepository } from '../modules/customers/customer-service';
@@ -45,6 +45,13 @@ export interface ApiEnvironment {
     auth: AuthContext;
     authToken: string;
     requestId: string;
+    /**
+     * 运营上下文，只由 `requireOpsAuth()` 写入。与 `auth` 并存而不复用同一个
+     * 变量：两套身份来自不同的表、有不同的失败码，混成一个字段会让
+     * 「这条路由到底该判哪一套」重新变成读代码才能回答的问题。
+     */
+    opsContext: OpsContext;
+    opsToken: string;
   };
 }
 

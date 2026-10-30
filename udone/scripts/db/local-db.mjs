@@ -58,6 +58,12 @@ const USER_IDS = {
   finance: 'a1000000-0000-4000-8000-000000000003',
 };
 
+// 运营端夹具：一个平台管理员。与三个租户账号刻意不重叠——「同一个 auth.users
+// 能不能既是租户成员又是运营成员」是另一条待验证的边界，不放进基础夹具里
+// 混着测，否则一旦失败分不清是哪一边。
+const OPS_USER_ID = 'a1000000-0000-4000-8000-0000000000f1';
+const OPS_OPERATOR_ID = 'a2000000-0000-4000-8000-000000000001';
+
 let serverProcess = null;
 let postgrestProcess = null;
 let gatewayServer = null;
@@ -489,6 +495,16 @@ INSERT INTO public.organization_members (organization_id, user_id, role) VALUES
   ('${ORG_ID}', '${USER_IDS.admin}', 'admin'),
   ('${ORG_ID}', '${USER_IDS.operator}', 'operator'),
   ('${ORG_ID}', '${USER_IDS.finance}', 'finance');
+
+INSERT INTO auth.users (id, email) VALUES
+  ('${OPS_USER_ID}', 'ops-admin@integration.test');
+
+INSERT INTO ops.operators (id, user_id, email, display_name, status) VALUES
+  ('${OPS_OPERATOR_ID}', '${OPS_USER_ID}', 'ops-admin@integration.test', 'Integration Ops', 'active');
+
+INSERT INTO ops.operator_roles (operator_id, role_id, granted_by)
+SELECT '${OPS_OPERATOR_ID}', role.id, '${OPS_OPERATOR_ID}'
+FROM ops.roles AS role WHERE role.code = 'platform_admin';
 `,
     'utf8',
   );
@@ -526,6 +542,7 @@ async function http(...extra) {
           UDONE_TEST_ADMIN_ID: USER_IDS.admin,
           UDONE_TEST_OPERATOR_ID: USER_IDS.operator,
           UDONE_TEST_FINANCE_ID: USER_IDS.finance,
+          UDONE_TEST_OPS_USER_ID: OPS_USER_ID,
         },
       },
     );
@@ -670,4 +687,4 @@ if (invokedDirectly) {
   }
 }
 
-export { ORG_ID, USER_IDS, JWT_SECRET, REST_PORT, DB_NAME, PORT };
+export { ORG_ID, USER_IDS, OPS_USER_ID, OPS_OPERATOR_ID, JWT_SECRET, REST_PORT, DB_NAME, PORT };

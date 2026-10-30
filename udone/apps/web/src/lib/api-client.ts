@@ -4,7 +4,7 @@ import {
   ORGANIZATION_HEADER,
   ROUTES,
   type PathParamNames,
-  type RouteKey,
+  type BusinessRouteKey,
   type RoutePath,
   type RouteResponse,
 } from '@erp/contracts';
@@ -44,7 +44,7 @@ export class ApiClientError extends Error {
 /** 前后端字段不一致时抛出：属于开发期缺陷，不是用户错误。 */
 export class ContractViolationError extends Error {
   constructor(
-    readonly route: RouteKey,
+    readonly route: BusinessRouteKey,
     readonly direction: 'request' | 'response',
     readonly issues: { path: string; code: string }[],
   ) {
@@ -64,7 +64,7 @@ export interface ApiClientOptions {
   retryDelayMs?: number;
 }
 
-export interface CallOptions<K extends RouteKey> {
+export interface CallOptions<K extends BusinessRouteKey> {
   params?: Record<PathParamNames<RoutePath<K>>, string>;
   /**
    * 请求体。GET 路由的契约 `request` 描述的是查询条件，此时 body 经校验后
@@ -121,7 +121,7 @@ export function createApiClient(options: ApiClientOptions) {
   const maxRetries = options.maxServerErrorRetries ?? 3;
   const retryDelayMs = options.retryDelayMs ?? 200;
 
-  async function call<K extends RouteKey>(
+  async function call<K extends BusinessRouteKey>(
     key: K,
     callOptions: CallOptions<K> = {},
   ): Promise<RouteResponse<K>> {

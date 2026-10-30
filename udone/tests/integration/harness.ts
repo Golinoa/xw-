@@ -36,6 +36,13 @@ export const REST_URL = requiredEnv('UDONE_REST_URL');
 const JWT_SECRET = requiredEnv('UDONE_LOCAL_JWT_SECRET');
 export const ORG_ID = requiredEnv('UDONE_TEST_ORG_ID');
 
+/**
+ * 运营端固定账号（auth.users id），与夹具里的 ops.operators 行一一对应。
+ * 它不在 `USERS` 里：那三个是租户成员，走 `AUTH_VERIFIER` 注入的租户身份；
+ * 运营端点走的是「用户令牌 → PostgREST → ops 判定函数」，两条路径不共用。
+ */
+export const OPS_USER = requiredEnv('UDONE_TEST_OPS_USER_ID');
+
 /** 三个固定账号，与 scripts/db/local-db.mjs 的夹具一一对应。 */
 export const USERS = {
   admin: requiredEnv('UDONE_TEST_ADMIN_ID'),

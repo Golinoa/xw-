@@ -14,6 +14,7 @@ import {
   updateCustomerRequestSchema,
 } from './customers';
 import type { HttpMethod } from './http';
+import { opsMetaResponseSchema } from './ops/meta';
 import {
   createFinanceApplicationRequestSchema,
   decideFinanceApplicationRequestSchema,
@@ -275,10 +276,16 @@ export const ROUTES = {
  * 而不是租户成员）、不同的错误码词表。合成一张表会让「这条路由属于谁」变成
  * 需要读路径字符串才能回答的问题，而 `respond()` 的 key 恰恰是最容易抄错的东西。
  *
- * 现在是空的：T-01 起逐个登记。留空不影响任何现有行为——`OPS_ROUTES` 没有键时，
- * 并集类型与今天完全相同。
+ * T-01 起逐个登记。第一条是 `GET /api/v1/ops/meta`——它是前端判断「对端是不是
+ * 它以为的那个后端」的唯一入口，所以排在所有业务端点之前。
  */
-export const OPS_ROUTES = {} as const satisfies Record<string, RouteContract>;
+export const OPS_ROUTES = {
+  getOpsMeta: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/meta',
+    response: opsMetaResponseSchema,
+  }),
+} as const satisfies Record<string, RouteContract>;
 
 export type OpsRouteKey = keyof typeof OPS_ROUTES;
 
@@ -295,6 +302,15 @@ export const ROUTE_ENTRIES = { ...ROUTES, ...OPS_ROUTES };
 export const ROUTE_REGISTRIES = { ROUTES, OPS_ROUTES } as const;
 
 export type RouteKey = keyof typeof ROUTE_ENTRIES;
+
+/**
+ * 业务端（`/api/*`）的端点键。
+ *
+ * 前端 api client 只服务这张表。`RouteKey` 是并集，用它当约束会让租户前端
+ * 在类型层就「可以调用」运营端点——而它既没有运营令牌，也不该走那条路径。
+ * 类型上允许调不通的接口，最终会以运行期 401 的形式出现在某个页面上。
+ */
+export type BusinessRouteKey = keyof typeof ROUTES;
 export type RoutePath<K extends RouteKey> = (typeof ROUTE_ENTRIES)[K]['path'];
 export type RouteMethod<K extends RouteKey> = (typeof ROUTE_ENTRIES)[K]['method'];
 export type RouteResponse<K extends RouteKey> = z.output<(typeof ROUTE_ENTRIES)[K]['response']>;

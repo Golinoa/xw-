@@ -13,6 +13,7 @@ export * from './health';
 export * from './http';
 export * from './members';
 export * from './orders';
+export * from './ops';
 export * from './organizations';
 export * from './pagination';
 export * from './permissions';
