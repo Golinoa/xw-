@@ -1,7 +1,7 @@
 # 运营端（ops）后端实施计划（udone）
 
 > **For agentic workers:** 按 Wave 顺序执行，一个任务一个提交；完成项必须附**当次实测**证据，不引用历史结论。
-> **读者边界:** 本文件是**我方执行层清单**。ops 的字段、端点、错误码、RLS 与任务书的唯一真源是运营端仓库的 `admin/Docs/ops-api-contract.md`，本文件不重定义任何契约。
+> **读者边界:** 本文件是**业务端执行层清单**。ops 的字段、端点、错误码、RLS 与任务书的唯一真源是运营端仓库的 `admin/Docs/ops-api-contract.md`，本文件不重定义任何契约。
 
 **Goal:** 把运营后台从「对着桩跑」推进到「对着真 API 跑」。先交付能验证「权限驱动呈现」的最小闭环（登录 + `/meta` + `/session`），再按域推进；每个域完成即验收，不攒到最后。
 
@@ -12,8 +12,8 @@
 | ops 字段 / 端点 / 错误码 / RLS / 任务书 T-01~T-14 | `admin/Docs/ops-api-contract.md` | 运营端 |
 | 交接约定、缺口清单、前端已冻结的假设 | `admin/Docs/ops-backend-handoff.md` | 运营端 |
 | 前端已冻结的请求/响应类型 | `admin/apps/web-antd/src/api/ops/*/types.ts` | 运营端 |
-| 工程约束、测试分层、契约规范 | `.harness/ENGINEERING_STANDARDS.md`、`.harness/TESTING_STANDARDS.md`、`.harness/CONTRACTS.md` | 我方 |
-| 业务端（非 ops）未完成项 | `Docs/superpowers/plans/2026-10-29-business-completion-backlog.md` | 我方 |
+| 工程约束、测试分层、契约规范 | `.harness/ENGINEERING_STANDARDS.md`、`.harness/TESTING_STANDARDS.md`、`.harness/CONTRACTS.md` | 业务端 |
+| 业务端（非 ops）未完成项 | `Docs/superpowers/plans/2026-10-29-business-completion-backlog.md` | 业务端 |
 
 ## 基线（2026-10-30 实测，`feat/business-slice` @ `0351bad`）
 
@@ -33,21 +33,21 @@
 
 **契约数字已逐项核对（不是引用报告）:** 43 张表、112 个端点、**39** 个权限动作码、9 个域（契约 §3.1~§3.9 = **8 个业务域 + identity-audit**）、前端 47 个测试文件、6 例 e2e —— 全部吻合。
 
-> 两处口径纠正（2026-10-30 二次核对）：① 原写「6 个业务域」，按契约目录逐节数是 8 个，错在我；② 权限码是 **39**：逐行提取运营端 `constants/permissions.ts` 得 39 个码，与契约 §4 一一对应，此前看板写的「48 条动作码」无出处，已废。
+> 两处口径纠正（2026-10-30 二次核对）：① 原写「6 个业务域」，按契约目录逐节数是 8 个，错在业务端；② 权限码是 **39**：逐行提取运营端 `constants/permissions.ts` 得 39 个码，与契约 §4 一一对应，此前看板写的「48 条动作码」无出处，已废。
 > 差异裁决与执行顺序见 `2026-10-30-ops-alignment.md`（DIF-01~15、N1~N8）。
 
 **与报告不符的一处:** 报告 §9 写「8 个迁移」。本分支是 **13 个**（多 `soft_delete_visibility`、`order_write_grants`、`order_line_upsert`、`line_write_state_guard`、`finance_applications`）。原因是报告按 `feat/ops-console`（`c6facfe`）写成，而本分支比它**多 24 个提交**。迁移序号与「现有表」的假设一律按 13 个重算。
 
 ## 风险（未闭合不进入 Wave 1）
 
-| 编号 | 风险 | 影响 | 我的处理 | 阻塞谁 |
+| 编号 | 风险 | 影响 | 业务端的处理 | 阻塞谁 |
 |---|---|---|---|---|
-| R1 | 运营端 90 个路径未提交（含 1120 行契约真源、`src/api/ops/**`），远端只有 `main` | 真源随时可能丢；我无法 checkout 到前端做联调 | 已在交接文档列为他的 P0；我不动 `admin/**` | 运营端 |
-| R2 | 认证三端点 `/auth/{login,refresh,logout}` 被前端调用，但契约 §5.1 完全没有 | T-03 的「登录」无令牌形态定义，写了要返工 | 我按其已实现的约定（内存 access token + HttpOnly cookie）补契约建议稿，见交接文档 §11 | 运营端确认 |
+| R1 | 运营端 90 个路径未提交（含 1120 行契约真源、`src/api/ops/**`），远端只有 `main` | 真源随时可能丢；业务端无法 checkout 到前端做联调 | 已在交接文档列为他的 P0；业务端不动 `admin/**` | 运营端 |
+| R2 | 认证三端点 `/auth/{login,refresh,logout}` 被前端调用，但契约 §5.1 完全没有 | T-03 的「登录」无令牌形态定义，写了要返工 | 业务端按其已实现的约定（内存 access token + HttpOnly cookie）补契约建议稿，见交接文档 §11 | 运营端确认 |
 | R3 | `contractVersion` 前端**不**阻断（README 自承「等后端给真实版本号」） | 报告 §8「契约一致性」验收项当前是空断言 | 后端先如实返回版本号；阻断与否由前端决定，验收项据实改写 | 运营端 |
-| R4 | 幂等键未按端点/用户命名空间，且只存 isolate 内存 | 同一 key 跨端点会**重放另一端点响应体**；跨用户可能拿到别人的响应；多实例下重复建单 | Wave 0.1 先修，再谈资金端点 | 我方 |
-| R5 | PostgREST 未暴露 `ops` schema，且 `rest-client` 无 profile 头 | 改 `config.toml` 一行不解决问题，ops 表在真实链路里读不到 | Wave 0.2 三处一起改 | 我方 |
-| R6 | 本地无 GoTrue（Supabase Auth 是替身） | 「邀请 → `status='invited'` → 审计」不能端到端跑 | 该条验收降级为单测替身，并在 journal 中显式标注，不当作已验证 | 我方 + 运营端知悉 |
+| R4 | 幂等键未按端点/用户命名空间，且只存 isolate 内存 | 同一 key 跨端点会**重放另一端点响应体**；跨用户可能拿到别人的响应；多实例下重复建单 | Wave 0.1 先修，再谈资金端点 | 业务端 |
+| R5 | PostgREST 未暴露 `ops` schema，且 `rest-client` 无 profile 头 | 改 `config.toml` 一行不解决问题，ops 表在真实链路里读不到 | Wave 0.2 三处一起改 | 业务端 |
+| R6 | 本地无 GoTrue（Supabase Auth 是替身） | 「邀请 → `status='invited'` → 审计」不能端到端跑 | 该条验收降级为单测替身，并在 journal 中显式标注，不当作已验证 | 业务端 + 运营端知悉 |
 
 ## 任务总览
 
@@ -71,7 +71,7 @@ Wave 1 只做到「前端登录、菜单、403/404 能对着真 API 跑通」，
 
 **执行顺序修正（2026-10-30）:** 原表把 0.1 排在 0.2 前面，实际 **0.2 必须先做**。理由：0.1 的落库部分要写 `ops.idempotency_records`，而 `ops` 没被 PostgREST 暴露时那条写入在真实链路里就是 406；0.2 的验收（跨 schema 往返）又需要有表可读写。两项互相咬住，所以先建 schema 与表、再暴露、最后接 store。已按此顺序完成。
 
-## Wave 0：前置纠正（我方）
+## Wave 0：前置纠正（业务端）
 
 ### 0.1 幂等：先修命名空间，再落库 — 已完成（`3df4fe2` + `fe4e184`）
 
@@ -133,7 +133,7 @@ Wave 1 只做到「前端登录、菜单、403/404 能对着真 API 跑通」，
 - [ ] `POST /api/v1/ops/auth/{login,refresh,logout}` 落进契约与实现
 - [ ] `cors.ts` 仅在配置了 `ALLOWED_ORIGINS` 时开 `credentials`，登录单独限流
 
-**现状证据:** 前端 `api/core/auth.ts` 已在调这三个路径，并假定「access token 只驻内存、刷新令牌走 Set-Cookie」（`withCredentials: true`）；契约 §5.1 一条都没有。我方 `cors.ts` 是 `credentials: false`，跨源时浏览器会丢弃 `Set-Cookie`。
+**现状证据:** 前端 `api/core/auth.ts` 已在调这三个路径，并假定「access token 只驻内存、刷新令牌走 Set-Cookie」（`withCredentials: true`）；契约 §5.1 一条都没有。业务端 `cors.ts` 是 `credentials: false`，跨源时浏览器会丢弃 `Set-Cookie`。
 
 **做法:** 浏览器不持 anon key（符合契约 §7.2），由 Worker 用 publishable key 代理 GoTrue：登录成功后再用该 token 调 `ops.get_current_ops_context()` 判成员；非运营成员或停用返回 403 + `details.reason`（`OPS_MEMBER_MISSING` / `OPS_MEMBER_INACTIVE`）且**不下发 cookie**。refresh 读 HttpOnly cookie 并轮换。开发期要求前端走同源代理，跨源必须显式配置来源白名单。
 

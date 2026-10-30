@@ -67,9 +67,17 @@ pnpm board:check     # 读 ../../../XW-ERP/dev-board.html，可用 BOARD_PATH �
 
 Anything blocked on the ops side is reported from the board's `COLLAB` list, not from memory and not from prose in the report. Rules in [`COLLABORATION.md`](COLLABORATION.md).
 
-- Give each item its own state: awaiting them, answered and awaiting me, closed with a locator. "Waiting on them" as a single blanket sentence is not a state report.
+- Give each item its own state: waiting on the ops side, answered and awaiting the business side, closed with a locator. A blanket "still waiting" is not a state report.
 - An item is closed only when the evidence can be located — a commit hash, a contract section, or a line number. A closed item whose evidence cannot be located is worse than an open one, because nobody goes back to check it.
 - When a milestone is reported, every `COLLAB` item whose `due` falls in that milestone gets its own line. The reader is deciding whether to chase someone; that decision needs per-item facts.
+
+## Naming the two ends
+
+Both sides read these documents, and both sides write into them. First person has no stable referent here: 「我方做不了」, read by the ops side, means the ops side cannot do it — the reference inverts on the reader, who then acts as the wrong party.
+
+- Only「业务端」(this repository, `feat/business-slice`) and「运营端」(the adjacent worktree, `feat/ops-console`). Never 我 / 我们 / 我方 / 我这侧 / 对方 / 他们.
+- 「对方」 does a second kind of damage: it turns an engineering disagreement into a personal one. 「运营端未回写契约 §5.1」 can be checked. 「他们还没理我们」 cannot.
+- `pnpm board:check` rejects those seven forms in card titles, card descriptions, every `COLLAB` field, and the `BLOCKERS` array. Definition, reasoning, and the check itself: [`COLLABORATION.md`](COLLABORATION.md) §0.
 
 ## Prohibited
 

@@ -1,32 +1,32 @@
 # ops 双端差异对齐与执行顺序（2026-10-30）
 
-> **一句话结论：** 15 处差异逐条裁决完毕。5 处是我的口径要改（含 2 处数字错误），3 处是运营端要回写契约正文，4 处是我这边新发现的实现细节，3 处已闭环只需告知。执行顺序固定为 **T-02a → T-01(`/meta`) → W0.4(登录) → T-03a(`/session`)**，因为这四步的依赖是硬的（`/meta` 的权限是「已认证运营成员」、`login` 要判 `OPS_MEMBER_MISSING`，两者都要查 `ops.operators`）。
+> **一句话结论：** 15 处差异逐条裁决完毕。5 处是业务端的口径要改（含 2 处数字错误），3 处是运营端要回写契约正文，4 处是业务端这边新发现的实现细节，3 处已闭环只需告知。执行顺序固定为 **T-02a → T-01(`/meta`) → W0.4(登录) → T-03a(`/session`)**，因为这四步的依赖是硬的（`/meta` 的权限是「已认证运营成员」、`login` 要判 `OPS_MEMBER_MISSING`，两者都要查 `ops.operators`）。
 
-**读者边界：** 本文件是**我方执行清单与差异台账**。ops 的字段、端点、错误码仍以 `admin/Docs/ops-api-contract.md` 为唯一真源，本文件不重定义契约，只记录「哪里不一致、为什么、谁改」。
+**读者边界：** 本文件是**业务端执行清单与差异台账**。ops 的字段、端点、错误码仍以 `admin/Docs/ops-api-contract.md` 为唯一真源，本文件不重定义契约，只记录「哪里不一致、为什么、谁改」。
 
 ---
 
 ## 1. 差异清单（DIF-01 ~ DIF-15）
 
-| 编号 | 事项 | 运营端口径 | 我方口径 | 裁决 | 依据（可复核） |
+| 编号 | 事项 | 运营端口径 | 业务端口径 | 裁决 | 依据（可复核） |
 |---|---|---|---|---|---|
-| **DIF-01** | 落地顺序 | `/meta` 提前到 W0.4 并行，T-02 放最后 | T-02a 必须最先 | **采纳我方** | 契约 §5.1：`GET /meta` 权限列＝「已认证运营成员」；`POST /auth/login` 要返 `OPS_MEMBER_MISSING`/`INACTIVE` 且不下发 cookie。两处都查 `ops.operators`，而表在 T-02 里 |
+| **DIF-01** | 落地顺序 | `/meta` 提前到 W0.4 并行，T-02 放最后 | T-02a 必须最先 | **采纳业务端** | 契约 §5.1：`GET /meta` 权限列＝「已认证运营成员」；`POST /auth/login` 要返 `OPS_MEMBER_MISSING`/`INACTIVE` 且不下发 cookie。两处都查 `ops.operators`，而表在 T-02 里 |
 | **DIF-02** | 幂等 scope 派生 | 改 `operator_id` | 验签后的 `sub` | 诊断采纳、实现另择；契约写「调用者标识」不锁算法 | 中间件链 `requestId→cors→rateLimit→idempotency→routes`，幂等跑在路由级 `requireAuth` **之前**；`sub` = `auth.users.id` = 契约 §3.9 `ops.operators.user_id`（`UNIQUE`），与 operator 一对一 |
 | **DIF-03** | `actor_id` 语义 | 未表态 | `ops.idempotency_records.actor_id` 存 `auth.users.id`（uuid） | 成立，需契约加一句措辞 | 迁移 `20261030000002` 已定义为 `uuid`；契约 §3.9 审计表本就分 `actor_operator_id` 与 `actor_user_id` 两列，写审计时两列都填 |
-| **DIF-04** | 幂等表列形状 | `PK(scope, key)`，scope 示例 `POST /api/v1/ops/receipts` | `scope_key` 单列 `UNIQUE` | **我方主动收敛**（非阻塞） | 我的偏离理由（scope 不含调用者→撞 key 共享槽）成立，但可以用「`scope` 内含调用者」同时满足形状与命名空间。纯口径问题，无安全增益，排 T-02b |
-| **DIF-05** | U-17/U-18/U-19 落正文 | 三条都「按接受处理」 | 按裁决实现 | **他们改正文** | 实测：U-17 已入正文（§5.9 `POST /exports` 有 `reason`）；U-18（`GET /operators` 的 `version`/`mfaRequired`）、U-19（`GET /dictionaries` 条目 `id`）**只在 §11 不确定性表**，正文未动 |
-| **DIF-06** | 域数 | 8 业务域 + identity | 我方文档写「6 个业务域 + identity」 | **采纳他们** | 契约 §3.1~§3.9 共 9 节 = 8 业务域 + identity-audit |
+| **DIF-04** | 幂等表列形状 | `PK(scope, key)`，scope 示例 `POST /api/v1/ops/receipts` | `scope_key` 单列 `UNIQUE` | **业务端主动收敛**（非阻塞） | 业务端的偏离理由（scope 不含调用者→撞 key 共享槽）成立，但可以用「`scope` 内含调用者」同时满足形状与命名空间。纯口径问题，无安全增益，排 T-02b |
+| **DIF-05** | U-17/U-18/U-19 落正文 | 三条都「按接受处理」 | 按裁决实现 | **运营端已改正文**（`7912a3d`） | 此前 U-18（`GET /operators` 的 `version`/`mfaRequired`）、U-19（`GET /dictionaries` 条目 `id`）只在 §11 不确定性表、正文未动；`7912a3d` 已回写 §5.1 行 519 与 §5.9 行 669。U-17 更早已入正文 |
+| **DIF-06** | 域数 | 8 业务域 + identity | 业务端文档写「6 个业务域 + identity」 | **采纳运营端** | 契约 §3.1~§3.9 共 9 节 = 8 业务域 + identity-audit |
 | **DIF-07** | 权限码数 | 契约 39 | 看板写「动作码定义 48 条」 | **39 是唯一口径，看板改** | 逐行提取 `constants/permissions.ts` = **39** 个码，与契约 §4 一一对应；48 无出处 |
-| **DIF-08** | `supportedSalesModes` / `supportedCurrencies` 取值集 | 要求与 C12 同构（另给两条附加条件） | 我方 C12 未做，且全仓无定义 | 我提案取值，写进契约常量 | 契约 §3.2 `ops.product_sales_modes.sales_mode` ∈ `saas`/`private` → `['saas','private']`；币种全契约只出现 `char(3) DEFAULT 'CNY'`、无多币种需求 → `['CNY']` |
-| **DIF-09** | `/auth/*` 豁免 Authorization | 三个 `POST /auth/*` 豁免，其余全要求 | 我方只认 Bearer，无路径级豁免 | 采纳 | 契约 §5.1 「认证端点例外」；`refresh`/`logout` 凭 cookie，无 Bearer |
-| **DIF-10** | CORS 凭证 | 跨源 `None; Secure` + credentials + 白名单，断言 `*` 被忽略、凭证响应带 `Vary: Origin` | `credentials:false`（`cors.ts:44`） | 采纳，并补一条更严的 | 读 hono 4.13.12 源码：`Vary: Origin` **只在 `opts.origin !== '*'` 时** append（我们传函数，成立）；而 `Access-Control-Allow-Credentials: true` 是**无条件**设置的，不看来源是否命中 → 必须把 credentials 与「白名单非空 + 来源命中」绑定 |
+| **DIF-08** | `supportedSalesModes` / `supportedCurrencies` 取值集 | 要求与 C12 同构（另给两条附加条件） | 业务端 C12 未做，且全仓无定义 | **已采纳**（`7912a3d`），并加严为 U-23 | 契约 §3.2 `ops.product_sales_modes.sales_mode` ∈ `saas`/`private` → `['saas','private']`；币种全契约只出现 `char(3) DEFAULT 'CNY'`、无多币种需求 → `['CNY']`。U-23 追加一条：端点侧必须同白名单校验，放开币种时 `/meta` 与端点校验同一次变更 |
+| **DIF-09** | `/auth/*` 豁免 Authorization | 三个 `POST /auth/*` 豁免，其余全要求 | 业务端只认 Bearer，无路径级豁免 | 采纳 | 契约 §5.1 「认证端点例外」；`refresh`/`logout` 凭 cookie，无 Bearer |
+| **DIF-10** | CORS 凭证 | 跨源 `None; Secure` + credentials + 白名单，断言 `*` 被忽略、凭证响应带 `Vary: Origin` | `credentials:false`（`cors.ts:44`） | 采纳，并补一条更严的 | 读 hono 4.13.12 源码：`Vary: Origin` **只在 `opts.origin !== '*'` 时** append（业务端传函数，成立）；而 `Access-Control-Allow-Credentials: true` 是**无条件**设置的，不看来源是否命中 → 必须把 credentials 与「白名单非空 + 来源命中」绑定 |
 | **DIF-11** | 测试 JWT 通道 | 要求能签测试令牌 | `jwt.ts` 只有验签，无签发入口 | 采纳，但必须独立开关 | 不能「配了 `SUPABASE_JWT_SECRET` 就启用」——生产也配它。用 `ALLOW_LOCAL_JWT_AUTH`，并在 `check:deploy` 断言生产禁止 |
-| **DIF-12** | 根 `test:unit` 拉全仓 | 已改为 `--filter` | — | **不适用** | 我根 `package.json` 只有 `"test": "vitest run"`，没有 `test:unit`、没有 `quality:check`，单一 `vitest.config.ts`（`maxWorkers: 6`） |
+| **DIF-12** | 根 `test:unit` 拉全仓 | 已改为 `--filter` | — | **不适用** | 业务端根 `package.json` 只有 `"test": "vitest run"`，没有 `test:unit`、没有 `quality:check`，单一 `vitest.config.ts`（`maxWorkers: 6`） |
 | **DIF-13** | `contractVersion` | `1.0.0`（semver，无前缀） | 一致 | 无分歧 | 契约 §2.1.1：`v1.0.0`/`1.0.0-beta` 均判 `MALFORMED` |
-| **DIF-14** | 邀请端到端 | 未回应 | §11.6 声明本地无 GoTrue → 只能单测替身 | **要他们书面确认** | `ops.operators.user_id NOT NULL REFERENCES auth.users(id)`：邀请要先在 GoTrue 建号，本地无 GoTrue |
+| **DIF-14** | 邀请端到端 | 未回应 | §11.6 声明本地无 GoTrue → 只能单测替身 | **运营端已书面确认**（`7912a3d`） | `ops.operators.user_id NOT NULL REFERENCES auth.users(id)`：邀请要先在 GoTrue 建号，本地无 GoTrue。确认时追加一条要求：验收表分两行，不合成一句「邀请已验证」 |
 | **DIF-15** | 前端直连 `/rest/v1` 会不会 42501 | 提问 | 已证：会 | 已闭环，只需告知 | `tests/integration/ops-schema.test.ts`：客户端令牌请求 ops 表 → `42501 permission denied`；`ops` schema 未授予 `anon`/`authenticated` USAGE |
 
-### 1.1 我先改的三处（自我纠正）
+### 1.1 业务端先改的三处（自我纠正）
 
 1. **域数 6 → 8**（DIF-06）：本文件与计划文档同步改。
 2. **权限码 48 → 39**（DIF-07）：看板数字改，并给出取数口径（`grep -o "'[a-z]*\.[a-z.]*'" constants/permissions.ts | sort -u | wc -l`）。
@@ -50,7 +50,7 @@
 
 ---
 
-## 3. 我方推进任务列表（固定顺序）
+## 3. 业务端推进任务列表（固定顺序）
 
 | 序 | 任务 | 规模 | 依赖 | 状态 | 验收（可执行断言） |
 |---|---|---|---|---|---|
@@ -77,23 +77,25 @@
 
 ---
 
-## 4. 需要运营端动作的 6 件事
+## 4. 需要运营端动作的 6 件事（2026-10-30 已全部闭环：`7912a3d`）
 
-| # | 事项 | 为什么必须他们做 | 不做的后果 |
-|---|---|---|---|
-| 1 | 回写 §5.1 `GET /operators` 加 `version`、`mfaRequired` | 契约正文是三方唯一真源 | 他们前端继续「禁用成员编辑」，我实现后仍"未定义" |
-| 2 | 回写 §5.9 `GET /dictionaries` 条目加 `id`（含 `POST /dictionaries/{code}/items` 响应） | 同上 | 字典项只能只读 |
-| 3 | 书面确认「邀请验收按替身记账」 | 本地无 GoTrue，`auth.admin` 无法端到端 | 我只能在 journal 标替身，他们会误以为已验收 |
-| 4 | 确认两个常量数组取值（`['saas','private']` / `['CNY']`）及其两条附加条件原文 | 我只记得「与 C12 同构」 | 若他们要别的值集，T-01 要返工 |
-| 5 | 定稿三处「未定义形状」 | 他们在 §13.2 主动提出 | T-13 报表/导出返工 |
-| 6 | `ops.idempotency_records.actor_id` 措辞改为「auth 用户 id，非 operator 主键」 | 一词两义会让审计查询读错列 | 排障时口径打架 |
+| # | 事项 | 为什么必须运营端做 | 不做的后果 | 状态 |
+|---|---|---|---|---|
+| 1 | 回写 §5.1 `GET /operators` 加 `version`、`mfaRequired` | 契约正文是三方唯一真源 | 运营端前端继续「禁用成员编辑」，业务端实现后仍"未定义" | ✅ 行 519 已补，未新增详情端点 |
+| 2 | 回写 §5.9 `GET /dictionaries` 条目加 `id`（含 `POST /dictionaries/{code}/items` 响应） | 同上 | 字典项只能只读 | ✅ 行 669 已补，行 678 写明 PATCH 按 id 寻址 |
+| 3 | 书面确认「邀请验收按替身记账」 | 本地无 GoTrue，`auth.admin` 无法端到端 | 业务端只能在 journal 标替身，运营端会误以为已验收 | ✅ 已确认，并要求验收表分两行 |
+| 4 | 确认两个常量数组取值（`['saas','private']` / `['CNY']`）及其两条附加条件原文 | 业务端只记得「与 C12 同构」 | 若运营端要别的值集，T-01 要返工 | ✅ 采纳，并加严为 U-23：端点侧同白名单，放开币种时两处同一次变更 |
+| 5 | 定稿三处「未定义形状」 | 运营端在 §13.2 主动提出 | T-13 报表/导出返工 | ✅ 定稿为 U-20 / U-21，并各给了理由 |
+| 6 | `ops.idempotency_records.actor_id` 措辞改为「auth 用户 id，非 operator 主键」 | 一词两义会让审计查询读错列 | 排障时口径打架 | ✅ 比要求的更彻底：列名改成 `actor_user_id`（U-24） |
 
-### 4.1 我给出的三处定稿建议（对应第 5 项）
+运营端另自补一条不在业务端台账里的缺口：`GET /roles` 不返回 `description`，属「能写不能读」（U-22）。
+
+### 4.1 业务端给出的三处定稿建议（对应第 5 项）
 
 | 字段 | 定稿 | 依据 |
 |---|---|---|
-| `overview.partialFailures[]` | `{ code: string, message: string, section?: string }` | 他们前端已按 `{code?, message?, section?}` 全可选读取，此形状是其超集，不需要改前端 |
-| `requestedBy` / `updatedBy` | **对象** `{ id, displayName }` | 与 `/audit-events` 的 `actor{id,displayName}` 同形；他们前端 `OpsActorLike = OpsActorRef \| string` 两种都吃，对象优先显示 |
+| `overview.partialFailures[]` | `{ code: string, message: string, section?: string }` | 运营端前端已按 `{code?, message?, section?}` 全可选读取，此形状是其超集，不需要改前端 |
+| `requestedBy` / `updatedBy` | **对象** `{ id, displayName }` | 与 `/audit-events` 的 `actor{id,displayName}` 同形；运营端前端 `OpsActorLike = OpsActorRef \| string` 两种都吃，对象优先显示 |
 | `retention.exportDays` | 整数 `1–365`（与 `overview.expiryWindowDays` 同区间） | 契约 §5.9 已给窗口 1–365、工单时限 1–720；导出保留未给，无理由超一年 |
 
 ---
@@ -103,50 +105,50 @@
 ```text
 【后端回执 · 差异对齐（feat/business-slice @ cf93cbb）】
 
-一、四态（当我次实测，不引用历史）
+一、四态（当业务端次实测，不引用历史）
 - W0.1 幂等命名空间 + 落库：已交付已验证（3df4fe2/fe4e184/d585392，单测 9 + 集成 4，变异三轮）
 - W0.2 PostgREST 暴露 ops：已交付已验证（9aba9ce，集成 4 条含 42501，变异 PGRST106）
 - W0.3 契约双注册表：已交付已验证（36b2cc8，parity 6 条合成输入，变异两轮）
 - W0.4 认证代理 + 受控 CORS：未开始（cors.ts:44 仍 credentials:false，无 auth 路由）
 - T-01 /meta：未开始（OPS_ROUTES 还是空表）；T-02：未开始（ops 下 1 张表 0 个函数）；T-03：未开始
 
-二、顺序裁决（这条我要改你的建议）
+二、顺序裁决（这条业务端要改你的建议）
 你说的「/meta 提前与 W0.4 并行、T-02 放最后」技术上不成立：契约 §5.1 里 /meta 的权限是「已认证运营成员」，
 login 要返 OPS_MEMBER_MISSING / INACTIVE 且不下发 cookie —— 两者都要查 ops.operators，而表在 T-02。
 固定顺序：T-02a（identity 五表 + 四函数 + 39 码 seed）→ T-01(/meta) → W0.4(login) → T-03a(/session)。
-四步全绿我一并通知你，你就可以 VITE_OPS_MOCK=false。
+四步全绿业务端一并通知你，你就可以 VITE_OPS_MOCK=false。
 
 三、三条裁决的落地状态
 - U-17：你已写进 §5.9 正文，收到。
 - U-18 / U-19：**只在 §11 不确定性表，正文没改**。GET /operators 的响应字段仍无 version/mfaRequired，
-  GET /dictionaries 的条目仍无 id。我按裁决实现，但请你回写正文，否则三方再次不一致。
-- 我额外要一条：幂等表 actor_id 的措辞请改为「auth 用户 id（= operators.user_id），非 operator 主键」，
+  GET /dictionaries 的条目仍无 id。业务端按裁决实现，但请你回写正文，否则三方再次不一致。
+- 业务端额外要一条：幂等表 actor_id 的措辞请改为「auth 用户 id（= operators.user_id），非 operator 主键」，
   因为审计表里本就分 actor_operator_id 与 actor_user_id 两列，一词两义会让排障读错列。
 
-四、幂等 scope：你的诊断成立，实现我换了一条
-sha256(Authorization) 在令牌轮换下必失效，我认。但你建议的 operator_id 需要中间件先拿到身份，而它跑在
+四、幂等 scope：你的诊断成立，实现业务端换了一条
+sha256(Authorization) 在令牌轮换下必失效，业务端认。但你建议的 operator_id 需要中间件先拿到身份，而它跑在
 requireAuth 之前（要先查缓存才决定是否执行 handler）；改用自己验一次 HS256 便宜几个数量级。
 所以取验签后的 sub —— 它 = auth.users.id = 你要的 operators.user_id，与 operator 一对一。
 三级退化都朝安全方向收敛：无令牌→anonymous；验签失败→令牌哈希（仍隔离调用者，只是自己刷新后换格）；验签通过→user:<sub>。
 
-五、两个常量数组（我提案，请确认或否掉）
+五、两个常量数组（业务端提案，请确认或否掉）
 - supportedSalesModes = ['saas','private']（取自契约 §3.2 product_sales_modes.sales_mode 的全部取值）
 - supportedCurrencies = ['CNY']（契约全文只出现 char(3) DEFAULT 'CNY'，无多币种需求）
-你上次给的两条附加条件，我按「①必须是 contracts 里的常量数组（as const），不得在 handler 内硬编码；
+你上次给的两条附加条件，业务端按「①必须是 contracts 里的常量数组（as const），不得在 handler 内硬编码；
 ②C12 落地后复用同一数组，不得另立」实现。若不是这两条，请复述原文。
 
-六、CORS：你的两条断言我照做，但实测源码后要加严一条
-hono 4.13.12 的 cors 里，Vary: Origin 只在 opts.origin !== '*' 时 append（我们传的是函数，所以成立）；
+六、CORS：你的两条断言业务端照做，但实测源码后要加严一条
+hono 4.13.12 的 cors 里，Vary: Origin 只在 opts.origin !== '*' 时 append（业务端传的是函数，所以成立）；
 但 Access-Control-Allow-Credentials: true 是**无条件**设置的，不看来源是否命中白名单。
-所以我的实现把 credentials 与「白名单非空 + 来源命中」绑定，断言三条：
+所以业务端的实现把 credentials 与「白名单非空 + 来源命中」绑定，断言三条：
 ① ALLOWED_ORIGINS 含 * 时该来源不被接受；② 命中来源必须同时有 ACAO + ACAC + Vary: Origin；
 ③ 未命中来源不得出现 ACAC（你原来只要求前两条）。
 
 七、测试 JWT 通道
 jwt.ts 验签已就位，W0.4 里补签发入口。开关用独立的 ALLOW_LOCAL_JWT_AUTH，**不是**「配了 SUPABASE_JWT_SECRET 就启用」
-——生产也配那个变量。check:deploy 会断言生产环境禁止打开，这条我写进门禁。
+——生产也配那个变量。check:deploy 会断言生产环境禁止打开，这条业务端写进门禁。
 
-八、三处「未定义形状」我今天定稿，你有反对现在说
+八、三处「未定义形状」业务端今天定稿，你有反对现在说
 - overview.partialFailures[] = { code, message, section? }（你前端读的是三者全可选，这是超集，前端不用改）
 - requestedBy / updatedBy = 对象 { id, displayName }（与 /audit-events 的 actor 同形，你的 OpsActorLike 两种都吃）
 - retention.exportDays ∈ 1–365（与 overview.expiryWindowDays 同区间）
@@ -154,13 +156,13 @@ jwt.ts 验签已就位，W0.4 里补签发入口。开关用独立的 ALLOW_LOCA
 九、两件只需要你点头的事
 1. 邀请端到端：本地无 GoTrue，而 ops.operators.user_id 外键到 auth.users —— 邀请必须先建 auth 用户。
    这条验收只能是单测替身，请书面确认按替身记账，不要算作已验证。
-2. 根 test:unit 那条对我这边不适用：我根 package.json 只有 "test": "vitest run"，单一 vitest.config.ts
+2. 根 test:unit 那条对业务端这边不适用：业务端根 package.json 只有 "test": "vitest run"，单一 vitest.config.ts
    （maxWorkers: 6），没有 test:unit / quality:check 两条脚本。
 
 十、数字口径（两处纠正）
-- 域数：8 业务域 + identity-audit（我之前写 6，是我按旧版数错了）。
-- 权限码：**39**。我逐行提取你 constants/permissions.ts 是 39 个，与契约 §4 一一对应；
-  我这边 48 是错的口径，已改看板。
+- 域数：8 业务域 + identity-audit（业务端之前写 6，是业务端按旧版数错了）。
+- 权限码：**39**。业务端逐行提取你 constants/permissions.ts 是 39 个，与契约 §4 一一对应；
+  业务端这边 48 是错的口径，已改看板。
 
 十一、42501 已闭环
 客户端令牌请求 ops 表 → 42501 permission denied，集成里就有这条（ops-schema.test.ts）。
@@ -169,9 +171,9 @@ jwt.ts 验签已就位，W0.4 里补签发入口。开关用独立的 ALLOW_LOCA
 
 ---
 
-## 6. 我暂不承诺的三件事
+## 6. 业务端暂不承诺的三件事
 
-1. **`/meta` + `/session` 的具体日期**：N1 的 pgTAP 断言数未知（P1/P2/P4/P5 需要新写），我不给估时；做完立刻通知。
+1. **`/meta` + `/session` 的具体日期**：N1 的 pgTAP 断言数未知（P1/P2/P4/P5 需要新写），业务端不给估时；做完立刻通知。
 2. **T-03b 的邀请能真跑**：见 DIF-14，本地无 GoTrue，只能替身。
 3. **Wave 2 的节奏**：T-04 之后每域一轮（迁移→RPC→端点→pgTAP→集成→提交），不承诺并行，因为迁移必须串行追加。
 
@@ -183,3 +185,5 @@ jwt.ts 验签已就位，W0.4 里补签发入口。开关用独立的 ALLOW_LOCA
 |---|---|
 | 2026-10-30 | 建立本台账。15 条差异裁决；六项运营端待办；执行顺序 N1~N8；三处形状定稿提案 |
 | 2026-10-30 | 复核过表：N1 由「五表」改「六表」（漏了 `audit_events`，而 `write_audit()` 要靠它）、`permission_version` 挪进 N1 迁移、N3 验收拆成「GoTrue 替身 + 真实 ops 表」两段。见 §3.1 |
+| 2026-10-30 | 运营端 `7912a3d` 回写契约正文并逐条回执，§4 六件事全部闭环（DIF-05/08/14 结论同步改判）。随之解锁 `o-t01`、`o-t03b`、`o-t13` 三张卡；仅余 C-04（M1 关桩验证，等业务端交付）与 C-08（三端点 + 工单两字段，P6/P7 才需要） |
+| 2026-10-30 | 全文术语改为「业务端」/「运营端」，不再用「我」「我方」「对方」「他们」。理由：这份文档的读者就是运营端，写「我方」会被读成运营端自己。口径见 `.harness/COLLABORATION.md` §0，`pnpm board:check` 会拦这七个词 |

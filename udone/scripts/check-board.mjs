@@ -17,10 +17,15 @@
  *   6. blocked 必须在 desc 里写解锁条件（关键词：解锁 / 阻塞条件）
  *   7. 协作事项（COLLAB）必须：id 唯一、状态与类型合法、need 写清具体动作、
  *      blocks 指向真实任务卡、closed 必须有证据
+ *   8. 看板文字只能用「业务端」「运营端」指代两端，不得用第一人称或泛指
  *
  * 第 7 项的理由：协作页是跨端「谁在等谁」的唯一真源。它一旦失准，比没有更糟——
  * 人会照着过期的 waiting 去催一件对方早就做完的事，或者以为已闭环而实际没做。
  * 所以「closed 要证据」「need 不许写空话」都得由命令来拦，不能靠自觉。
+ *
+ * 第 8 项的理由：这块看板两端都在看，两端也都会改。写「我这边做不了」时，读的人
+ * 分不清这个「我」是业务端还是运营端——指代正好读反的成本，是照着错的角色去干活。
+ * 术语口径见 .harness/COLLABORATION.md §0。
  *
  * 看板路径：默认 ../../../XW-ERP/dev-board.html（相对本文件），可用 BOARD_PATH 覆盖。
  * 文件不存在时按「跳过」处理并返回 0——看板在仓库外，CI 看不到它是正常情况，
@@ -80,6 +85,17 @@ const EXEMPT = /无独立提交|证据缺失/;
 const UNLOCK = /解锁条件/;
 const LOCATOR = /[0-9a-f]{7,40}|§\s*\d|第\s*\d+\s*行|\bL\d+/;
 
+// 两端共用一个看板，第一人称在这里没有唯一指代：读的人容易把「我」读成自己，
+// 而「对方」把工程分歧写成了私人往来。只认「业务端」「运营端」。
+// 「自我」「其他」是正常词，用后视排除。
+const BANNED = /我们|我方|我这侧|对方|他们|(?<!其)(?<!自)我(?!们)/;
+const bannedIn = (value) => {
+  // 压平换行，否则报错片段会从上一行的括号开始，看不出问题在哪。
+  const text = String(value ?? '').replace(/\s+/g, ' ');
+  const hit = text.match(BANNED);
+  return hit ? text.slice(Math.max(0, hit.index - 10), hit.index + 14).trim() : null;
+};
+
 if (sandbox.seed.seedVersion !== seedVersion) {
   fail(`seed.seedVersion(${sandbox.seed.seedVersion}) 与 SEED_VERSION(${seedVersion}) 不一致`);
 }
@@ -94,6 +110,14 @@ for (const task of tasks) {
 
   if (seen.has(task.id)) fail(`${where}: id 重复`);
   seen.add(task.id);
+
+  for (const [field, value] of [
+    ['title', task.title],
+    ['desc', task.desc],
+  ]) {
+    const hit = bannedIn(value);
+    if (hit) fail(`${where}: ${field} 用了第一人称/泛指（「…${hit}…」改用「业务端」或「运营端」）`);
+  }
 
   if (!(task.status in counts)) {
     fail(`${where}: 未知状态 ${task.status}`);
@@ -161,6 +185,13 @@ if (!collabMatch) {
       if (seenCollab.has(c.id)) fail(`协作 ${at}: id 重复`);
       seenCollab.add(c.id);
 
+      for (const field of ['title', 'impact', 'need', 'due', 'evidence']) {
+        const hit = bannedIn(c[field]);
+        if (hit) {
+          fail(`协作 ${at}: ${field} 用了第一人称/泛指（「…${hit}…」改用「业务端」或「运营端」）`);
+        }
+      }
+
       if (!STATUSES.has(c.status)) fail(`协作 ${at}: 未知状态 ${c.status}`);
       if (!TYPES.has(c.type)) fail(`协作 ${at}: 未知类型 ${c.type}`);
 
@@ -185,6 +216,13 @@ if (!collabMatch) {
     const openCount = collab.filter((c) => c.status !== 'closed').length;
     collabNote = ` · 协作 ${collab.length} 项（${openCount} 未闭环 / ${collab.length - openCount} 已闭环）`;
   }
+}
+
+/* ── 阻塞清单 ── */
+const blockersMatch = html.match(/const BLOCKERS = \[[\s\S]*?\n\];/);
+if (blockersMatch) {
+  const hit = bannedIn(blockersMatch[0]);
+  if (hit) fail(`BLOCKERS: 用了第一人称/泛指（「…${hit}…」改用「业务端」或「运营端」）`);
 }
 
 if (problems.length > 0) {
