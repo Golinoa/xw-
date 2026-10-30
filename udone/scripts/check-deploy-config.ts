@@ -20,6 +20,7 @@ export const WORKER_ENV_VARIABLES = [
   'SUPABASE_URL',
   'SUPABASE_PUBLISHABLE_KEY',
   'SUPABASE_SERVICE_ROLE_KEY',
+  'ALLOW_LOCAL_JWT_AUTH',
 ] as const;
 
 /** Variables .env.example must document; secrets stay blank, config carries a usable default. */
@@ -29,6 +30,7 @@ export const ENV_EXAMPLE_VARIABLES = [
   'SUPABASE_SERVICE_ROLE_KEY',
   'ALLOWED_ORIGINS',
   'RATE_LIMIT_PER_MINUTE',
+  'ALLOW_LOCAL_JWT_AUTH',
 ] as const;
 
 const BLANK_IN_EXAMPLE = new Set([
@@ -112,6 +114,20 @@ export async function checkDeployConfig(): Promise<string[]> {
     if (name === 'ALLOWED_ORIGINS' && value === '*') {
       issues.push('.env.example must not allow wildcard origins');
     }
+    if (name === 'ALLOW_LOCAL_JWT_AUTH' && value !== 'false') {
+      issues.push('.env.example must leave the local JWT channel off');
+    }
+  }
+
+  /**
+   * 本地自签令牌通道在生产里出现即失败，不看值是什么。
+   *
+   * 关掉的写法有很多种（`"false"`、注释、删掉），而「配了但没生效」与
+   * 「配了且生效」在部署日志里长得一样。所以这条断言不判断语义，只判断
+   * **这个名字有没有出现在部署配置里**：出现就要人来看一眼，没出现就不可能被打开。
+   */
+  if (/ALLOW_LOCAL_JWT_AUTH/i.test(config)) {
+    issues.push('Wrangler configuration must not define ALLOW_LOCAL_JWT_AUTH');
   }
 
   const artifactPaths = await filesUnder('apps/web/dist');

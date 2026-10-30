@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { verifyAccessToken } from './jwt';
+import { localJwtAuthEnabled, signAccessToken, verifyAccessToken } from './jwt';
 
 const SECRET = 'fixture-jwt-secret';
 
@@ -95,5 +95,65 @@ describe('verifyAccessToken', () => {
     for (const value of ['', 'not-a-token', 'a.b', 'a.b.c.d', 'a.!!!.c']) {
       await expect(verifyAccessToken(value, SECRET)).resolves.toBeNull();
     }
+  });
+});
+
+describe('signAccessToken', () => {
+  /**
+   * 签发与验签必须是一对。这条用真实往返证明：本地没有 GoTrue 时，
+   * 集成测试拿到的令牌确实能被中间件认出来。
+   */
+  it('produces a token the verifier accepts', async () => {
+    const token = await signAccessToken({
+      subject: 'user-1',
+      sessionId: 'session-1',
+      secret: SECRET,
+    });
+
+    await expect(verifyAccessToken(token, SECRET)).resolves.toEqual({
+      subject: 'user-1',
+      sessionId: 'session-1',
+      expiresAt: expect.any(Number),
+    });
+  });
+
+  it('omits session_id when none is given, instead of writing an empty claim', async () => {
+    const token = await signAccessToken({ subject: 'user-1', secret: SECRET });
+
+    await expect(verifyAccessToken(token, SECRET)).resolves.toMatchObject({ sessionId: undefined });
+  });
+
+  it('rejects its own output under a different secret', async () => {
+    const token = await signAccessToken({ subject: 'user-1', secret: 'another-secret' });
+
+    await expect(verifyAccessToken(token, SECRET)).resolves.toBeNull();
+  });
+
+  it('honours the ttl it is given', async () => {
+    const token = await signAccessToken({ subject: 'user-1', secret: SECRET, ttlSeconds: -1 });
+
+    await expect(verifyAccessToken(token, SECRET)).resolves.toBeNull();
+  });
+});
+
+describe('localJwtAuthEnabled', () => {
+  it('is off unless the flag says exactly true', () => {
+    expect(localJwtAuthEnabled({})).toBe(false);
+    expect(localJwtAuthEnabled({ ALLOW_LOCAL_JWT_AUTH: '' })).toBe(false);
+    // 这些是最容易「看起来关了其实开着」的写法。
+    for (const value of ['false', '0', 'no', 'TRUE', 'True', '1', 'yes']) {
+      expect(localJwtAuthEnabled({ ALLOW_LOCAL_JWT_AUTH: value })).toBe(false);
+    }
+    expect(localJwtAuthEnabled({ ALLOW_LOCAL_JWT_AUTH: 'true' })).toBe(true);
+  });
+
+  /**
+   * 生产也会配 SUPABASE_JWT_SECRET（幂等命名空间要用），所以它不能当开关。
+   * 这条把那个决定钉住：即便 secret 在，没有开关也不开本地自签。
+   */
+  it('ignores the presence of a JWT secret', () => {
+    const productionLike = { SUPABASE_JWT_SECRET: SECRET } as { ALLOW_LOCAL_JWT_AUTH?: string };
+
+    expect(localJwtAuthEnabled(productionLike)).toBe(false);
   });
 });
