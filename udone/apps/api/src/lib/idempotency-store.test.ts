@@ -15,7 +15,7 @@ describe('createMemoryIdempotencyStore', () => {
   it('returns the stored response for a known key', async () => {
     const store = createMemoryIdempotencyStore();
 
-    await store.set('key-one', { status: 201, body: { id: 'invitation-one' } });
+    await store.set('key-one', { status: 201, body: { id: 'invitation-one' }, requestHash: 'h1' });
 
     await expect(store.get('key-one')).resolves.toMatchObject({
       status: 201,
@@ -33,7 +33,7 @@ describe('createMemoryIdempotencyStore', () => {
     const time = clock();
     const store = createMemoryIdempotencyStore({ ttlMs: 1_000, now: time.now });
 
-    await store.set('key-one', { status: 200, body: { ok: true } });
+    await store.set('key-one', { status: 200, body: { ok: true }, requestHash: 'h1' });
     time.advance(999);
     await expect(store.get('key-one')).resolves.not.toBeNull();
 
@@ -44,9 +44,9 @@ describe('createMemoryIdempotencyStore', () => {
   it('evicts the oldest entry when the store is full', async () => {
     const store = createMemoryIdempotencyStore({ maxEntries: 2 });
 
-    await store.set('first', { status: 200, body: 1 });
-    await store.set('second', { status: 200, body: 2 });
-    await store.set('third', { status: 200, body: 3 });
+    await store.set('first', { status: 200, body: 1, requestHash: 'h1' });
+    await store.set('second', { status: 200, body: 2, requestHash: 'h2' });
+    await store.set('third', { status: 200, body: 3, requestHash: 'h3' });
 
     await expect(store.get('first')).resolves.toBeNull();
     await expect(store.get('second')).resolves.not.toBeNull();
@@ -56,8 +56,8 @@ describe('createMemoryIdempotencyStore', () => {
   it('overwrites rather than duplicating on a repeated key', async () => {
     const store = createMemoryIdempotencyStore({ maxEntries: 2 });
 
-    await store.set('key-one', { status: 200, body: 1 });
-    await store.set('key-one', { status: 200, body: 2 });
+    await store.set('key-one', { status: 200, body: 1, requestHash: 'h1' });
+    await store.set('key-one', { status: 200, body: 2, requestHash: 'h2' });
 
     await expect(store.get('key-one')).resolves.toMatchObject({ body: 2 });
   });

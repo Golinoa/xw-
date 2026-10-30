@@ -1,6 +1,8 @@
 export interface IdempotencyRecord {
   status: number;
   body: unknown;
+  /** 原始请求体的指纹。同一个 key 换了内容必须拒绝，不能回放旧结果。 */
+  requestHash: string;
   expiresAt: number;
 }
 

@@ -1,6 +1,7 @@
 import type { MiddlewareHandler } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { ERROR_CODES } from '@erp/contracts';
+import { idempotencyStorageKey, requestFingerprint } from '../lib/idempotency-key';
 import { createMemoryIdempotencyStore, type IdempotencyStore } from '../lib/idempotency-store';
 import type { ApiEnvironment } from './auth';
 import { ApiHttpError } from './error-handler';
@@ -20,6 +21,10 @@ const defaultStore = createMemoryIdempotencyStore();
  *
  * Only 2xx JSON responses are cached: a failed request must stay retryable, and a
  * replayed error would hide a transient failure the caller could recover from.
+ *
+ * 命中缓存前先比请求体指纹：同一个 key 配上不同的内容不是重试，是客户端
+ * 复用了 key。此时回放旧响应会把「这一次的写入没有发生」伪装成成功——
+ * 对会动钱的端点来说，这比直接报错严重得多。
  */
 export function idempotency(options: IdempotencyOptions = {}): MiddlewareHandler<ApiEnvironment> {
   const store = options.store ?? defaultStore;
@@ -44,8 +49,29 @@ export function idempotency(options: IdempotencyOptions = {}): MiddlewareHandler
       );
     }
 
-    const replay = await store.get(key);
+    // 克隆再读：路由里的 parseJson() 还要读同一个请求体。
+    const rawBody = await context.req.raw
+      .clone()
+      .text()
+      .catch(() => '');
+    const requestHash = await requestFingerprint(rawBody);
+    const storageKey = await idempotencyStorageKey({
+      authorization: context.req.header('Authorization'),
+      organizationId: context.req.header('X-Organization-ID'),
+      method: context.req.method,
+      path: context.req.path,
+      key,
+    });
+
+    const replay = await store.get(storageKey);
     if (replay) {
+      if (replay.requestHash !== requestHash) {
+        throw new ApiHttpError(
+          409,
+          ERROR_CODES.IDEMPOTENCY_CONFLICT,
+          'This Idempotency-Key was already used for a different request',
+        );
+      }
       context.header('Idempotent-Replay', 'true');
       return context.json(
         replay.body as Record<string, unknown>,
@@ -64,6 +90,6 @@ export function idempotency(options: IdempotencyOptions = {}): MiddlewareHandler
       .catch(() => null);
     if (body === null) return;
 
-    await store.set(key, { status, body });
+    await store.set(storageKey, { status, body, requestHash });
   };
 }

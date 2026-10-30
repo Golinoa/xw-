@@ -26,6 +26,13 @@ export const ERROR_CODES = {
   FINANCE_APPLICATION_STATE_CONFLICT: 'FINANCE_APPLICATION_STATE_CONFLICT',
   /** 创建人不能审批自己提交的申请（当前固定禁止，不做开关）。 */
   FINANCE_SELF_APPROVAL_FORBIDDEN: 'FINANCE_SELF_APPROVAL_FORBIDDEN',
+  /**
+   * 同一个 Idempotency-Key 被用于了不一样的内容。
+   *
+   * 与通用 `CONFLICT` 分开是为了让调用方能区分「业务对象状态冲突」与
+   * 「幂等键被复用」：后者是客户端 bug，重试永远不会成功，必须换 key。
+   */
+  IDEMPOTENCY_CONFLICT: 'IDEMPOTENCY_CONFLICT',
   RATE_LIMITED: 'RATE_LIMITED',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;
