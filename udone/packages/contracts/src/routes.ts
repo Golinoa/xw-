@@ -14,6 +14,7 @@ import {
   updateCustomerRequestSchema,
 } from './customers';
 import type { HttpMethod } from './http';
+import { opsLoginRequestSchema, opsLogoutResponseSchema, opsTokenResponseSchema } from './ops/auth';
 import { opsMetaResponseSchema } from './ops/meta';
 import { opsPermissionListResponseSchema, opsSessionResponseSchema } from './ops/session';
 import {
@@ -281,6 +282,27 @@ export const ROUTES = {
  * 它以为的那个后端」的唯一入口，所以排在所有业务端点之前。
  */
 export const OPS_ROUTES = {
+  /**
+   * 三个 `POST /auth/*` 是唯一不要求 `Authorization` 的运营端点（契约 §5.1）。
+   * 它们排在清单最前面，是因为读契约的人先看到例外再看到规则，比反过来更容易
+   * 记住「其余全部要令牌」。
+   */
+  postOpsLogin: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/auth/login',
+    request: opsLoginRequestSchema,
+    response: opsTokenResponseSchema,
+  }),
+  postOpsRefresh: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/auth/refresh',
+    response: opsTokenResponseSchema,
+  }),
+  postOpsLogout: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/auth/logout',
+    response: opsLogoutResponseSchema,
+  }),
   getOpsMeta: defineRoute({
     method: 'GET',
     path: '/api/v1/ops/meta',

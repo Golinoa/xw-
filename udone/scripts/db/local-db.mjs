@@ -64,6 +64,12 @@ const USER_IDS = {
 const OPS_USER_ID = 'a1000000-0000-4000-8000-0000000000f1';
 const OPS_OPERATOR_ID = 'a2000000-0000-4000-8000-000000000001';
 
+// 停用账号。登录端点要在 403 里区分「不是运营成员」与「成员被停用」，前者用
+// 上面那个租户管理员就能测，后者必须真的有一个 status='disabled' 的行——
+// 拿 active 的账号改 status 会污染同文件其它用例的顺序依赖。
+const OPS_DISABLED_USER_ID = 'a1000000-0000-4000-8000-0000000000f2';
+const OPS_DISABLED_OPERATOR_ID = 'a2000000-0000-4000-8000-000000000002';
+
 let serverProcess = null;
 let postgrestProcess = null;
 let gatewayServer = null;
@@ -497,10 +503,12 @@ INSERT INTO public.organization_members (organization_id, user_id, role) VALUES
   ('${ORG_ID}', '${USER_IDS.finance}', 'finance');
 
 INSERT INTO auth.users (id, email) VALUES
-  ('${OPS_USER_ID}', 'ops-admin@integration.test');
+  ('${OPS_USER_ID}', 'ops-admin@integration.test'),
+  ('${OPS_DISABLED_USER_ID}', 'ops-disabled@integration.test');
 
 INSERT INTO ops.operators (id, user_id, email, display_name, status) VALUES
-  ('${OPS_OPERATOR_ID}', '${OPS_USER_ID}', 'ops-admin@integration.test', 'Integration Ops', 'active');
+  ('${OPS_OPERATOR_ID}', '${OPS_USER_ID}', 'ops-admin@integration.test', 'Integration Ops', 'active'),
+  ('${OPS_DISABLED_OPERATOR_ID}', '${OPS_DISABLED_USER_ID}', 'ops-disabled@integration.test', 'Integration Ops (disabled)', 'disabled');
 
 INSERT INTO ops.operator_roles (operator_id, role_id, granted_by)
 SELECT '${OPS_OPERATOR_ID}', role.id, '${OPS_OPERATOR_ID}'
@@ -543,6 +551,7 @@ async function http(...extra) {
           UDONE_TEST_OPERATOR_ID: USER_IDS.operator,
           UDONE_TEST_FINANCE_ID: USER_IDS.finance,
           UDONE_TEST_OPS_USER_ID: OPS_USER_ID,
+          UDONE_TEST_OPS_DISABLED_USER_ID: OPS_DISABLED_USER_ID,
         },
       },
     );
@@ -687,4 +696,14 @@ if (invokedDirectly) {
   }
 }
 
-export { ORG_ID, USER_IDS, OPS_USER_ID, OPS_OPERATOR_ID, JWT_SECRET, REST_PORT, DB_NAME, PORT };
+export {
+  ORG_ID,
+  USER_IDS,
+  OPS_USER_ID,
+  OPS_OPERATOR_ID,
+  OPS_DISABLED_USER_ID,
+  JWT_SECRET,
+  REST_PORT,
+  DB_NAME,
+  PORT,
+};

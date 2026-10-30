@@ -3,9 +3,9 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 16
+- Migration sources scanned: 17
 - Tables discovered: 24
-- Functions discovered: 31
+- Functions discovered: 32
 - Indexes discovered: 32
 - RLS policies discovered: 61
 - Triggers discovered: 2
@@ -28,3 +28,4 @@
 | `20261030000001_ops_schema_idempotency.sql` | `ops.idempotency_records` | — | `idempotency_records_expires_at_idx` | — | — |
 | `20261030000002_ops_idempotency_align_contract.sql` | — | — | — | — | — |
 | `20261030000003_ops_identity.sql` | `ops.operators`, `ops.roles`, `ops.permissions`, `ops.role_permissions`, `ops.operator_roles`, `ops.audit_events` | `ops.current_operator_id`, `ops.has_permission`, `ops.get_current_ops_context`, `ops.require_permission`, `ops.write_audit` | `operators_email_lower_idx`, `operators_status_idx`, `permissions_domain_idx`, `operator_roles_role_idx`, `audit_events_created_idx`, `audit_events_entity_idx`, `audit_events_actor_idx`, `audit_events_action_idx` | `operators_select_operator_reader`, `roles_select_operator_reader`, `permissions_select_operator_reader`, `role_permissions_select_operator_reader`, `operator_roles_select_operator_reader`, `audit_events_select_audit_reader` | — |
+| `20261030000004_ops_login_state.sql` | — | `ops.login_member_state` | — | — | — |

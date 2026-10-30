@@ -9,6 +9,7 @@ import type { FinanceRepository } from '../modules/finance/finance-service';
 import type { FinanceApplicationRepository } from '../modules/finance-applications/finance-application-service';
 import { ApiHttpError } from './error-handler';
 import { createSupabaseAuthVerifier } from '../services/supabase-auth-verifier';
+import type { OpsAuthUpstream } from '../modules/ops/auth/upstream';
 
 export interface AuthVerifier {
   verify(token: string, organizationId?: string): Promise<AuthContext | null>;
@@ -24,6 +25,14 @@ export interface ApiEnvironment {
     SUPPLIER_REPOSITORY?: SupplierRepository;
     FINANCE_REPOSITORY?: FinanceRepository;
     FINANCE_APPLICATION_REPOSITORY?: FinanceApplicationRepository;
+    /**
+     * GoTrue 的注入点，只存在于测试。
+     *
+     * 本地没有 `/auth/v1`（`db:local:*` 只起 PostgREST），登录端点若直接写 `fetch`，
+     * 它的每条分支都只能在有真实 Supabase 项目的地方跑到。绑定是对象而不是字符串，
+     * 所以 `wrangler.toml` 里写不出它——这一点由类型而不是约定保证。
+     */
+    OPS_AUTH_UPSTREAM?: OpsAuthUpstream;
     SUPABASE_URL?: string;
     SUPABASE_PUBLISHABLE_KEY?: string;
     SUPABASE_SERVICE_ROLE_KEY?: string;

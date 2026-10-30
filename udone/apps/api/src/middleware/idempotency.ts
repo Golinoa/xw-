@@ -1,6 +1,6 @@
 import type { Context, MiddlewareHandler } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
-import { ERROR_CODES } from '@erp/contracts';
+import { ERROR_CODES, OPS_ROUTES } from '@erp/contracts';
 import { idempotencyStorageKey, requestFingerprint, resolveCaller } from '../lib/idempotency-key';
 import { createMemoryIdempotencyStore, type IdempotencyStore } from '../lib/idempotency-store';
 import { createOpsIdempotencyStore } from '../lib/ops-idempotency-store';
@@ -10,6 +10,13 @@ import { ApiHttpError } from './error-handler';
 
 const WRITE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const KEY_PATTERN = /^[A-Za-z0-9_-]{8,128}$/;
+
+/** 与 `OPS_ROUTES` 的三条认证路径同源；这里只做集合判断，不重复拼路径。 */
+const OPERATIONS_AUTH_PATHS = new Set([
+  OPS_ROUTES.postOpsLogin.path,
+  OPS_ROUTES.postOpsRefresh.path,
+  OPS_ROUTES.postOpsLogout.path,
+]);
 
 export interface IdempotencyOptions {
   store?: IdempotencyStore;
@@ -71,6 +78,19 @@ function resolveStore(context: Context<ApiEnvironment>): IdempotencyStore {
 export function idempotency(options: IdempotencyOptions = {}): MiddlewareHandler<ApiEnvironment> {
   return async (context, next) => {
     if (!WRITE_METHODS.has(context.req.method)) {
+      await next();
+      return;
+    }
+
+    /**
+     * 认证三端点不参与幂等。
+     *
+     * 幂等在这里的含义是「同一个 key 重放同一个响应」，对写业务对象成立，对发令牌
+     * 不成立：重放一次登录会返回**那个时刻**的 access token，而它可能已经过期，
+     * 于是客户端拿着回放的 200 去做下一次请求，得到 401 且不知道原因。
+     * 刷新更糟——它本来就要轮换令牌，重放等于把旧令牌再发一次。
+     */
+    if (OPERATIONS_AUTH_PATHS.has(context.req.path)) {
       await next();
       return;
     }

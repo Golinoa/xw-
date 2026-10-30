@@ -19,7 +19,7 @@ function limiterFor(rawLimit: string | undefined): RateLimiter {
   return created;
 }
 
-function clientKey(context: Parameters<MiddlewareHandler<ApiEnvironment>>[0]): string {
+export function clientKey(context: Parameters<MiddlewareHandler<ApiEnvironment>>[0]): string {
   const direct = context.req.header('cf-connecting-ip');
   if (direct) return direct;
   const forwarded = context.req.header('x-forwarded-for');

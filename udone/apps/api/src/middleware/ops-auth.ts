@@ -134,6 +134,79 @@ export async function resolveOpsContext(
 }
 
 /**
+ * 登录时才有答案的那个问题：这个账号是「不是运营成员」还是「成员被停用」。
+ *
+ * `get_current_ops_context()` 的 WHERE 带 `status='active'`，对这两种情况**同样**
+ * 返回零行——它回答的是「是不是有效成员」，不是「为什么不是」。区分只能另开一个
+ * 入口，而这个入口不能靠放宽 RLS：那会让停用账号读到自己的运营行（含停用原因），
+ * 也会把「读得到自己的行」与「是有效成员」变成两件事。
+ *
+ * 所以库里有一个 `ops.login_member_state()`：SECURITY DEFINER、不吃任何参数、
+ * 身份取自 `auth.uid()`（PostgREST 验签后的令牌），只回一个状态词。参数化会让人
+ * 能拿别人的 uid 去问，返回值只有状态、没有邮箱与停用原因。
+ */
+const MEMBER_STATE_RPC = '/rest/v1/rpc/login_member_state';
+
+export const OPS_MEMBER_STATES = ['active', 'invited', 'disabled', 'missing'] as const;
+export type OpsMemberState = (typeof OPS_MEMBER_STATES)[number];
+
+export async function resolveMemberState(
+  environment: Pick<ApiEnvironment['Bindings'], 'SUPABASE_URL' | 'SUPABASE_PUBLISHABLE_KEY'>,
+  token: string,
+  fetcher: typeof fetch = fetch,
+): Promise<OpsMemberState> {
+  const baseUrl = environment.SUPABASE_URL?.replace(/\/$/, '');
+  const publishableKey = environment.SUPABASE_PUBLISHABLE_KEY;
+  if (!baseUrl || !publishableKey) {
+    throw new ApiHttpError(
+      503,
+      ERROR_CODES.INTERNAL_ERROR,
+      'Authentication service is not configured',
+    );
+  }
+
+  const response = await fetcher(`${baseUrl}${MEMBER_STATE_RPC}`, {
+    method: 'POST',
+    headers: {
+      apikey: publishableKey,
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'Content-Profile': 'ops',
+    },
+    body: '{}',
+    signal: AbortSignal.timeout(5_000),
+  });
+
+  // 刚拿到的令牌被 PostgREST 拒掉，说明 GoTrue 与 PostgREST 认的不是同一个
+  // JWT secret。这不是调用方的凭证问题，回 401 会让人去重输密码，而重启服务
+  // 之后症状依旧——所以按配置错误处理。
+  if (!response.ok) {
+    throw new ApiHttpError(
+      503,
+      ERROR_CODES.INTERNAL_ERROR,
+      'The operator directory is unavailable',
+    );
+  }
+
+  const payload: unknown = await response.json();
+  if (typeof payload !== 'string' || !(OPS_MEMBER_STATES as readonly string[]).includes(payload)) {
+    console.error(
+      JSON.stringify({
+        event: 'ops_member_state_contract_violation',
+        value: typeof payload === 'string' ? payload : typeof payload,
+      }),
+    );
+    throw new ApiHttpError(
+      503,
+      ERROR_CODES.INTERNAL_ERROR,
+      'The operator directory is unavailable',
+    );
+  }
+  return payload as OpsMemberState;
+}
+
+/**
  * 契约 §5.1：其余端点全部要求 `Authorization`，`/auth/*` 三个例外。
  * 没有令牌 401；令牌有效但不是 active 运营成员 403。
  */

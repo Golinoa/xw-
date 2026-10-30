@@ -43,6 +43,15 @@ export const ORG_ID = requiredEnv('UDONE_TEST_ORG_ID');
  */
 export const OPS_USER = requiredEnv('UDONE_TEST_OPS_USER_ID');
 
+/**
+ * 停用账号（`status = 'disabled'`）。
+ *
+ * 登录端点要区分「不是运营成员」与「成员被停用」，而这两种情况在
+ * `get_current_ops_context()` 里都是零行。没有这个夹具，那条 403 分支就只能靠
+ * 单测的替身证明；有了它，`ops.login_member_state()` 是**真跑**在真实 RLS 上的。
+ */
+export const OPS_DISABLED_USER = requiredEnv('UDONE_TEST_OPS_DISABLED_USER_ID');
+
 /** 三个固定账号，与 scripts/db/local-db.mjs 的夹具一一对应。 */
 export const USERS = {
   admin: requiredEnv('UDONE_TEST_ADMIN_ID'),
@@ -178,6 +187,13 @@ export interface CallOptions {
   query?: Record<string, string>;
   organizationId?: string;
   headers?: Record<string, string>;
+  /**
+   * 覆盖本次请求的绑定。
+   *
+   * 登录端点需要 GoTrue，而本地只有 PostgREST——所以替身是从这里进去的，
+   * 走 `Env.OPS_AUTH_UPSTREAM` 这个只存在于测试类型的绑定，而不是模块级全局。
+   */
+  env?: Partial<ApiEnvironment['Bindings']>;
 }
 
 export interface ApiResponse<T = unknown> {
@@ -218,7 +234,7 @@ export async function call<T = unknown>(
       headers,
       ...(options.body === undefined ? {} : { body: JSON.stringify(options.body) }),
     },
-    apiEnv(),
+    apiEnv(options.env),
   );
 
   const text = await response.text();

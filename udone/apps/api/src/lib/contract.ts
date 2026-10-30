@@ -50,6 +50,16 @@ export function parseQuery<T extends z.ZodType>(context: ApiContext, schema: T):
 }
 
 /**
+ * 204 没有 body，`respond()` 的出行校验在这里无从下手。
+ *
+ * 所以这个函数**不接受任何 body 参数**：调用方拿不到「顺手多塞一个字段」的机会，
+ * 出口仍然只有一处。登出是唯一的用户（契约 §5.1：`204` + 清 cookie）。
+ */
+export function respondNoContent(context: ApiContext) {
+  return context.body(null, 204);
+}
+
+/**
  * 出站校验：响应体必须满足该端点在注册表（`ROUTES` 或 `OPS_ROUTES`）里的 schema。
  *
  * 多字段、少字段、类型不符都会在这里变成 500 + 结构化日志，而不是静默流到前端。
