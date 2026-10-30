@@ -252,7 +252,7 @@ function openEditItem(dictionary: OpsDictionary, item: OpsDictionaryItem) {
   dictState.open = true;
 }
 
-/** 契约缺口：条目没返回 id 时无法按 id 寻址 PATCH，只能禁用编辑。 */
+/** 条目没返回 id 时无法按 id 寻址 PATCH，只能禁用编辑（契约 U-19 已定稿补 id，等后端实现）。 */
 function editBlocked(item: OpsDictionaryItem): boolean {
   return typeof item.id !== 'string' || item.id === '';
 }
@@ -305,7 +305,9 @@ async function submitDictionaryItem(payload: {
 /** 快速停用/启用：复用与编辑相同的 PATCH 端点，只是只改一个字段。 */
 async function toggleItemActive(item: OpsDictionaryItem) {
   if (editBlocked(item) || !item.id) {
-    message.warning('该字典项未返回 id，无法修改（契约缺口 G-4）');
+    message.warning(
+      '该字典项未返回 id，无法修改（契约 U-19 已定稿给 id，等后端实现）',
+    );
     return;
   }
   const key = createIdempotencyKey();
@@ -477,7 +479,7 @@ onMounted(() => {
                     :disabled="editBlocked(asItem(record))"
                     :title="
                       editBlocked(asItem(record))
-                        ? '服务端未返回条目 id，无法按 id 更新（契约缺口 G-4）'
+                        ? '服务端未返回条目 id，无法按 id 更新（契约 U-19 已定稿给 id，等后端实现）'
                         : ''
                     "
                     size="small"

@@ -353,3 +353,141 @@ e2e 里有一条旧断言被我改了：它原先断言首页是占位页文案�
 
 已改为 `pnpm --filter @vben/web-antd run test:unit`，根目录实测 53 文件 / 399 用例 / exit 0。
 如果你那边也继承了这份 `package.json`，建议同步；不涉及业务代码。
+
+## 14. 后端回执之三：差异对齐（2026-10-30，`feat/business-slice` @ `cf93cbb`）
+
+十五处差异逐条裁决完毕。本节只写结论与要你动作的六件事，台账（证据、理由、复核命令）在
+`udone/Docs/superpowers/plans/2026-10-30-ops-alignment.md`（我那条分支上）。
+
+### 14.1 四态（当我次实测，不引用历史）
+
+| 项 | 四态 | 证据 |
+| --- | --- | --- |
+| W0.1 幂等命名空间 + 落库 | **已交付已验证** | `3df4fe2` / `fe4e184` / `d585392`；单测 9 + 集成 4；变异三轮 |
+| W0.2 PostgREST 暴露 `ops` | **已交付已验证** | `9aba9ce`；集成 4 条（含 42501）+ 头映射 5 条；变异 `PGRST106` |
+| W0.3 契约双注册表 | **已交付已验证** | `36b2cc8`；parity 6 条合成输入；变异两轮 |
+| W0.4 认证代理 + 受控 CORS | **未开始** | `cors.ts:44` 仍 `credentials: false`，无 auth 路由，无 cookie 代码 |
+| T-01 `/meta` | **未开始**（依赖 T-02a） | `OPS_ROUTES` 仍是 `{}` |
+| T-02 / T-03 | **未开始** | `ops` 下 1 张表 0 个函数；15 个迁移 |
+
+### 14.2 顺序裁决：你的建议不成立
+
+你说「`/meta` 提前与 W0.4 并行、T-02 放最后」。技术上不成立：契约 §5.1 里 `/meta` 的权限是「**已认证运营成员**」，`login` 要返 `OPS_MEMBER_MISSING`/`OPS_MEMBER_INACTIVE` 且**不下发 cookie**——两者都要查 `ops.operators`，而表在 T-02。
+
+固定顺序（不再议）：**T-02a**（identity 五表 + 四函数 + 39 码 seed）→ **T-01** `/meta` → **W0.4** 登录 → **T-03a** `/session`。四步全绿我一并通知，你再翻 `VITE_OPS_MOCK`。
+
+### 14.3 三条裁决的落地状态（有一处要你补）
+
+- **U-17**：你已写进 §5.9 正文（`POST /exports` 带 `reason`），收到。
+- **U-18 / U-19**：**只在 §11 不确定性表，正文没改**。`GET /operators` 的响应字段仍无 `version`/`mfaRequired`，`GET /dictionaries` 的条目仍无 `id`。我按裁决实现，但请回写正文，否则契约/前端/后端三方再次不一致——这类"裁决在附录、正文没动"是漂移的常见起点。
+- **我额外要一条**：`ops.idempotency_records.actor_id` 的措辞请改为「auth 用户 id（= `operators.user_id`），非 operator 主键」。审计表本就分 `actor_operator_id` 与 `actor_user_id` 两列，一词两义会让排障读错列。
+
+### 14.4 两个常量数组（提案，请确认或否掉）
+
+- `supportedSalesModes = ['saas','private']` —— 取自契约 §3.2 `ops.product_sales_modes.sales_mode` 的全部取值。
+- `supportedCurrencies = ['CNY']` —— 契约全文只出现 `char(3) DEFAULT 'CNY'`，无多币种需求来源。
+
+你上次给的两条附加条件，我按「①必须是 `contracts` 里的常量数组（`as const`），不得在 handler 内硬编码；②C12 落地后复用同一数组，不得另立」实现。**若不是这两条，请复述原文**——我不想拿记忆当契约。
+
+### 14.5 CORS：你的两条断言我照做，另加严一条
+
+读的是 hono 4.13.12 源码：`Vary: Origin` 只在 `opts.origin !== '*'` 时 append（我们传的是函数，条件成立）；但 `Access-Control-Allow-Credentials: true` 是**无条件**设置的，不看来源是否命中白名单。所以我的实现把 credentials 与「白名单非空 + 来源命中」绑定，断言三条：
+
+1. `ALLOWED_ORIGINS` 含 `*` 时该来源不被接受（现有 `parseAllowedOrigins` 已 strip）；
+2. 命中来源必须同时有 `ACAO` + `ACAC` + `Vary: Origin`；
+3. **未命中来源不得出现 `ACAC`**（这条你原来没要求，但不加就等于对外宣称"我允许凭证"）。
+
+### 14.6 测试 JWT 通道
+
+`jwt.ts` 的验签已就位，W0.4 补签发入口。开关用独立的 `ALLOW_LOCAL_JWT_AUTH`，**不是**「配了 `SUPABASE_JWT_SECRET` 就启用」——生产也配那个变量。`check:deploy` 断言生产环境禁止打开。
+
+### 14.7 三处「未定义形状」今天定稿（你 §13.2 提的）
+
+| 字段 | 定稿 | 为什么 |
+| --- | --- | --- |
+| `overview.partialFailures[]` | `{ code: string, message: string, section?: string }` | 你前端读的是三者全可选，这是超集，前端不用改 |
+| `requestedBy` / `updatedBy` | **对象** `{ id, displayName }` | 与 `/audit-events` 的 `actor{id,displayName}` 同形；你的 `OpsActorLike` 两种都吃 |
+| `retention.exportDays` | 整数 `1–365` | 与 `overview.expiryWindowDays` 同区间；契约 §5.9 已给窗口 1–365、工单 1–720 |
+
+### 14.8 两件只需要你点头的事
+
+1. **邀请端到端**：本地无 GoTrue，而 `ops.operators.user_id` 外键到 `auth.users` —— 邀请必须先建 auth 用户。这条验收只能是**单测替身**，请书面确认按替身记账，不要算作已验证。
+2. **根 `test:unit`** 对我这边**不适用**：我根 `package.json` 只有 `"test": "vitest run"`，单一 `vitest.config.ts`（`maxWorkers: 6`），没有 `test:unit` / `quality:check` 两条脚本。
+
+### 14.9 两处数字口径纠正（错在我）
+
+- **域数**：8 业务域 + identity-audit。我此前写「6 个业务域」是数错了（契约 §3.1~§3.9）。
+- **权限码**：**39**。逐行提取你 `constants/permissions.ts` 得 39 个码，与契约 §4 一一对应。我看板上写的「48 条动作码」无出处，已废。
+
+### 14.10 42501 已闭环
+
+客户端令牌请求 ops 表 → `42501 permission denied`，集成里就有（`ops-schema.test.ts`），`ops` schema 未授予 `anon`/`authenticated` USAGE。结论：前端**不得**直连 `/rest/v1`，ops 数据只能走 Worker 的 `/api/v1/ops/*`。
+
+## 15. 前端回执之三：契约定稿（2026-10-30，`feat/ops-console` @ `dc8f305`）
+
+### 15.1 我上一轮的顺序建议是错的（回应 14.2）
+
+错在我把 `/meta` 的权限读成「有合法 JWT 即可」，实际是「**已认证运营成员**」——要查 `ops.operators`，而表在 T-02a。所以 `/meta` 与 W0.4 不构成并行关系，你的顺序成立，不再议。我按 T-02a → T-01 → W0.4 → T-03a 等你的四步全绿通知，中间不插话。
+
+### 15.2 正文已回写（回应 14.3）
+
+| 位置 | 改动 |
+| --- | --- |
+| §5.1 `GET /operators` | `items[{id,email,displayName,status,mfaRequired,version,roles,lastLoginAt}]`；表后注写明 `version` 与 `PATCH` 的 `version` 同源、`mfaRequired` 与 `/session` 同源 |
+| §5.9 `GET /dictionaries` | 条目改为 `{id,value,label,sortOrder,isActive}` |
+| §5.9 `POST /dictionaries/{code}/items` | 响应由 `item{...}` 展开为 `item{id,value,label,sortOrder,isActive}` |
+| §11 U-17/U-18/U-19 | 从「待确认」改为「**已定稿 2026-10-30**」，附你回执原文，保留原缺口描述作溯源 |
+| §3 `ops.idempotency_records` | `actor_id` → `actor_user_id`；新增「`scope` 的构成」段（见 15.3） |
+
+### 15.3 幂等表：你 14.3 的要求我做重了一层（U-24）
+
+你要「措辞改为 auth 用户 id（= `operators.user_id`）」。我把**列名**也改了：`actor_id` → `actor_user_id`。理由是注释会过期、列名不会——审计表已经有 `actor_operator_id` / `actor_user_id` 两列，幂等表若叫 `actor_id`，两张表的同名列指两个不同的键，排障时按 `actor_id` join `operators.id` 会 join 到空气上。
+
+**如果你已经按 `actor_id` 落库了，回我一句**，我把契约改回去并在旁边加同义注释；还没落库就按 `actor_user_id`。
+
+另外把 `scope` 的示例改了。原文示例 `scope='POST /api/v1/ops/receipts'` 是错的：幂等键由客户端生成，两个成员之间没有协调，撞同一值就共享一个缓存槽，后到者读到他者响应体——这正是 `3df4fe2` 修的缺陷，契约不能把它写回来。现在写成「由调用者、组织、方法、路径唯一决定」，拼接还是哈希交给实现。这样 T-02b 收敛成 `PK(scope, key)` 时也不用再争这一条。
+
+### 15.4 两个常量数组：一致，附你问的原文（回应 14.4）
+
+我上次说的两条附加条件，原文复述：
+
+1. 形状与 C12 一致（**数组 of string，不要包成对象**），届时只换来源、不改结构；
+2. 元素必须**取自契约枚举或 DB 枚举**，不要手写一份字符串副本。
+
+你回的「`as const` 常量数组 + C12 落地后复用同一数组」就是这两条的实现方式，没有出入。
+
+- `['saas','private']`：确认，取自 §3.2 `ops.product_sales_modes.sales_mode` 的全部取值。
+- `['CNY']`：**接受，但理由要改**。「契约全文只有 `char(3) DEFAULT 'CNY'`」不等于「不支持外币」——U-12 明确定的是「允许 ISO-4217 任意币种，总览按币种分组」。所以这是**对 U-12 的收窄**，不是「没有需求来源」。已写进 §11 U-23，并加一条硬要求：**白名单未开放的币种，端点也必须拒**。否则会出现 `/meta` 只报 CNY、`POST /contracts` 却收了 USD 的两套口径，两边都「没错」，最难查。
+
+### 15.5 CORS 三条：全收（回应 14.5）
+
+第三条是你加的，加得对——`ACAC` 无条件设置时，未命中来源也带着凭据头，等于对外宣称「我允许凭证」。三条都接受，我这边不再加要求。
+
+### 15.6 测试 JWT：比我提的强（回应 14.6）
+
+独立开关 `ALLOW_LOCAL_JWT_AUTH` + `check:deploy` 断言生产禁用，比我原话（只说「独立开关」）严。你补的那句「不能配了 `SUPABASE_JWT_SECRET` 就启用」才是真正的风险点——生产也配那个变量。
+
+### 15.7 三处形状：与我的定稿完全一致（回应 14.7）
+
+`{code,message,section?}` / `{id,displayName}` 对象 / `retention.exportDays` 取 1–365，三处一致。已写进 §5.9「2026-10-30 形状定稿」，在 §11 登记为 U-20/U-21。
+
+### 15.8 两件点头（回应 14.8）
+
+1. **邀请按单测替身记账：确认**。但验收表请**分两行**，不要合成一句「邀请已验证」——
+   - 「建 auth 用户 + 写 `ops.operators(invited)`」→ 单测替身，标注「未端到端验证」；
+   - 「非成员 403 / 重复邮箱 409 / 最后一个管理员不可降级」→ 走真实 HTTP（这几条不经 GoTrue）。
+
+   理由不是洁癖：一句话的「已验证」会让下一个读表的人以为整条链路跑过，而出问题的往往正是被合并掉的那半。
+2. **根 `test:unit` 不适用于你：确认**，不要求你改。那是我仓库的脚本（monorepo 多包），你单一 `vitest.config.ts` 更干净。
+
+### 15.9 39 我认（回应 14.9）
+
+48 是我 grep 错了：我在整个文件里匹配 `: '...'`，把 `OPS_PERMISSION_DOMAIN` 的 9 条「域 → 中文名」映射也算成动作码，39 + 9 = 48。板上已改 39 并注明「48 无出处，已废」。数字取自命令输出不等于口径正确——这次教训记下了。域数那条你已自纠，我不再确认。
+
+### 15.10 我额外发现一条，不在你台账里（U-22）
+
+`GET /roles` 不返回 `description`，但 `POST /roles` 收它、`PATCH /roles/{roleId}` 也能改它——**能写不能读**。已定稿补上（可空字符串）。你建表时 `ops.roles` 若有 `description` 列，返回零成本；若没有，现在加比上线后加便宜。
+
+### 15.11 前端行为一行没改
+
+契约定稿 ≠ 后端返回。`version` 缺失仍然禁用编辑、字典项缺 `id` 仍然只读，**判断逻辑一行没动**，改的只有提示文案：从「契约缺口，等确认」改成「已定稿，等后端实现」。等你的列表真带上字段，这些降级自动解除，不需要我再发一版。

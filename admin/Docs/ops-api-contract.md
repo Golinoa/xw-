@@ -410,11 +410,19 @@ ops 域只持久化「软件提供方与旅行社之间的商业关系、交付�
 | `ops.role_permissions` | `role_id uuid NOT NULL`、`permission_code text NOT NULL` | `PK(role_id, permission_code)`；写入需 `role.manage` | [PRD §4.2] [PRD §4.3] |
 | `ops.operator_roles` | `operator_id uuid NOT NULL`、`role_id uuid NOT NULL`、`granted_by uuid NOT NULL`、`granted_at` | `PK(operator_id, role_id)`；一个账号至少一个角色（删除最后一条角色 → 409 `STATE_CONFLICT`） | [PRD §4.3]「每个运营账号必须有启用状态和至少一个运营角色」；多角色并集 [推导] |
 | `ops.audit_events` | `id`、`actor_operator_id uuid`、`actor_user_id uuid`、`action text NOT NULL`、`entity_type text NOT NULL`、`entity_id uuid`、`request_id text`、`reason text`、`before_summary jsonb`、`after_summary jsonb`、`created_at` | **仅 INSERT**；`INDEX(created_at DESC)`、`INDEX(entity_type, entity_id)`、`INDEX(actor_operator_id, created_at DESC)`、`INDEX(action)` | [PRD §6.10]「操作者 ID、动作、目标对象、时间、请求 ID、原因、前后值摘要」 |
-| `ops.idempotency_records` | `scope text NOT NULL`（如 `POST /api/v1/ops/receipts`）、`key text NOT NULL`、`actor_id uuid`、`request_hash text NOT NULL`、`response_status integer NOT NULL`、`response_body jsonb NOT NULL`、`created_at`、`expires_at timestamptz NOT NULL` | `PK(scope, key)`；`INDEX(expires_at)` | [推导] 现有中间件为进程内存，不能保护钱款与命令；见 U-06 |
+| `ops.idempotency_records` | `scope text NOT NULL`（见下方「`scope` 的构成」）、`key text NOT NULL`、`actor_user_id uuid`、`request_hash text NOT NULL`、`response_status integer NOT NULL`、`response_body jsonb NOT NULL`、`created_at`、`expires_at timestamptz NOT NULL` | `PK(scope, key)`；`INDEX(expires_at)` | [推导] 现有中间件为进程内存，不能保护钱款与命令；见 U-06 |
 | `ops.dictionaries` | `code text PRIMARY KEY`、`name text NOT NULL`、`description text`、`is_system boolean NOT NULL DEFAULT false` | — | [PRD §5.10] 字典配置 |
 | `ops.dictionary_items` | `id`、`dictionary_code text NOT NULL`、`value text NOT NULL`、`label text NOT NULL`、`sort_order integer NOT NULL DEFAULT 0`、`is_active boolean NOT NULL DEFAULT true` | `UNIQUE(dictionary_code, value)` | [PRD §6.5]「内部配置的收款方式」[PRD §6.9]「问题类型配置可扩展」 |
 | `ops.settings` | `key text PRIMARY KEY`、`value jsonb NOT NULL`、`updated_by uuid`、`updated_at` | `key` 白名单：`overview.expiryWindowDays`、`ticket.dueHours`、`retention.exportDays` | [PRD §6.1]「窗口值可配置」[PRD §6.9]「内部工作时限可配置」[PRD §6.10]「通知阈值」 |
 | `ops.exports` | `id`、`export_no text NOT NULL`、`export_type text NOT NULL`、`filters jsonb NOT NULL`、`status text NOT NULL`（`queued`/`running`/`succeeded`/`failed`/`expired`）、`requested_by uuid NOT NULL`、`row_count integer`、`storage_path text`、`expires_at`、`created_at`、`completed_at` | `UNIQUE(export_no)`；`INDEX(requested_by, created_at DESC)` | [PRD §6.10]「重大数据导出需单独权限，记录导出者、筛选条件、时间和对象范围」 |
+
+**`scope` 的构成（2026-10-30 定稿，U-24）**
+
+`scope` 必须由**调用者、组织、方法、路径**唯一决定，不能只写 `method + path`。原示例 `scope='POST /api/v1/ops/receipts'` 是错的：幂等键由客户端生成，两个运营成员之间没有任何协调，撞同一个值时就会共享一个缓存槽——后到者会读到他者的响应体。这正是 `3df4fe2` 修掉的缺陷，契约不能把它写回来。
+
+拼接还是哈希由实现决定（当前实现为单列 `scope_key = sha256(调用者) : 组织 : method : path`，`PK(scope, key)` 的两列形状可在 T-02b 收敛，语义不变）。
+
+`actor_user_id` = `ops.operators.user_id`，指向 `auth.users`，**不是 operator 主键**。审计表已用 `actor_operator_id` 与 `actor_user_id` 两列区分，同一个词不能指两个键——排障时按 `actor_id` 去 join `operators.id` 会 join 到空气上。
 
 **运营身份与权限的来源约束**
 
@@ -511,13 +519,17 @@ ops 域只持久化「软件提供方与旅行社之间的商业关系、交付�
 | `GET /meta` | 已认证运营成员 | — | `contractVersion`、`serverTime`、`timezone='Asia/Shanghai'`、`supportedSalesModes`、`supportedCurrencies` | 401/403 | — |
 | `GET /session` | 已认证运营成员 | — | `operator{id,displayName,email,status,mfaRequired}`、`roles[{code,name}]`、`permissions[]`、`permissionVersion`、`lastLoginAt` | 401/403 | — |
 | `GET /permissions` | `operator.read` | — | `items[{code,domain,description,isHighRisk}]` | 403 | — |
-| `GET /operators` | `operator.read` | `keyword`、`status`、`roleCode` | `items[{id,email,displayName,status,roles,lastLoginAt}]` | 403 | — |
+| `GET /operators` | `operator.read` | `keyword`、`status`、`roleCode` | `items[{id,email,displayName,status,mfaRequired,version,roles,lastLoginAt}]` | 403 | — |
 | `POST /operators/invitations` | `operator.manage` | `email`、`roleCodes[]`、`reason` | `operator{id,status='invited'}`、`invitationExpiresAt` | 409 `CONFLICT`（已存在）、400 | 必填 |
 | `PATCH /operators/{operatorId}` | `operator.manage` | `status?`、`roleCodes?`、`mfaRequired?`、`reason`、`version` | `operator{...}`、`permissionsChanged{added,removed}` | 403、409 `STATE_CONFLICT`（最后一个角色/最后一个管理员）、409 `CONFLICT`（版本） | 必填 |
-| `GET /roles` | `operator.read` | — | `items[{id,code,name,isSystem,status,permissions[]}]` | 403 | — |
+| `GET /roles` | `operator.read` | — | `items[{id,code,name,description,isSystem,status,permissions[]}]` | 403 | — |
 | `POST /roles` | `role.manage` | `code`、`name`、`description`、`permissionCodes[]` | `role{...}` | 409 `CONFLICT`、400 | 必填 |
 | `PATCH /roles/{roleId}` | `role.manage` | `name?`、`description?`、`permissionCodes?`、`status?`、`reason` | `role{...}`、`beforePermissions[]`、`afterPermissions[]` | 403、409 `STATE_CONFLICT`（系统角色不可改 code/删除） | 必填 |
 | `GET /audit-events` | `audit.read` | `actorOperatorId`、`action`、`entityType`、`entityId`、`requestId`、`from`、`to` | `items[{id,actor{id,displayName},action,entityType,entityId,reason,beforeSummary,afterSummary,requestId,createdAt}]` | 403 | — |
+
+`GET /meta` 的两个数组一律从枚举派生，不手写字符串副本：`supportedSalesModes` 取 `ops.product_sales_modes.sales_mode` 的枚举值 `['saas','private']`（§3 已定义）；`supportedCurrencies` 在 v1 只返回 `['CNY']`——**这是对 U-12 的收窄**：能力上支持 ISO-4217 任意币种，但白名单未开放前端点也必须只接受 `CNY`，不许出现「/meta 说只支持 CNY、接口却收了 USD」的两套口径。放开某币种时 `/meta` 与端点校验必须同一次变更（U-23）。`contractVersion` 返回本文档头部的 semver（当前 `1.0.0`），不带 `v` 前缀、不带日期。
+
+`GET /operators` 的 `version` 与 `PATCH /operators/{operatorId}` 的 `version` 同源，取自 `ops.operators.version`，是乐观锁的值：前端直接用列表返回的 `version` 回传，不再额外取详情（本域没有 `GET /operators/{operatorId}`）。`mfaRequired` 与 `GET /session` 的 `operator.mfaRequired` 同源。两项都是 U-18 定稿的产物（2026-10-30）。
 
 ### 5.2 customer
 
@@ -653,13 +665,20 @@ ops 域只持久化「软件提供方与旅行社之间的商业关系、交付�
 | `GET /reports/tenant-sync-failures` | `tenant.read` | `commandType`、`createdFrom` | `rows[{commandId,mapping,customer,commandType,attemptCount,lastErrorCategory,lastAttemptAt}]` | 403 | — |
 | `GET /reports/deployment-versions` | `deployment.read` | `customerId`、`status` | `rows[{version,instanceCount,customers[]}]`、`unknownVersionCount` | 403 | — |
 | `GET /settings` | `settings.manage` | — | `settings{overviewExpiryWindowDays,ticketDueHours,exportRetentionDays}`、`updatedBy`、`updatedAt` | 403 | — |
-| `PATCH /settings` | `settings.manage` | 任一设置项 | `settings{...}` | 403、400（范围：窗口 1–365 天、工单时限 1–720 小时）[推导] | 必填 |
-| `GET /dictionaries` | 任意已认证运营成员 | `code?` | `items[{code,name,items[{value,label,sortOrder,isActive}]}]` | 401/403 | — |
-| `POST /dictionaries/{code}/items` | `settings.manage` | `value`、`label`、`sortOrder?` | `item{...}` | 403、409 `CONFLICT` | 必填 |
+| `PATCH /settings` | `settings.manage` | 任一设置项 | `settings{...}` | 403、400（范围：窗口 1–365 天、工单时限 1–720 小时、导出保留 1–365 天）[推导] | 必填 |
+| `GET /dictionaries` | 任意已认证运营成员 | `code?` | `items[{code,name,items[{id,value,label,sortOrder,isActive}]}]` | 401/403 | — |
+| `POST /dictionaries/{code}/items` | `settings.manage` | `value`、`label`、`sortOrder?` | `item{id,value,label,sortOrder,isActive}` | 403、409 `CONFLICT` | 必填 |
 | `PATCH /dictionary-items/{itemId}` | `settings.manage` | `label?`、`sortOrder?`、`isActive?` | `item{...}` | 403、404 | 可选 |
 | `GET /exports` | `export.read` | `exportType`、`status[]`、`requestedBy` | `items[{id,exportNo,exportType,status,rowCount,requestedBy,createdAt,expiresAt}]` | 403 | — |
-| `POST /exports` | `export.create` | `exportType`（`receivables`/`receipts`/`contracts`/`customers`/`tickets`）、`filters`（与对应列表端点同构）、`reason`（U-17 [推导]） | 202 `export{id,exportNo,status='queued'}` | 403、400（筛选非法） | 必填 |
+| `POST /exports` | `export.create` | `exportType`（`receivables`/`receipts`/`contracts`/`customers`/`tickets`）、`filters`（与对应列表端点同构）、`reason`（必填，U-17） | 202 `export{id,exportNo,status='queued'}` | 403、400（筛选非法） | 必填 |
 | `GET /exports/{exportId}` | `export.read` | — | `export{...}`、`downloadUrl?`（≤5 分钟签名）、`expiresAt` | 404 | — |
+
+**2026-10-30 形状定稿（U-19 与三处此前未定义的形状）**
+
+- **字典条目带 `id`**：`GET /dictionaries` 与 `POST /dictionaries/{code}/items` 的条目都是 `{id,value,label,sortOrder,isActive}`，`id` 取自 `ops.dictionary_items.id`。`PATCH /dictionary-items/{itemId}` 按它寻址——这是该端点唯一可用的寻址键，缺 `id` 时端点不可用（U-19）。
+- **`partialFailures[]` 条目是 `{code,message,section?}`**。`code` 为机器可读稳定标识（如 `RECEIVABLE_SUMMARY`、`ENTITLEMENT_EXPIRY`、`TENANT_SYNC`），`message` 为可直接展示的中文短句，`section` 指向受影响的响应区块（`metrics`/`amounts`），缺省表示影响整份响应。**数组非空即「本次统计不完整」**，前端必须显式提示并禁止当成全量展示（U-20）。
+- **`requestedBy` / `updatedBy` 一律是 `{id,displayName}` 对象，不是裸 uuid**，`GET /exports` 与 `GET /settings` 皆同。理由不是好看：列表要直接渲染人名，返回 uuid 会逼前端为每行再查一次 `GET /operators`，把一次列表请求变成 N+1。审计事件里的 `actor` 已是这个形状，两处保持一致（U-20）。
+- **`settings.retention.exportDays` 取 `1–365` 整数天**，与 `overview.expiryWindowDays`（1–365 天）、`ticket.dueHours`（1–720 小时）同属「越界回 400 而非静默截断」的强校验项（U-21）。
 
 ---
 
@@ -1082,9 +1101,14 @@ GRANT EXECUTE ON FUNCTION ops.transition_contract(uuid, text, integer, text) TO 
 | U-14 | 导出是否一律异步 | 一律异步（`queued/running/succeeded/failed/expired`），单文件上限 200k 行 | [推导]。PRD §10.1「大规模导出使用受后台任务」，未给同步阈值 |
 | U-15 | 运营成员邀请是否需要邮箱域名白名单 | 不限制域名，仅平台管理员可邀请 | [推导]。PRD 未定义；若需限制，加 `settings` 项与校验 |
 | U-16 | 客户「地区」字段口径 | `region_code` 存 GB/T 2260 行政区划码，展示层映射名称 | [推导]。PRD 只写「地区」 |
-| U-17 | 发起导出是否必须填写原因 | `POST /exports` 请求体增加 `reason`（与其余高风险动作一致） | [推导]。§4 把 `export.create` 列为高风险动作并要求填写原因，但 §5.9 只列了 `exportType`/`filters`。后端若不接受该字段应忽略而不是 400 |
-| U-18 | `GET /operators` 是否返回 `version` 与 `mfaRequired` | 前端按**可选字段**读取；缺失时禁用成员编辑并提示原因 | [推导·契约缺口] `PATCH /operators/{operatorId}` 要求 `version` 必填，但列表项没有该字段、也没有详情端点，乐观锁的值无处可取。建议后端在列表项补 `version`（及 `mfaRequired`） |
-| U-19 | `GET /dictionaries` 的条目是否返回 `id` | 前端按可选 `id` 读取；缺失时字典项只读 | [推导·契约缺口] `PATCH /dictionary-items/{itemId}` 按 id 寻址，而 §5.9 的条目字段只有 `{value,label,sortOrder,isActive}` |
+| U-17 | 发起导出是否必须填写原因 | **已定稿 2026-10-30**：`POST /exports` 请求体增加 `reason` 且必填 | [推导]。§4 把 `export.create` 列为高风险动作并要求填写原因，但 §5.9 只列了 `exportType`/`filters`。后端 2026-10-30 回执：接受，按必填校验并写审计；同时确认该端点幂等键必填，缺 `Idempotency-Key` 回 400 |
+| U-18 | `GET /operators` 是否返回 `version` 与 `mfaRequired` | **已定稿 2026-10-30**：两者都返回，§5.1 的响应形状已改；前端不再因缺字段禁用成员编辑 | [推导·原契约缺口] `PATCH /operators/{operatorId}` 要求 `version` 必填，而列表项没有该字段、也没有详情端点，乐观锁的值无处可取。后端 2026-10-30 回执：接受，`ops.operators` 本来就要有 `version` 列，列表返回零成本；建表时一并落 |
+| U-19 | `GET /dictionaries` 的条目是否返回 `id` | **已定稿 2026-10-30**：条目返回 `id`（含 `POST /dictionaries/{code}/items` 的响应），§5.9 已改 | [推导·原契约缺口] `PATCH /dictionary-items/{itemId}` 按 id 寻址，而原条目字段只有 `{value,label,sortOrder,isActive}`，端点因此不可用。后端 2026-10-30 回执：接受 |
+| U-20 | `partialFailures[]` 与 `requestedBy`/`updatedBy` 的形状未定义 | **已定稿 2026-10-30**：`partialFailures[] = {code,message,section?}`；`requestedBy`/`updatedBy` = `{id,displayName}` 对象（见 §5.9 形状定稿） | [推导]。原 §5.9 只给了字段名。定成对象的理由是避免前端为渲染人名逐行查 `GET /operators`；定成 `{code,message}` 的理由是前端要能按 `code` 决定提示文案，而不是去匹配中文 |
+| U-21 | `settings.retention.exportDays` 取值范围 | **已定稿 2026-10-30**：`1–365` 整数天，越界回 400 | [推导]。§5.9 原先只给了窗口与工时两个范围，漏了这一项；前端因此不编上限，越界一律交服务端判定 |
+| U-22 | `GET /roles` 是否返回 `description` | **已定稿 2026-10-30**：返回 `description`（可空字符串） | [推导·原文不一致] `POST /roles` 收 `description`、`PATCH /roles/{roleId}` 也能改它，唯独列表不返回，等于「能写不能读」。补上是零成本的读侧对齐 |
+| U-23 | `/meta` 的 `supportedCurrencies` 与 U-12「允许任意 ISO-4217」如何并存 | **已定稿 2026-10-30**：v1 白名单只 `['CNY']`，端点侧同白名单校验；放开币种时 `/meta` 与端点校验同一次变更 | [推导]。U-12 说的是「能力上允许外币记账」，不等于「v1 就开出外币入口」。两处若不同步，会出现「/meta 只报 CNY、POST /contracts 却收了 USD」的漂移——这类不一致最难查，因为两边都「没错」 |
+| U-24 | 幂等记录的 `scope` 是否要含调用者 | **已定稿 2026-10-30**：`scope` 由（调用者、组织、方法、路径）唯一决定；`actor_id` 更名 `actor_user_id`，语义为 `operators.user_id` | [推导·修回退] 原示例只写 `method + path`，会让两个成员撞同一幂等键时共享缓存槽，后到者读到他者响应体（`3df4fe2` 修的就是这个）。列名改 `actor_user_id` 是因为审计表已用 `actor_operator_id`/`actor_user_id` 两列区分，同词两义会让排障 join 错表 |
 
 ---
 

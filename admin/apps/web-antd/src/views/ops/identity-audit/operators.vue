@@ -438,7 +438,7 @@ onMounted(() => {
           v-if="blockedCount > 0"
           class="mb-3"
           :message="`有 ${blockedCount} 个成员缺少乐观锁版本（version），暂不可修改`"
-          description="PATCH /operators/{operatorId} 要求 version 必填，但列表项未返回该字段。为防止用旧数据覆盖他人改动，这些成员的编辑入口已禁用。"
+          description="PATCH /operators/{operatorId} 要求 version 必填。契约 §5.1 已定稿补该字段（U-18），但后端尚未实现；在列表真正返回 version 之前，这些成员的编辑入口保持禁用——不为了一次修改去伪造版本号覆盖他人的改动。"
           show-icon
           type="warning"
         />

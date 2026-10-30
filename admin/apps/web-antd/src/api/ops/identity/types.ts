@@ -21,22 +21,28 @@ export interface OpsOperatorListItem {
   id: string;
   lastLoginAt: null | string;
   /**
-   * `PATCH /operators/{operatorId}` 要求 `version` 必填，但契约 §5.1 的列表项字段里
-   * **没有** `version`，也没有 `GET /operators/{id}` 详情端点——乐观锁的值无处可取。
-   * 这里按可选字段读取：后端返回了就正常带版本提交，没返回时页面禁用编辑并说明原因，
-   * 而不是伪造一个版本号去覆盖别人的改动。已登记为契约缺口。
+   * MFA 策略位。契约 U-18（2026-10-30 定稿）要求列表返回它，与 `GET /session` 的
+   * `operator.mfaRequired` 同源；后端实现前按可选读取，缺失时按 `false` 预填并提示。
    */
   mfaRequired?: boolean;
   roles: OpsRoleRef[];
   status: OpsOperatorStatus;
   displayName: string;
+  /**
+   * 乐观锁版本。契约 U-18（2026-10-30 定稿）要求列表返回它——`PATCH /operators/{operatorId}`
+   * 要求 `version` 必填，而本域没有详情端点，列表是唯一取值处。
+   * 后端实现前仍按可选读取：没返回就禁用编辑并说明原因，绝不伪造版本号覆盖他人改动。
+   */
   version?: number;
 }
 
 /** `GET /roles` 列表项。`isSystem` 系统角色不可改 code、不可删除。 */
 export interface OpsRoleDetail {
   code: string;
-  /** 契约 §5.1 的 `GET /roles` 未列 `description`；缺失时界面不渲染描述行。 */
+  /**
+   * 契约 U-22（2026-10-30 定稿）要求 `GET /roles` 返回 `description`：`POST`/`PATCH` 都收它，
+   * 唯独列表不返回等于「能写不能读」。后端实现前按可选读取，缺失时不渲染描述行。
+   */
   description?: null | string;
   id: string;
   isSystem: boolean;
@@ -214,9 +220,9 @@ export interface UpdateSettingsPayload {
 
 export interface OpsDictionaryItem {
   /**
-   * 契约 §5.9 的字典项响应字段只有 `{value,label,sortOrder,isActive}`，但
-   * `PATCH /dictionary-items/{itemId}` 需要条目 id（表结构 `ops.dictionary_items.id` 存在）。
-   * 这是契约缺口，已登记推导项；前端按 `id` 是否存在决定能否编辑，缺失时只读并说明原因。
+   * 契约 U-19（2026-10-30 定稿）要求条目返回 `id`：`PATCH /dictionary-items/{itemId}` 按它寻址，
+   * 原文只列了 `{value,label,sortOrder,isActive}`，端点因此不可用。
+   * 后端实现前按可选读取，缺失时该行只读并说明原因。
    */
   id?: string;
   isActive: boolean;

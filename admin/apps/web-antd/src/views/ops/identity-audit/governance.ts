@@ -27,14 +27,15 @@ export interface EditGuard {
 /**
  * 成员是否可编辑。
  *
- * `version` 缺失时禁用——契约 §5.1 的 `GET /operators` 没有该字段，
- * 也没有详情端点，前端无处取得乐观锁版本。已登记为契约缺口 G-1。
+ * `version` 缺失时禁用——契约 §5.1 已定稿要在列表项返回该字段（U-18，2026-10-30），
+ * 但后端尚未实现，且本域没有详情端点可补取，前端此刻仍无处取得乐观锁版本。
+ * 所以行为不变（继续禁用），变的只是原因：从「契约缺口」变成「等后端实现」。
  */
 export function operatorEditGuard(row: OpsOperatorListItem): EditGuard {
   if (typeof row.version !== 'number') {
     return {
       editable: false,
-      hint: '后端未返回乐观锁版本（version），无法安全修改；请让后端在 GET /operators 增加该字段',
+      hint: '后端未返回乐观锁版本（version），无法安全修改；契约 U-18 已定稿该字段，等后端在 GET /operators 返回后自动可编辑',
     };
   }
   return { editable: true };
