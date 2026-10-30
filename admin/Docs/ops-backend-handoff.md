@@ -1,9 +1,6 @@
 # 运营端后端交接书（ops API）
 
-> **读者**：接手 `udone` 后端实现的会话（人或 Agent）。
-> **一句话**：前端六个业务域已实现并全部走契约层，**后端一行 ops 代码都还没有**。你按本文件落地，前端切一个开关即可联调，不需要改页面。
-> **真源顺序**：`Docs/ops-api-contract.md`（字段/端点/错误的唯一真源） > 本文件（交接约定与缺口清单） > PRD。
-> 生成日期：2026-10-29 ｜ 对应前端分支：`feat/ops-console`
+> **读者**：接手 `udone` 后端实现的会话（人或 Agent）。 **一句话**：前端六个业务域已实现并全部走契约层，**后端一行 ops 代码都还没有**。你按本文件落地，前端切一个开关即可联调，不需要改页面。 **真源顺序**：`Docs/ops-api-contract.md`（字段/端点/错误的唯一真源） > 本文件（交接约定与缺口清单） > PRD。生成日期：2026-10-29 ｜ 对应前端分支：`feat/ops-console`
 
 ---
 
@@ -117,9 +114,7 @@ T-01 契约包与路由骨架
 
 ### 5.4 筛选参数（前端已在发，需入白名单）
 
-`GET /deployments`：`deploymentType`、`productId`（D-02/D-03）。
-`GET /subscriptions`：`billingCycle`、`endsFrom`、`endsTo`；`GET /licenses`：`licenseMode`。
-`GET /tenant-mappings`：`syncVersion`。
+`GET /deployments`：`deploymentType`、`productId`（D-02/D-03）。 `GET /subscriptions`：`billingCycle`、`endsFrom`、`endsTo`；`GET /licenses`：`licenseMode`。 `GET /tenant-mappings`：`syncVersion`。
 
 后端未实现应**忽略未知参数**而不是 400，否则页面筛选会整片报错。
 
@@ -143,6 +138,7 @@ cd admin && corepack pnpm -F @vben/web-antd dev
 **切换后必须验证的三件事**：
 
 > ⚠️ **2026-10-30 后端实测更正**：`VITE_OPS_MOCK` 在 `.env.development` 与 `.env.production` 中**均已是 `false`**，上面第 2 步是空操作。真实前提是「同一来源」——dev 必须走同源代理，否则浏览器会丢弃 `Set-Cookie`（后端 CORS 当前 `credentials: false`）。另：下面第 1 条「不匹配会拒绝渲染」当前**不成立**，`api/ops/README.md` 自承「前端暂不阻断」。两处详见 §11.2 P0-2 / P0-3。
+
 1. 登录 → `/meta` 返回 `contractVersion`，前端校验不匹配会拒绝渲染业务页；
 2. 任一列表页能翻页筛选（证明服务端分页参数被接受，而不是 400）；
 3. 页面顶部不再出现「开发态数据」提示（桩已彻底退出）。
@@ -190,6 +186,7 @@ cd admin && corepack pnpm -F @vben/web-antd dev
 ## 10. 第一个 PR 建议范围
 
 只做 **T-01 + T-02 + T-03 的登录与 `/meta`**，不碰业务域。理由：
+
 - 这三项决定后面所有授权是否正确，返工代价最高；
 - 前端登录、菜单、403/404 已就绪，做完即可验证「权限驱动呈现」是否真的成立；
 - 可以在真实 API 上第一次跑通前端 e2e 的契约回放项目，把联调风险提前暴露。
@@ -209,11 +206,13 @@ cd admin && corepack pnpm -F @vben/web-antd dev
 ### 11.2 你的 P0（不处理我只能空转）
 
 **P0-1 把前端与契约入库**
+
 - 现状：`git status --porcelain` = **90 项**（41 未跟踪 / 42 修改 / 7 删除），含 `admin/Docs/ops-api-contract.md`（1120 行真源）、`src/api/ops/**`（ops 下 38 个测试文件）、`views/ops/**`；远端只有 `main`，`feat/ops-console` 未推。
 - 为什么阻塞：① 唯一真源只活在一个工作副本里，磁盘出事就没了；② 我要做联调必须 checkout 到那份前端，不提交我拿不到；③ §5 说「字段已冻结」——没进 git 的冻结等于没冻结。
 - 要你做：提交并推到远端，然后告诉我分支名。
 
 **P0-2 补契约里的认证三端点（最大缺口）**
+
 - 现状：前端 `api/core/auth.ts` 调 `/auth/login|refresh|logout`，注释写「契约 §5.1 未列，沿用设计文档 §2.2」；契约全文 0 处提到 refresh。
 - 为什么阻塞：T-03 就是「登录」。令牌形态、刷新轮换、失败锁定、`mfaRequired` 全无定义，我只能猜，猜错就是双向返工。
 - 我的裁决（你无异议我就按此实现，并请你回写 §5.1）：
@@ -227,11 +226,13 @@ cd admin && corepack pnpm -F @vben/web-antd dev
 补充约定：浏览器不持 anon key（符合 §7.2），GoTrue 由 Worker 代理；`SameSite=Strict` 只在同源成立，跨源必须 `None; Secure`，所以开发的正确姿势是同源代理。
 
 **P0-3 `contractVersion` 要么阻断，要么改验收项**
+
 - 现状：`api/ops/README.md` 写「前端暂不阻断不兼容版本（等后端给出真实版本号）」；但 §6 与 §8 把它写成「不匹配即拒绝渲染」的已验证拦截。
 - 二选一：(a) 你实现阻断 + 升级提示页；(b) 我把 §8 验收项改成「`/meta` 返回真实版本号，前端记录但不阻断」。
 - 建议 (a)：§2.1 已把「禁止静默回退 mock」写成决策，不做就等于留了静默回退的口子。
 
 **P0-4 identity 写请求缺幂等键（现在不阻塞，做页面时会 400）**
+
 - 现状：billing / contract / deployment / entitlement / support / tenant 六个域都有 `writeConfig(createIdempotencyKey())`；`identity/` 只有 `session.ts`，`/operators`、`/roles`、`/audit-events` 零客户端。
 - 影响：§5.1 把邀请 / 改账号 / 建角色标成「幂等 必填」。你写账号管理页时必须带键，否则我按契约返回 400 `VALIDATION_ERROR`。
 
@@ -307,3 +308,48 @@ cd admin && corepack pnpm -F @vben/web-antd dev
 
 只剩一个：**等你 T-01/T-02 出 `/meta` 与 `/session`**，我就能关桩跑真登录。在那之前我没有可以推进的联调工作，Task 8 治理域要不要现在做，取决于你是否希望 `identity` 客户端先就位（做完你 P0-4 也一并解决）。
 
+## 13. 前端回执之二：Task 8 治理域完成（2026-10-30）
+
+### 13.1 交付内容
+
+| 项 | 内容 |
+| --- | --- |
+| 页面（5 个，全部替换占位页） | `views/ops/identity-audit/`：`overview.vue`（总览）、`operators.vue`（账号与角色）、`settings.vue`（系统设置 + 字典）、`audit.vue`（审计日志）、`exports.vue`（导出任务） |
+| 组件（7 个） | 邀请弹窗、成员编辑弹窗、角色表单、权限动作码选择器、审计详情抽屉、字典项弹窗、导出创建弹窗 |
+| API 客户端 | `api/ops/identity/` 新增 `overview.ts`、`settings.ts`、`dictionaries.ts`、`exports.ts`、`errors.ts`、`rules.ts`、`format.ts`、`dev-stub.ts`、`fixtures.ts`；`operators/roles/audit-events` 三个既有客户端补上桩分支 |
+| 契约桩 | 复刻六条服务端不变量：版本冲突 409、`LAST_ROLE`、`LAST_ADMIN`、重复邮箱 409、设置越界 400、字典取值重复 409；导出按 `queued → running → succeeded` 真实推进（创建只返回 `queued`） |
+
+### 13.2 三处需要你定的事（已在契约 §11 登记 U-17/U-18/U-19）
+
+1. **`GET /operators` 请补 `version`（和 `mfaRequired`）**。`PATCH /operators/{operatorId}` 要求 `version` 必填，但列表项没有该字段、也没有 `GET /operators/{id}` 详情端点——**乐观锁的值无处可取**。前端现状：缺失时**禁用编辑入口**并在页面写明原因，绝不伪造版本号去覆盖别人的改动。这意味着后端不补该字段，成员就无法修改。
+2. **`GET /dictionaries` 请让条目带 `id`**。`PATCH /dictionary-items/{itemId}` 按 id 寻址，而 §5.9 的条目字段只有 `{value,label,sortOrder,isActive}`。前端现状：缺 `id` 时字典项只读。
+3. **`POST /exports` 是否接受 `reason`**（U-17）。§4 把 `export.create` 标为高风险动作（须填原因、写审计），§5.9 却只列 `exportType`/`filters`。前端已在弹窗收集原因并随请求体提交；后端若不接受，请**忽略**该字段而不是 400。
+
+另有三处「未定义形状」我按宽松读取处理，不阻塞联调，但建议顺手定稿：`overview.partialFailures[]` 的条目字段、`requestedBy`/`updatedBy` 是 uuid 还是对象、`retention.exportDays` 的取值范围。
+
+### 13.3 本轮门禁实测（本机）
+
+| 门禁 | 结果 |
+| --- | --- |
+| typecheck | 0 错 |
+| 单测 | **53 文件 / 399 用例 / exit 0，连跑两轮一致**（新增 4 文件 44 用例） |
+| lint（oxlint + eslint + stylelint） | 0 警告 0 错，303 文件 |
+| format（oxfmt） | 1227 文件全部匹配 |
+| build | 11 tasks 成功，`dist.zip` 1,554,364 字节；产物内桩夹具关键词 **0 命中**（`exports.example.invalid` / `平台管理员·陈` / `开发桩·演示运营` 全部搜不到） |
+| e2e | **10 例全过，连跑两轮**（34.5s / 34.4s，本轮新增 4 例治理页渲染验证） |
+
+e2e 里有一条旧断言被我改了：它原先断言首页是占位页文案（`该页面将在后续迭代中实现…`）。占位页换真实页面后该断言必须跟着变，否则会变成「测试还在保护一个已经不存在的行为」。现在改为断言总览页的「统计时刻」「应收按币种」存在，并反向断言占位文案**取不到**。
+
+### 13.4 仍未解锁的
+
+还是那一件：**T-01/T-02 的 `/meta` 与 `/session` 落地前，我无法关桩跑真登录**。治理域页面目前全部走 `VITE_OPS_MOCK=true` 的桩，桩内数据是虚构的（邮箱一律 `example.invalid`），不能作为集成验收依据。
+
+### 13.5 顺手修的一个门禁问题（与你无关，但会影响 CI 判定）
+
+根目录 `pnpm run test:unit` 原先直接执行 `vitest run --dom`，在仓库根跑就会把整个 monorepo 的测试
+全拉起来（实测 88 文件 / 665 用例，26 文件失败）：其中 24 个是本应用的 mount 类测试——根目录运行时
+加载不到 `apps/web-antd/vitest.config.ts`，缺 Vue 插件与 `#/` 别名；另 2 个是上游 `packages/*`
+的环境相关失败。而 `quality:check`（CI 用的就是这条）里调的正是这条根命令，等于**单测步骤必红**。
+
+已改为 `pnpm --filter @vben/web-antd run test:unit`，根目录实测 53 文件 / 399 用例 / exit 0。
+如果你那边也继承了这份 `package.json`，建议同步；不涉及业务代码。

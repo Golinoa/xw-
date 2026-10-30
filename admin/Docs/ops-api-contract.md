@@ -658,7 +658,7 @@ ops 域只持久化「软件提供方与旅行社之间的商业关系、交付�
 | `POST /dictionaries/{code}/items` | `settings.manage` | `value`、`label`、`sortOrder?` | `item{...}` | 403、409 `CONFLICT` | 必填 |
 | `PATCH /dictionary-items/{itemId}` | `settings.manage` | `label?`、`sortOrder?`、`isActive?` | `item{...}` | 403、404 | 可选 |
 | `GET /exports` | `export.read` | `exportType`、`status[]`、`requestedBy` | `items[{id,exportNo,exportType,status,rowCount,requestedBy,createdAt,expiresAt}]` | 403 | — |
-| `POST /exports` | `export.create` | `exportType`（`receivables`/`receipts`/`contracts`/`customers`/`tickets`）、`filters`（与对应列表端点同构） | 202 `export{id,exportNo,status='queued'}` | 403、400（筛选非法） | 必填 |
+| `POST /exports` | `export.create` | `exportType`（`receivables`/`receipts`/`contracts`/`customers`/`tickets`）、`filters`（与对应列表端点同构）、`reason`（U-17 [推导]） | 202 `export{id,exportNo,status='queued'}` | 403、400（筛选非法） | 必填 |
 | `GET /exports/{exportId}` | `export.read` | — | `export{...}`、`downloadUrl?`（≤5 分钟签名）、`expiresAt` | 404 | — |
 
 ---
@@ -1082,6 +1082,9 @@ GRANT EXECUTE ON FUNCTION ops.transition_contract(uuid, text, integer, text) TO 
 | U-14 | 导出是否一律异步 | 一律异步（`queued/running/succeeded/failed/expired`），单文件上限 200k 行 | [推导]。PRD §10.1「大规模导出使用受后台任务」，未给同步阈值 |
 | U-15 | 运营成员邀请是否需要邮箱域名白名单 | 不限制域名，仅平台管理员可邀请 | [推导]。PRD 未定义；若需限制，加 `settings` 项与校验 |
 | U-16 | 客户「地区」字段口径 | `region_code` 存 GB/T 2260 行政区划码，展示层映射名称 | [推导]。PRD 只写「地区」 |
+| U-17 | 发起导出是否必须填写原因 | `POST /exports` 请求体增加 `reason`（与其余高风险动作一致） | [推导]。§4 把 `export.create` 列为高风险动作并要求填写原因，但 §5.9 只列了 `exportType`/`filters`。后端若不接受该字段应忽略而不是 400 |
+| U-18 | `GET /operators` 是否返回 `version` 与 `mfaRequired` | 前端按**可选字段**读取；缺失时禁用成员编辑并提示原因 | [推导·契约缺口] `PATCH /operators/{operatorId}` 要求 `version` 必填，但列表项没有该字段、也没有详情端点，乐观锁的值无处可取。建议后端在列表项补 `version`（及 `mfaRequired`） |
+| U-19 | `GET /dictionaries` 的条目是否返回 `id` | 前端按可选 `id` 读取；缺失时字典项只读 | [推导·契约缺口] `PATCH /dictionary-items/{itemId}` 按 id 寻址，而 §5.9 的条目字段只有 `{value,label,sortOrder,isActive}` |
 
 ---
 
