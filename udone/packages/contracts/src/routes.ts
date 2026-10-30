@@ -14,6 +14,21 @@ import {
   updateCustomerRequestSchema,
 } from './customers';
 import type { HttpMethod } from './http';
+import {
+  opsAuditEventListQuerySchema,
+  opsAuditEventListResponseSchema,
+  opsOperatorInvitationRequestSchema,
+  opsOperatorInvitationResponseSchema,
+  opsOperatorListQuerySchema,
+  opsOperatorListResponseSchema,
+  opsOperatorUpdateRequestSchema,
+  opsOperatorUpdateResponseSchema,
+  opsRoleCreateRequestSchema,
+  opsRoleCreateResponseSchema,
+  opsRoleListResponseSchema,
+  opsRoleUpdateRequestSchema,
+  opsRoleUpdateResponseSchema,
+} from './ops/accounts';
 import { opsLoginRequestSchema, opsLogoutResponseSchema, opsTokenResponseSchema } from './ops/auth';
 import { opsMetaResponseSchema } from './ops/meta';
 import { opsPermissionListResponseSchema, opsSessionResponseSchema } from './ops/session';
@@ -317,6 +332,55 @@ export const OPS_ROUTES = {
     method: 'GET',
     path: '/api/v1/ops/permissions',
     response: opsPermissionListResponseSchema,
+  }),
+  /**
+   * 账号与角色写侧（契约 §5.1）。
+   *
+   * `POST /operators/invitations` 排在 `PATCH /operators/:operatorId` 之前是刻意的：
+   * Hono 按注册顺序匹配，虽然两者方法不同不会真的撞车，但阅读顺序应当是
+   * 「先看到集合上的动作，再看到单条上的动作」——反过来读会以为 invitations
+   * 是某个 operatorId 的子资源。
+   */
+  listOpsOperators: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/operators',
+    request: opsOperatorListQuerySchema,
+    response: opsOperatorListResponseSchema,
+  }),
+  inviteOpsOperator: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/operators/invitations',
+    request: opsOperatorInvitationRequestSchema,
+    response: opsOperatorInvitationResponseSchema,
+  }),
+  updateOpsOperator: defineRoute({
+    method: 'PATCH',
+    path: '/api/v1/ops/operators/:operatorId',
+    request: opsOperatorUpdateRequestSchema,
+    response: opsOperatorUpdateResponseSchema,
+  }),
+  listOpsRoles: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/roles',
+    response: opsRoleListResponseSchema,
+  }),
+  createOpsRole: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/roles',
+    request: opsRoleCreateRequestSchema,
+    response: opsRoleCreateResponseSchema,
+  }),
+  updateOpsRole: defineRoute({
+    method: 'PATCH',
+    path: '/api/v1/ops/roles/:roleId',
+    request: opsRoleUpdateRequestSchema,
+    response: opsRoleUpdateResponseSchema,
+  }),
+  listOpsAuditEvents: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/audit-events',
+    request: opsAuditEventListQuerySchema,
+    response: opsAuditEventListResponseSchema,
   }),
 } as const satisfies Record<string, RouteContract>;
 

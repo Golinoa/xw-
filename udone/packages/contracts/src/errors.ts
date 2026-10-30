@@ -12,6 +12,14 @@ export const ERROR_CODES = {
   VALIDATION_ERROR: 'VALIDATION_ERROR',
   NOT_FOUND: 'NOT_FOUND',
   CONFLICT: 'CONFLICT',
+  /**
+   * 运营端通用状态机冲突（契约 §6.3）。
+   *
+   * 不复用 `ORDER_STATE_CONFLICT`：那个码属于租户侧订单状态机，前端按它渲染的
+   * 文案与后续动作都不同。两个域共用一个码，症状是运营端把「不能移除最后一个
+   * 管理员」显示成「订单状态不允许该操作」。
+   */
+  STATE_CONFLICT: 'STATE_CONFLICT',
   /** 主数据仍被业务单据引用，不能物理删除（需求 §19.2）。 */
   OBJECT_REFERENCED: 'OBJECT_REFERENCED',
   /** 订单当前状态不允许该动作，例如对已锁团订单执行确认出团。 */

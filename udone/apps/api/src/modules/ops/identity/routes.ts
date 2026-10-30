@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import {
-  ERROR_CODES,
   OPS_ROUTES,
   type OpsPermissionListResponse,
   type OpsSessionResponse,
@@ -8,8 +7,8 @@ import {
 import { respond } from '../../../lib/contract';
 import { createRestClient } from '../../../lib/rest-client';
 import type { ApiEnvironment } from '../../../middleware/auth';
-import { ApiHttpError } from '../../../middleware/error-handler';
 import { requireOpsAuth } from '../../../middleware/ops-auth';
+import { requireOpsPermission } from '../../../middleware/ops-permission';
 
 export const opsIdentityRoutes = new Hono<ApiEnvironment>();
 
@@ -68,12 +67,7 @@ opsIdentityRoutes.get(OPS_ROUTES.getOpsSession.path, requireOpsAuth(), (context)
  * 契约写的就是 403，所以判定放在这里。
  */
 opsIdentityRoutes.get(OPS_ROUTES.listOpsPermissions.path, requireOpsAuth(), async (context) => {
-  const opsContext = context.get('opsContext');
-  if (!opsContext.permissions.includes('operator.read')) {
-    throw new ApiHttpError(403, ERROR_CODES.FORBIDDEN, 'The operator.read permission is required', {
-      required: 'operator.read',
-    });
-  }
+  requireOpsPermission(context, 'operator.read');
 
   const client = createRestClient(context.env, context.get('opsToken'));
   const rows = await client.rest<PermissionRow[]>(

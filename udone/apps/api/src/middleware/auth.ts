@@ -10,6 +10,7 @@ import type { FinanceApplicationRepository } from '../modules/finance-applicatio
 import { ApiHttpError } from './error-handler';
 import { createSupabaseAuthVerifier } from '../services/supabase-auth-verifier';
 import type { OpsAuthUpstream } from '../modules/ops/auth/upstream';
+import type { OpsInviteUpstream } from '../modules/ops/accounts/invite-upstream';
 
 export interface AuthVerifier {
   verify(token: string, organizationId?: string): Promise<AuthContext | null>;
@@ -33,6 +34,11 @@ export interface ApiEnvironment {
      * 所以 `wrangler.toml` 里写不出它——这一点由类型而不是约定保证。
      */
     OPS_AUTH_UPSTREAM?: OpsAuthUpstream;
+    /**
+     * GoTrue `auth.admin` 的注入点，只存在于测试。理由同 `OPS_AUTH_UPSTREAM`：
+     * 邀请要真的建一个 auth 用户，而本地没有 `/auth/v1`。
+     */
+    OPS_INVITE_UPSTREAM?: OpsInviteUpstream;
     SUPABASE_URL?: string;
     SUPABASE_PUBLISHABLE_KEY?: string;
     SUPABASE_SERVICE_ROLE_KEY?: string;

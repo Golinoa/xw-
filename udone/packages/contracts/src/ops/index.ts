@@ -6,6 +6,7 @@
  * 是运营的 39 码之一还是租户的角色权限」会变成需要看出处才能回答的问题——
  * 而两者恰好同名，是最容易串的一处。
  */
+export * from './accounts';
 export * from './auth';
 export * from './identity';
 export * from './meta';

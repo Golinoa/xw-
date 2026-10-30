@@ -3,9 +3,9 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 17
+- Migration sources scanned: 18
 - Tables discovered: 24
-- Functions discovered: 32
+- Functions discovered: 43
 - Indexes discovered: 32
 - RLS policies discovered: 61
 - Triggers discovered: 2
@@ -29,3 +29,4 @@
 | `20261030000002_ops_idempotency_align_contract.sql` | — | — | — | — | — |
 | `20261030000003_ops_identity.sql` | `ops.operators`, `ops.roles`, `ops.permissions`, `ops.role_permissions`, `ops.operator_roles`, `ops.audit_events` | `ops.current_operator_id`, `ops.has_permission`, `ops.get_current_ops_context`, `ops.require_permission`, `ops.write_audit` | `operators_email_lower_idx`, `operators_status_idx`, `permissions_domain_idx`, `operator_roles_role_idx`, `audit_events_created_idx`, `audit_events_entity_idx`, `audit_events_actor_idx`, `audit_events_action_idx` | `operators_select_operator_reader`, `roles_select_operator_reader`, `permissions_select_operator_reader`, `role_permissions_select_operator_reader`, `operator_roles_select_operator_reader`, `audit_events_select_audit_reader` | — |
 | `20261030000004_ops_login_state.sql` | — | `ops.login_member_state` | — | — | — |
+| `20261030000005_ops_identity_write.sql` | — | `ops.unknown_role_codes`, `ops.unknown_permission_codes`, `ops.operator_json`, `ops.role_json`, `ops.list_operators`, `ops.invite_operator`, `ops.update_operator`, `ops.list_roles`, `ops.create_role`, `ops.update_role`, `ops.list_audit_events` | — | — | — |

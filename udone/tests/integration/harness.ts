@@ -52,6 +52,23 @@ export const OPS_USER = requiredEnv('UDONE_TEST_OPS_USER_ID');
  */
 export const OPS_DISABLED_USER = requiredEnv('UDONE_TEST_OPS_DISABLED_USER_ID');
 
+/**
+ * 只读运营账号（`ops_viewer`）：有 `audit.read`，**没有** `operator.read`。
+ *
+ * 这一对差异是「权限按动作码判」与「权限按会员身份判」的分界：同一个人读审计
+ * 应当 200、读账号列表应当 403。缺这个账号，两条断言都会因为「他没有令牌」
+ * 或「他是管理员」而变得没有意义。
+ */
+export const OPS_VIEWER_USER = requiredEnv('UDONE_TEST_OPS_VIEWER_USER_ID');
+
+/**
+ * 待邀请对象：`auth.users` 里有、`ops.operators` 里没有。
+ *
+ * 邀请端点先让 GoTrue 建号再写 ops 行，本地没有 GoTrue，所以由注入的替身返回
+ * 这个 id。它是夹具里唯一一个「用户存在但还不是运营成员」的账号。
+ */
+export const OPS_INVITEE_USER = requiredEnv('UDONE_TEST_OPS_INVITEE_USER_ID');
+
 /** 三个固定账号，与 scripts/db/local-db.mjs 的夹具一一对应。 */
 export const USERS = {
   admin: requiredEnv('UDONE_TEST_ADMIN_ID'),

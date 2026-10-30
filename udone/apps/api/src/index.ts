@@ -13,6 +13,7 @@ import { orderRoutes } from './modules/orders/routes';
 import { supplierRoutes } from './modules/suppliers/routes';
 import { financeRoutes } from './modules/finance/routes';
 import { financeApplicationRoutes } from './modules/finance-applications/routes';
+import { opsAccountRoutes } from './modules/ops/accounts/routes';
 import { opsAuthRoutes } from './modules/ops/auth/routes';
 import { opsIdentityRoutes } from './modules/ops/identity/routes';
 import { opsMetaRoutes } from './modules/ops/meta/routes';
@@ -41,5 +42,6 @@ app.route('/', financeApplicationRoutes);
 app.route('/', opsAuthRoutes);
 app.route('/', opsMetaRoutes);
 app.route('/', opsIdentityRoutes);
+app.route('/', opsAccountRoutes);
 
 export default app;
