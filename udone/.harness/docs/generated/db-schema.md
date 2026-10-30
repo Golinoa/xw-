@@ -3,11 +3,11 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 15
-- Tables discovered: 18
-- Functions discovered: 26
-- Indexes discovered: 24
-- RLS policies discovered: 55
+- Migration sources scanned: 16
+- Tables discovered: 24
+- Functions discovered: 31
+- Indexes discovered: 32
+- RLS policies discovered: 61
 - Triggers discovered: 2
 
 | Migration | Tables | Functions | Indexes | Policies | Triggers |
@@ -27,3 +27,4 @@
 | `20261029000008_finance_applications.sql` | `public.finance_applications`, `public.finance_application_actions` | `public.release_finance_application_hold`, `public.confirm_finance_application_hold`, `public.release_finance_application_confirm`, `public.create_finance_application`, `public.decide_finance_application`, `public.undo_finance_application`, `public.withdraw_finance_application` | `finance_applications_order_index`, `finance_applications_pending_index`, `finance_application_actions_application_index` | `finance_applications_select_reader`, `finance_application_actions_select_reader` | — |
 | `20261030000001_ops_schema_idempotency.sql` | `ops.idempotency_records` | — | `idempotency_records_expires_at_idx` | — | — |
 | `20261030000002_ops_idempotency_align_contract.sql` | — | — | — | — | — |
+| `20261030000003_ops_identity.sql` | `ops.operators`, `ops.roles`, `ops.permissions`, `ops.role_permissions`, `ops.operator_roles`, `ops.audit_events` | `ops.current_operator_id`, `ops.has_permission`, `ops.get_current_ops_context`, `ops.require_permission`, `ops.write_audit` | `operators_email_lower_idx`, `operators_status_idx`, `permissions_domain_idx`, `operator_roles_role_idx`, `audit_events_created_idx`, `audit_events_entity_idx`, `audit_events_actor_idx`, `audit_events_action_idx` | `operators_select_operator_reader`, `roles_select_operator_reader`, `permissions_select_operator_reader`, `role_permissions_select_operator_reader`, `operator_roles_select_operator_reader`, `audit_events_select_audit_reader` | — |
