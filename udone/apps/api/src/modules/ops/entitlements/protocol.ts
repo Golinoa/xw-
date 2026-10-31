@@ -382,7 +382,7 @@ export function toSnapshotLine(row: SnapshotLineRow): OpsEntitlementSnapshotLine
   return {
     featureKey: row.feature_key,
     enabled: row.enabled,
-    quotaValue: row.quota_value,
+    quota: row.quota_value,
     termMonths: row.term_months,
     displayNameSnapshot: row.display_name_snapshot,
   };

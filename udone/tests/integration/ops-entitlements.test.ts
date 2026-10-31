@@ -53,7 +53,7 @@ const CUSTOMERS = '/api/v1/ops/customers';
 interface SnapshotLineBody {
   featureKey: string;
   enabled: boolean;
-  quotaValue: number | null;
+  quota: number | null;
   termMonths: number | null;
   displayNameSnapshot: string;
 }
@@ -347,7 +347,7 @@ describe('POST /api/v1/ops/subscriptions', () => {
           autoRenewIntent: true,
           features: [
             { featureKey: 'ent_feature_a', enabled: true },
-            { featureKey: 'ent_feature_b', quotaValue: 10 },
+            { featureKey: 'ent_feature_b', quota: 10 },
           ],
           reason: '首期开通',
         },
@@ -498,6 +498,14 @@ describe('GET /api/v1/ops/subscriptions/{id}', () => {
       'ent_feature_b',
     ]);
     expect(response.body.snapshot.lines[0]?.displayNameSnapshot).toBeTruthy();
+
+    // 额度必须真的换算到 `quota` 上，而不只是「行数对得上」。
+    // 入站（create_subscription 的 p_features）与出站（protocol 的行映射）各用一次
+    // 键名，任一侧写错都会让额度变成 null 而 lineCount 仍是 2——只数行数是看不出来的。
+    const byKey = new Map(response.body.snapshot.lines.map((line) => [line.featureKey, line]));
+    expect(byKey.get('ent_feature_a')).toMatchObject({ enabled: true, quota: null });
+    expect(byKey.get('ent_feature_b')).toMatchObject({ enabled: true, quota: 10 });
+
     expect(response.body.changeRequests).toEqual([]);
     expect(response.body.tenantMapping).toBeNull();
   });
@@ -525,7 +533,7 @@ describe('POST /api/v1/ops/subscriptions/{id}/change-requests', () => {
         body: {
           changeType: 'quota_change',
           reason: '客户扩席',
-          proposedFeatures: [{ featureKey: 'ent_feature_b', quotaValue: 20 }],
+          proposedFeatures: [{ featureKey: 'ent_feature_b', quota: 20 }],
         },
       },
     );
@@ -539,7 +547,7 @@ describe('POST /api/v1/ops/subscriptions/{id}/change-requests', () => {
     expect(
       response.body.changeRequest.afterSummary.lines.find(
         (line) => line.featureKey === 'ent_feature_b',
-      )?.quotaValue,
+      )?.quota,
     ).toBe(20);
     changeRequest = response.body.changeRequest;
   });

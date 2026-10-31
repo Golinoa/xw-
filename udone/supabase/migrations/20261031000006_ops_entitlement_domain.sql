@@ -444,8 +444,11 @@ begin
     quota := null;
     term := null;
 
-    if entry ? 'quotaValue' and jsonb_typeof(entry -> 'quotaValue') <> 'null' then
-      quota := (entry ->> 'quotaValue')::numeric;
+    -- 入站键是契约里的 `quota`（§5.4 entitlement-preview 与 §5.6 快照明细都这么写），
+    -- 内部与列名是 `quota_value`。两者不同名是刻意的：出站形状必须与同一份契约的
+    -- 其它域一致，否则运营端拿到的权益行会有两种键名。
+    if entry ? 'quota' and jsonb_typeof(entry -> 'quota') <> 'null' then
+      quota := (entry ->> 'quota')::numeric;
       if quota < 0 then
         return jsonb_build_object('status', 'feature_invalid', 'feature_key', target_key);
       end if;

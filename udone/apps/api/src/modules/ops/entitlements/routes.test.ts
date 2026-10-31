@@ -881,7 +881,7 @@ describe('POST /subscriptions/:subscriptionId/change-requests', () => {
       body: {
         changeType: 'quota_change',
         reason: '客户扩席',
-        proposedFeatures: [{ featureKey: 'feature_b', quotaValue: 20 }],
+        proposedFeatures: [{ featureKey: 'feature_b', quota: 20 }],
       },
     });
 
@@ -893,7 +893,7 @@ describe('POST /subscriptions/:subscriptionId/change-requests', () => {
     });
     expect(response.body).toMatchObject({
       changeRequest: { status: 'pending_approval' },
-      diff: { added: [{ featureKey: 'feature_b', quotaValue: 20 }], removed: [] },
+      diff: { added: [{ featureKey: 'feature_b', quota: 20 }], removed: [] },
     });
   });
 
@@ -932,7 +932,7 @@ describe('POST /subscriptions/:subscriptionId/change-requests', () => {
       body: {
         changeType: 'quota_change',
         reason: '负数试试',
-        proposedFeatures: [{ featureKey: 'feature_b', quotaValue: 5 }],
+        proposedFeatures: [{ featureKey: 'feature_b', quota: 5 }],
       },
     });
 
@@ -1103,7 +1103,7 @@ describe('GET /entitlement-snapshots/:snapshotId', () => {
     expect(response.body).toMatchObject({
       lines: [
         { featureKey: 'feature_a', displayNameSnapshot: '基础功能' },
-        { featureKey: 'feature_b', quotaValue: 10 },
+        { featureKey: 'feature_b', quota: 10 },
       ],
     });
   });

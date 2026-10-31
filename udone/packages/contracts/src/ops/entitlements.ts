@@ -163,14 +163,14 @@ export type OpsEntitlementPackage = z.infer<typeof opsEntitlementPackageSchema>;
 export const opsEntitlementSnapshotLineSchema = z.object({
   featureKey: z.string().min(1),
   enabled: z.boolean(),
-  quotaValue: z.number().nullable(),
+  quota: z.number().nullable(),
   termMonths: z.number().int().nullable(),
   displayNameSnapshot: z.string().min(1),
 });
 export type OpsEntitlementSnapshotLine = z.infer<typeof opsEntitlementSnapshotLineSchema>;
 
 /**
- * 快照。`contentHash` 只覆盖 `featureKey` / `enabled` / `quotaValue` /
+ * 快照。`contentHash` 只覆盖 `featureKey` / `enabled` / `quota` /
  * `termMonths` 四个字段，**不含** `displayNameSnapshot`：改名不等于改授权，
  * 否则「同一个套餐改了文案」会变成一次重新发放。
  */
@@ -321,7 +321,7 @@ export type OpsEntitlementCommand = z.infer<typeof opsEntitlementCommandSchema>;
  * 一条权益输入。
  *
  * 全部字段除 `featureKey` 外都可省略——省略不是「置空」，是「沿用基线」：
- * `enabled` 省略即保持基线值，`quotaValue` 省略即保持基线额度。要真的清空一个
+ * `enabled` 省略即保持基线值，`quota` 省略即保持基线额度。要真的清空一个
  * 额度得显式传 `null`。
  *
  * `displayNameSnapshot` **不接受**：快照里的名称一律取字典当时的写法，允许
@@ -330,7 +330,7 @@ export type OpsEntitlementCommand = z.infer<typeof opsEntitlementCommandSchema>;
 export const opsFeatureInputSchema = z.strictObject({
   featureKey: z.string().trim().min(1).max(80),
   enabled: z.boolean().optional(),
-  quotaValue: z.number().min(0).nullable().optional(),
+  quota: z.number().min(0).nullable().optional(),
   termMonths: z.number().int().min(1).nullable().optional(),
 });
 export type OpsFeatureInput = z.infer<typeof opsFeatureInputSchema>;

@@ -1269,7 +1269,7 @@ SELECT
       p_subject_id => current_setting('ent.sub_a')::uuid,
       p_change_type => 'quota_change',
       p_reason => '客户扩席',
-      p_proposed_features => '[{"featureKey":"feature_b","quotaValue":20},{"featureKey":"feature_d","quotaValue":5}]'::jsonb
+      p_proposed_features => '[{"featureKey":"feature_b","quota":20},{"featureKey":"feature_d","quota":5}]'::jsonb
     ) ->> 'status',
     'ok',
     'C1 a change request is submitted'
