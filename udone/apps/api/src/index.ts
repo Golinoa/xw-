@@ -19,6 +19,7 @@ import { opsCatalogRoutes } from './modules/ops/catalog/routes';
 import { opsContractRoutes } from './modules/ops/contracts/routes';
 import { opsDeploymentRoutes } from './modules/ops/deployment/routes';
 import { opsReceivableRoutes } from './modules/ops/receivables/routes';
+import { opsReportRoutes } from './modules/ops/reports/routes';
 import { opsCustomerRoutes } from './modules/ops/customers/routes';
 import { opsIdentityRoutes } from './modules/ops/identity/routes';
 import { opsMetaRoutes } from './modules/ops/meta/routes';
@@ -78,5 +79,8 @@ app.route('/', opsDeploymentRoutes);
 // 总览接在最后：它不写任何表，只跨域读——客户、合同、应收、收款、权益、租户、
 // 部署、工单。放在最后意味着它的依赖方向是「全都看过一遍」，而不是「被别人依赖」。
 app.route('/', opsOverviewRoutes);
+// 报表接在总览之后：它不写任何表，只读同一组口径（`ops.v_receivable_status`）。
+// 放在总览之后是读的顺序，不是依赖——两者互不调用。
+app.route('/', opsReportRoutes);
 
 export default app;

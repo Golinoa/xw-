@@ -18,6 +18,7 @@ export * from './entitlements';
 export * from './identity';
 export * from './meta';
 export * from './overview';
+export * from './reports';
 export * from './receipts';
 export * from './receivables';
 export * from './session';

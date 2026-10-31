@@ -3,9 +3,9 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 32
+- Migration sources scanned: 33
 - Tables discovered: 57
-- Functions discovered: 213
+- Functions discovered: 217
 - Indexes discovered: 85
 - RLS policies discovered: 61
 - Triggers discovered: 6
@@ -44,3 +44,4 @@
 | `20261031000007_ops_tenant_integration_domain.sql` | `ops.tenant_mappings`, `ops.tenant_commands`, `ops.tenant_command_attempts` | `ops.tenant_command_attempt_immutable`, `ops.allowed_command_actions`, `ops.command_required_permission`, `ops.tenant_retry_backoff`, `ops.tenant_mapping_json`, `ops.tenant_command_json`, `ops.tenant_attempt_json`, `ops.tenant_command_attempts_json`, `ops.create_tenant_mapping`, `ops.update_tenant_mapping`, `ops.create_tenant_command`, `ops.transition_tenant_command`, `ops.record_tenant_command_attempt`, `ops.list_tenant_mappings`, `ops.get_tenant_mapping`, `ops.list_tenant_commands`, `ops.get_tenant_command`, `ops.list_tenant_command_attempts` | `tenant_mappings_customer_idx`, `tenant_mappings_status_idx`, `tenant_commands_status_idx`, `tenant_commands_mapping_idx`, `tenant_commands_next_retry_idx`, `tenant_command_attempts_command_idx` | — | `tenant_command_attempts_immutable` |
 | `20261031000008_ops_deployment_domain.sql` | `ops.deployment_instances`, `ops.deployment_version_records` | `ops.deployment_version_record_immutable`, `ops.allowed_deployment_actions`, `ops.deployment_instance_json`, `ops.deployment_version_record_json`, `ops.create_deployment_instance`, `ops.update_deployment_instance`, `ops.transition_deployment_instance`, `ops.create_deployment_version_record`, `ops.list_deployment_instances`, `ops.get_deployment_instance`, `ops.list_deployment_version_records` | `deployment_instances_status_idx`, `deployment_instances_version_idx`, `deployment_instances_customer_idx`, `deployment_version_records_instance_idx` | — | `deployment_version_records_immutable` |
 | `20261031000009_ops_overview.sql` | — | `ops.get_ops_overview` | — | — | — |
+| `20261031000010_ops_reports.sql` | — | `ops.report_receivables`, `ops.report_expiring_entitlements`, `ops.report_tenant_sync_failures`, `ops.report_deployment_versions` | — | — | — |

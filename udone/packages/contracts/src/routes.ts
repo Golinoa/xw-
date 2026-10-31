@@ -140,6 +140,16 @@ import {
 } from './ops/deployment';
 import { opsOverviewQuerySchema, opsOverviewResponseSchema } from './ops/overview';
 import {
+  opsDeploymentVersionReportQuerySchema,
+  opsDeploymentVersionReportResponseSchema,
+  opsExpiringEntitlementReportQuerySchema,
+  opsExpiringEntitlementReportResponseSchema,
+  opsReceivableReportQuerySchema,
+  opsReceivableReportResponseSchema,
+  opsTenantSyncFailureReportQuerySchema,
+  opsTenantSyncFailureReportResponseSchema,
+} from './ops/reports';
+import {
   opsTenantCommandAttemptListResponseSchema,
   opsTenantCommandCreateRequestSchema,
   opsTenantCommandCreateResponseSchema,
@@ -1146,6 +1156,30 @@ export const OPS_ROUTES = {
     path: '/api/v1/ops/overview',
     request: opsOverviewQuerySchema,
     response: opsOverviewResponseSchema,
+  }),
+  getOpsReceivableReport: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/reports/receivables',
+    request: opsReceivableReportQuerySchema,
+    response: opsReceivableReportResponseSchema,
+  }),
+  getOpsExpiringEntitlementReport: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/reports/expiring-entitlements',
+    request: opsExpiringEntitlementReportQuerySchema,
+    response: opsExpiringEntitlementReportResponseSchema,
+  }),
+  getOpsTenantSyncFailureReport: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/reports/tenant-sync-failures',
+    request: opsTenantSyncFailureReportQuerySchema,
+    response: opsTenantSyncFailureReportResponseSchema,
+  }),
+  getOpsDeploymentVersionReport: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/reports/deployment-versions',
+    request: opsDeploymentVersionReportQuerySchema,
+    response: opsDeploymentVersionReportResponseSchema,
   }),
 } as const satisfies Record<string, RouteContract>;
 
