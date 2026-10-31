@@ -23,6 +23,7 @@ import { opsIdentityRoutes } from './modules/ops/identity/routes';
 import { opsMetaRoutes } from './modules/ops/meta/routes';
 import { opsReceiptRoutes } from './modules/ops/receipts/routes';
 import { opsEntitlementRoutes } from './modules/ops/entitlements/routes';
+import { opsTenantIntegrationRoutes } from './modules/ops/tenant-integration/routes';
 import { opsTicketRoutes } from './modules/ops/tickets/routes';
 
 export const app = new Hono<ApiEnvironment>();
@@ -65,5 +66,9 @@ app.route('/', opsReceiptRoutes);
 // 权益接在收款之后：它只引用客户、合同、合同条目与功能字典，不引用任何
 // 金额链路——订阅与授权是「卖出去的权利」，与「收到多少钱」是两条线。
 app.route('/', opsEntitlementRoutes);
+// 租户集成接在权益之后：它引用客户、产品、合同与权益变更申请（`changeRequestId`），
+// 是唯一同时指向「卖出去的权利」和「远端那台机器」的模块。放在最后，
+// 依赖方向自上而下读得出来。
+app.route('/', opsTenantIntegrationRoutes);
 
 export default app;

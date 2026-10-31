@@ -124,6 +124,23 @@ import {
   opsSubscriptionTransitionResponseSchema,
 } from './ops/entitlements';
 import {
+  opsTenantCommandAttemptListResponseSchema,
+  opsTenantCommandCreateRequestSchema,
+  opsTenantCommandCreateResponseSchema,
+  opsTenantCommandDetailResponseSchema,
+  opsTenantCommandListQuerySchema,
+  opsTenantCommandListResponseSchema,
+  opsTenantCommandTransitionRequestSchema,
+  opsTenantCommandTransitionResponseSchema,
+  opsTenantMappingCreateRequestSchema,
+  opsTenantMappingCreateResponseSchema,
+  opsTenantMappingDetailResponseSchema,
+  opsTenantMappingListQuerySchema,
+  opsTenantMappingListResponseSchema,
+  opsTenantMappingUpdateRequestSchema,
+  opsTenantMappingUpdateResponseSchema,
+} from './ops/tenant-integration';
+import {
   opsReceivableDetailResponseSchema,
   opsReceivableExtensionCreateRequestSchema,
   opsReceivableExtensionCreateResponseSchema,
@@ -1009,6 +1026,63 @@ export const OPS_ROUTES = {
     method: 'GET',
     path: '/api/v1/ops/entitlement-snapshots/:snapshotId',
     response: opsSnapshotDetailResponseSchema,
+  }),
+  listOpsTenantMappings: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/tenant-mappings',
+    request: opsTenantMappingListQuerySchema,
+    response: opsTenantMappingListResponseSchema,
+  }),
+  createOpsTenantMapping: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/tenant-mappings',
+    request: opsTenantMappingCreateRequestSchema,
+    response: opsTenantMappingCreateResponseSchema,
+  }),
+  getOpsTenantMapping: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/tenant-mappings/:mappingId',
+    response: opsTenantMappingDetailResponseSchema,
+  }),
+  updateOpsTenantMapping: defineRoute({
+    method: 'PATCH',
+    path: '/api/v1/ops/tenant-mappings/:mappingId',
+    request: opsTenantMappingUpdateRequestSchema,
+    response: opsTenantMappingUpdateResponseSchema,
+  }),
+  createOpsTenantCommand: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/tenant-mappings/:mappingId/commands',
+    request: opsTenantCommandCreateRequestSchema,
+    response: opsTenantCommandCreateResponseSchema,
+  }),
+  listOpsTenantCommands: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/tenant-commands',
+    request: opsTenantCommandListQuerySchema,
+    response: opsTenantCommandListResponseSchema,
+  }),
+  getOpsTenantCommand: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/tenant-commands/:commandId',
+    response: opsTenantCommandDetailResponseSchema,
+  }),
+  listOpsTenantCommandAttempts: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/tenant-commands/:commandId/attempts',
+    response: opsTenantCommandAttemptListResponseSchema,
+  }),
+  retryOpsTenantCommand: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/tenant-commands/:commandId/retry',
+    request: opsTenantCommandTransitionRequestSchema,
+    response: opsTenantCommandTransitionResponseSchema,
+  }),
+  cancelOpsTenantCommand: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/tenant-commands/:commandId/cancel',
+    request: opsTenantCommandTransitionRequestSchema,
+    response: opsTenantCommandTransitionResponseSchema,
   }),
 } as const satisfies Record<string, RouteContract>;
 

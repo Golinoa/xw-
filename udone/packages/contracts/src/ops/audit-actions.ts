@@ -336,8 +336,7 @@ export const OPS_AUDIT_ACTIONS = [
   },
   {
     code: 'tenant_command.retried',
-    description:
-      '重试租户命令：failed → retrying，复用同一幂等键，不新建命令。永久错误不可重试。',
+    description: '重试租户命令：failed → retrying，复用同一幂等键，不新建命令。永久错误不可重试。',
   },
   {
     code: 'tenant_command.cancelled',
@@ -346,13 +345,11 @@ export const OPS_AUDIT_ACTIONS = [
   },
   {
     code: 'tenant_command.succeeded',
-    description:
-      '租户命令下发成功：远端确认后才落这个词，同时 syncVersion +1、映射状态摘要更新。',
+    description: '租户命令下发成功：远端确认后才落这个词，同时 syncVersion +1、映射状态摘要更新。',
   },
   {
     code: 'tenant_command.failed',
-    description:
-      '租户命令下发失败：摘要带 errorCategory / errorCode；permanent 不排下一次重试。',
+    description: '租户命令下发失败：摘要带 errorCategory / errorCode；permanent 不排下一次重试。',
   },
   {
     code: 'tenant_command.timed_out',

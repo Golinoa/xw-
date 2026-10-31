@@ -19,4 +19,5 @@ export * from './meta';
 export * from './receipts';
 export * from './receivables';
 export * from './session';
+export * from './tenant-integration';
 export * from './tickets';

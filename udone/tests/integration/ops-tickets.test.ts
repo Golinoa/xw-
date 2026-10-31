@@ -328,19 +328,42 @@ describe('工单的生命周期（真实状态机）', () => {
 
   it('links a reference and refuses the duplicate', async () => {
     const refId = '00000000-0000-4000-8000-00000000a001';
+    // 用 `deployment_version` 而不是 `tenant_command`：引用校验是「表在就真查」，
+    // 而租户命令表已经落地（o-t10），随便编一个 UUID 会被立刻挡成 400。
+    // 部署台账还没建（o-t11），这个类型眼下正是「只校验类型不校验行」的那一档。
     const created = await call<{ reference: { refType: string; refId: string } }>(
       `${TICKETS}/${mainTicket.id}/references`,
-      { method: 'POST', token: opsToken, body: { refType: 'tenant_command', refId } },
+      { method: 'POST', token: opsToken, body: { refType: 'deployment_version', refId } },
     );
     expectStatus(created, 201);
-    expect(created.body.reference).toMatchObject({ refType: 'tenant_command', refId });
+    expect(created.body.reference).toMatchObject({ refType: 'deployment_version', refId });
 
     const duplicate = await call<{ details: { reason: string } }>(
       `${TICKETS}/${mainTicket.id}/references`,
-      { method: 'POST', token: opsToken, body: { refType: 'tenant_command', refId } },
+      { method: 'POST', token: opsToken, body: { refType: 'deployment_version', refId } },
     );
     expectStatus(duplicate, 409);
     expect(duplicate.body.details.reason).toBe('REFERENCE_EXISTS');
+  });
+
+  it('租户命令表落地之后，编造的 tenant_command 引用真的会被挡', async () => {
+    // o-t09 时这条引用「表不存在 → 跳过校验」，谁都挂得上去。o-t10 落地后
+    // 同一个请求必须变成 400——否则工单里会积累一批指向不存在命令的引用，
+    // 事后没法区分「命令被删了」和「当初就是编的」。
+    const response = await call<{ details: { reason: string } }>(
+      `${TICKETS}/${mainTicket.id}/references`,
+      {
+        method: 'POST',
+        token: opsToken,
+        body: {
+          refType: 'tenant_command',
+          refId: '00000000-0000-4000-8000-0000000007f9',
+        },
+      },
+    );
+
+    expectStatus(response, 400);
+    expect(response.body.details.reason).toBe('REFERENCE_NOT_FOUND');
   });
 
   it('rejects a stale version on PATCH with the current version', async () => {
