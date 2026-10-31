@@ -22,6 +22,7 @@ import { opsReceivableRoutes } from './modules/ops/receivables/routes';
 import { opsCustomerRoutes } from './modules/ops/customers/routes';
 import { opsIdentityRoutes } from './modules/ops/identity/routes';
 import { opsMetaRoutes } from './modules/ops/meta/routes';
+import { opsOverviewRoutes } from './modules/ops/overview/routes';
 import { opsReceiptRoutes } from './modules/ops/receipts/routes';
 import { opsEntitlementRoutes } from './modules/ops/entitlements/routes';
 import { opsTenantIntegrationRoutes } from './modules/ops/tenant-integration/routes';
@@ -74,5 +75,8 @@ app.route('/', opsTenantIntegrationRoutes);
 // 部署台账接在租户之后：它引用客户、合同与私有化授权，而「租户开通之后能不能
 // 上线」正是它要回答的问题。两条线互不写对方的表。
 app.route('/', opsDeploymentRoutes);
+// 总览接在最后：它不写任何表，只跨域读——客户、合同、应收、收款、权益、租户、
+// 部署、工单。放在最后意味着它的依赖方向是「全都看过一遍」，而不是「被别人依赖」。
+app.route('/', opsOverviewRoutes);
 
 export default app;

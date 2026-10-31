@@ -138,6 +138,7 @@ import {
   opsDeploymentVersionRecordListQuerySchema,
   opsDeploymentVersionRecordListResponseSchema,
 } from './ops/deployment';
+import { opsOverviewQuerySchema, opsOverviewResponseSchema } from './ops/overview';
 import {
   opsTenantCommandAttemptListResponseSchema,
   opsTenantCommandCreateRequestSchema,
@@ -1139,6 +1140,12 @@ export const OPS_ROUTES = {
     path: '/api/v1/ops/deployments/:deploymentId/version-records',
     request: opsDeploymentVersionRecordListQuerySchema,
     response: opsDeploymentVersionRecordListResponseSchema,
+  }),
+  getOpsOverview: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/overview',
+    request: opsOverviewQuerySchema,
+    response: opsOverviewResponseSchema,
   }),
 } as const satisfies Record<string, RouteContract>;
 
