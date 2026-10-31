@@ -3,10 +3,10 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 26
-- Tables discovered: 43
-- Functions discovered: 134
-- Indexes discovered: 55
+- Migration sources scanned: 27
+- Tables discovered: 47
+- Functions discovered: 150
+- Indexes discovered: 65
 - RLS policies discovered: 61
 - Triggers discovered: 2
 
@@ -38,3 +38,4 @@
 | `20261031000001_ops_settings.sql` | `ops.settings` | `ops.setting_int` | — | — | — |
 | `20261031000002_ops_billing_receivables.sql` | `ops.receivables`, `ops.receivable_extensions` | `ops.receivable_today`, `ops.receivable_status`, `ops.receivable_json`, `ops.list_receivables`, `ops.get_receivable`, `ops.create_receivable_plan`, `ops.extend_receivable`, `ops.get_contract` | `receivables_due_idx`, `receivables_customer_due_idx`, `receivables_contract_idx`, `receivable_extensions_receivable_idx` | — | — |
 | `20261031000003_ops_support_tickets.sql` | `ops.tickets`, `ops.ticket_events`, `ops.ticket_references` | `ops.business_day_start`, `ops.allowed_ticket_actions`, `ops.ticket_due_at`, `ops.ticket_is_overdue`, `ops.ticket_json`, `ops.assignable_operators_json`, `ops.append_ticket_event`, `ops.list_tickets`, `ops.get_ticket`, `ops.ticket_event_json`, `ops.list_ticket_timeline`, `ops.list_assignable_operators`, `ops.create_ticket`, `ops.update_ticket`, `ops.assign_ticket`, `ops.transition_ticket`, `ops.add_ticket_event`, `ops.add_ticket_reference` | `tickets_status_priority_idx`, `tickets_assignee_status_idx`, `tickets_customer_idx`, `tickets_due_idx`, `ticket_events_ticket_created_idx`, `ticket_references_ref_idx` | — | — |
+| `20261031000004_ops_billing_receipts.sql` | `ops.receipts`, `ops.receipt_allocations`, `ops.receipt_allocation_reversals`, `ops.refunds` | `ops.receipt_allocated_net`, `ops.receipt_refundable`, `ops.allowed_receipt_actions`, `ops.operator_ref`, `ops.receipt_json`, `ops.refund_json`, `ops.list_receipts`, `ops.get_receipt`, `ops.record_receipt`, `ops.transition_receipt`, `ops.allocate_receipt`, `ops.reverse_receipt`, `ops.reverse_allocation`, `ops.list_refunds`, `ops.record_refund`, `ops.transition_refund` | `receipts_customer_status_idx`, `receipts_transaction_date_idx`, `receipts_status_idx`, `receipts_reference_no_idx`, `receipt_allocations_receipt_idx`, `receipt_allocations_receivable_idx`, `receipt_allocation_reversals_allocation_idx`, `refunds_receipt_idx`, `refunds_customer_idx`, `refunds_status_idx` | — | — |
