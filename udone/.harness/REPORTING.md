@@ -57,7 +57,11 @@ A "done" claim in the conversation that the board does not show is a reporting d
 pnpm board:check     # 读 ../../../XW-ERP/dev-board.html，可用 BOARD_PATH 覆盖
 ```
 
-它校验六件事：`SEED_VERSION` 与 `seed.seedVersion` 一致；卡片 id 唯一；`versionId` 引用存在；`done` 有 `start`、`progress=100` 且 `desc` 能指回提交（7–40 位十六进制）或写明豁免；非 `done` 没有 `end`、`progress` 不到 100；`blocked` 写了 `解锁条件`。
+它校验九件事：`SEED_VERSION` 与 `seed.seedVersion` 一致；卡片 id 唯一；`versionId` 引用存在；`done` 有 `start`、`progress=100` 且 `desc` 能指回提交或写明豁免；**`done` 卡与已闭环协作项引用的提交哈希必须能在仓库对象库里解析成 commit**（至少一条可达，全是悬空才红；没有 git 时整项跳过）；非 `done` 没有 `end`、`progress` 不到 100；`blocked` 写了 `解锁条件`；协作项五个文本字段非空且 `blocks` 指向真实卡、不阻塞已 done 的卡；卡片与协作文本不得用第一人称。
+
+哈希形状是短哈希 7–12 位、完整 40 位，**不是 7–40**：迁移文件名开头是 14 位纯数字时间戳（`20261030000003`），`{7,40}` 会把它当成哈希，于是「只提一句迁移编号」就能冒充证据。
+
+第九条（可达性）的理由：此前只校验证据「长得像」，不校验「查得到」。`a-import` 记的 `63a38dc` 属于合并前三仓时代，`8ccd36e` 合并成单仓时没保留旧历史，对象库里没有这个 commit——卡片 done、检查绿，任何人照着哈希核对都在第一步失败。形似证据比没有证据更糟：没有会让人去补，形似会让人以为核过了。判据取「至少一条可达」而非「全部可达」，是因为卡片需要留一句「原哈希属合并前仓库、现不可达」，要求全部可达等于逼人删掉这句说明。
 
 看板在仓库外、CI 看不到它，所以脚本在文件缺失时打印 `skipped` 并返回 0——**本地跑绿是义务，CI 里跳过不是豁免**。检查失败时的处置是改看板，不是改脚本：这条命令存在的意义就是把「看板可信」变成可执行的东西，放宽它等于取消它。
 
