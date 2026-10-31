@@ -124,6 +124,21 @@ import {
   opsSubscriptionTransitionResponseSchema,
 } from './ops/entitlements';
 import {
+  opsDeploymentCreateRequestSchema,
+  opsDeploymentCreateResponseSchema,
+  opsDeploymentDetailResponseSchema,
+  opsDeploymentListQuerySchema,
+  opsDeploymentListResponseSchema,
+  opsDeploymentTransitionRequestSchema,
+  opsDeploymentTransitionResponseSchema,
+  opsDeploymentUpdateRequestSchema,
+  opsDeploymentUpdateResponseSchema,
+  opsDeploymentVersionRecordCreateRequestSchema,
+  opsDeploymentVersionRecordCreateResponseSchema,
+  opsDeploymentVersionRecordListQuerySchema,
+  opsDeploymentVersionRecordListResponseSchema,
+} from './ops/deployment';
+import {
   opsTenantCommandAttemptListResponseSchema,
   opsTenantCommandCreateRequestSchema,
   opsTenantCommandCreateResponseSchema,
@@ -1083,6 +1098,47 @@ export const OPS_ROUTES = {
     path: '/api/v1/ops/tenant-commands/:commandId/cancel',
     request: opsTenantCommandTransitionRequestSchema,
     response: opsTenantCommandTransitionResponseSchema,
+  }),
+  listOpsDeployments: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/deployments',
+    request: opsDeploymentListQuerySchema,
+    response: opsDeploymentListResponseSchema,
+  }),
+  createOpsDeployment: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/deployments',
+    request: opsDeploymentCreateRequestSchema,
+    response: opsDeploymentCreateResponseSchema,
+  }),
+  getOpsDeployment: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/deployments/:deploymentId',
+    response: opsDeploymentDetailResponseSchema,
+  }),
+  updateOpsDeployment: defineRoute({
+    method: 'PATCH',
+    path: '/api/v1/ops/deployments/:deploymentId',
+    request: opsDeploymentUpdateRequestSchema,
+    response: opsDeploymentUpdateResponseSchema,
+  }),
+  transitionOpsDeployment: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/deployments/:deploymentId/transition',
+    request: opsDeploymentTransitionRequestSchema,
+    response: opsDeploymentTransitionResponseSchema,
+  }),
+  createOpsDeploymentVersionRecord: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/deployments/:deploymentId/version-records',
+    request: opsDeploymentVersionRecordCreateRequestSchema,
+    response: opsDeploymentVersionRecordCreateResponseSchema,
+  }),
+  listOpsDeploymentVersionRecords: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/deployments/:deploymentId/version-records',
+    request: opsDeploymentVersionRecordListQuerySchema,
+    response: opsDeploymentVersionRecordListResponseSchema,
   }),
 } as const satisfies Record<string, RouteContract>;
 

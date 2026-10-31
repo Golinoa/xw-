@@ -13,6 +13,7 @@ export * from './billing-shared';
 export * from './catalog';
 export * from './contracts';
 export * from './customers';
+export * from './deployment';
 export * from './entitlements';
 export * from './identity';
 export * from './meta';

@@ -17,6 +17,7 @@ import { opsAccountRoutes } from './modules/ops/accounts/routes';
 import { opsAuthRoutes } from './modules/ops/auth/routes';
 import { opsCatalogRoutes } from './modules/ops/catalog/routes';
 import { opsContractRoutes } from './modules/ops/contracts/routes';
+import { opsDeploymentRoutes } from './modules/ops/deployment/routes';
 import { opsReceivableRoutes } from './modules/ops/receivables/routes';
 import { opsCustomerRoutes } from './modules/ops/customers/routes';
 import { opsIdentityRoutes } from './modules/ops/identity/routes';
@@ -70,5 +71,8 @@ app.route('/', opsEntitlementRoutes);
 // 是唯一同时指向「卖出去的权利」和「远端那台机器」的模块。放在最后，
 // 依赖方向自上而下读得出来。
 app.route('/', opsTenantIntegrationRoutes);
+// 部署台账接在租户之后：它引用客户、合同与私有化授权，而「租户开通之后能不能
+// 上线」正是它要回答的问题。两条线互不写对方的表。
+app.route('/', opsDeploymentRoutes);
 
 export default app;

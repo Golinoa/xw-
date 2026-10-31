@@ -13,13 +13,15 @@ import { OPS_USER, OPS_VIEWER_USER, call, expectStatus, signToken } from './harn
  * 的生命周期），所以同一文件内顺序执行。**这正是要证明的东西**：状态机在真实
  * 事务里走得通，而不是只有 pgTAP 里走得通。
  *
- * 三处能力边界如实留空：
- * - **引用存在性**：`tenant_commands` / `entitlement_change_requests` /
- *   `deployment_version_records` 三张表属 o-t09/t10/t11，本轮不存在。集成层只能
- *   证明「表不在时关联被接受」，不能证明「引用不存在时报错」。
+ * 两处能力边界如实留空：
  * - **按优先级系数算时限**：U-11 的系数未定，四档同基线（见 C-107）。
  * - **`overdueOnly` 的真实命中**：`due_at` 由服务端按设置算，集成层无法把一张单
  *   改成逾期（没有写 `due_at` 的端点）。逾期判定由 pgTAP 对着边界值证明。
+ *
+ * 引用存在性这条边界在 o-t11 之后关掉了：`tenant_commands`、
+ * `entitlement_change_requests`、`deployment_version_records` 三张表全部落地，
+ * 「表不在就跳过校验」那一档不存在了，所以这里改成「造一条真记录挂上去 +
+ * 编造的 id 被拒」两条正向断言。
  */
 
 const opsToken = signToken(OPS_USER);
@@ -27,6 +29,7 @@ const viewerToken = signToken(OPS_VIEWER_USER);
 
 const TICKETS = '/api/v1/ops/tickets';
 const CUSTOMERS = '/api/v1/ops/customers';
+const DEPLOYMENTS = '/api/v1/ops/deployments';
 
 interface TicketBody {
   id: string;
@@ -327,10 +330,31 @@ describe('工单的生命周期（真实状态机）', () => {
   });
 
   it('links a reference and refuses the duplicate', async () => {
-    const refId = '00000000-0000-4000-8000-00000000a001';
-    // 用 `deployment_version` 而不是 `tenant_command`：引用校验是「表在就真查」，
-    // 而租户命令表已经落地（o-t10），随便编一个 UUID 会被立刻挡成 400。
-    // 部署台账还没建（o-t11），这个类型眼下正是「只校验类型不校验行」的那一档。
+    // 三个引用类型现在全部有表（o-t09/t10/t11），「表不在就跳过校验」那一档
+    // 已经不存在了。要证明「能挂上去」，就得先造一条真的升级记录。
+    const instance = await call<{ deployment: { id: string } }>(DEPLOYMENTS, {
+      method: 'POST',
+      token: opsToken,
+      body: { customerId, name: '工单引用用实例', deploymentType: 'private' },
+    });
+    expectStatus(instance, 201);
+
+    const record = await call<{ versionRecord: { id: string } }>(
+      `${DEPLOYMENTS}/${instance.body.deployment.id}/version-records`,
+      {
+        method: 'POST',
+        token: opsToken,
+        body: {
+          fromVersion: '1.0.0',
+          toVersion: '1.1.0',
+          executedOn: '2026-10-20',
+          result: 'succeeded',
+        },
+      },
+    );
+    expectStatus(record, 201);
+    const refId = record.body.versionRecord.id;
+
     const created = await call<{ reference: { refType: string; refId: string } }>(
       `${TICKETS}/${mainTicket.id}/references`,
       { method: 'POST', token: opsToken, body: { refType: 'deployment_version', refId } },
@@ -346,24 +370,22 @@ describe('工单的生命周期（真实状态机）', () => {
     expect(duplicate.body.details.reason).toBe('REFERENCE_EXISTS');
   });
 
-  it('租户命令表落地之后，编造的 tenant_command 引用真的会被挡', async () => {
-    // o-t09 时这条引用「表不存在 → 跳过校验」，谁都挂得上去。o-t10 落地后
-    // 同一个请求必须变成 400——否则工单里会积累一批指向不存在命令的引用，
-    // 事后没法区分「命令被删了」和「当初就是编的」。
-    const response = await call<{ details: { reason: string } }>(
-      `${TICKETS}/${mainTicket.id}/references`,
-      {
-        method: 'POST',
-        token: opsToken,
-        body: {
-          refType: 'tenant_command',
-          refId: '00000000-0000-4000-8000-0000000007f9',
-        },
-      },
-    );
+  it('编造的引用现在会被真的挡掉', async () => {
+    // o-t09 时这三条引用「表不存在 → 跳过校验」，谁都挂得上去。表陆续落地之后
+    // 同一类请求必须变成 400——否则工单里会积累一批指向不存在记录的引用，
+    // 事后没法区分「记录被删了」和「当初就是编的」。
+    for (const [refType, refId] of [
+      ['tenant_command', '00000000-0000-4000-8000-0000000007f9'],
+      ['deployment_version', '00000000-0000-4000-8000-0000000007fa'],
+    ] as const) {
+      const response = await call<{ details: { reason: string } }>(
+        `${TICKETS}/${mainTicket.id}/references`,
+        { method: 'POST', token: opsToken, body: { refType, refId } },
+      );
 
-    expectStatus(response, 400);
-    expect(response.body.details.reason).toBe('REFERENCE_NOT_FOUND');
+      expectStatus(response, 400);
+      expect(response.body.details.reason).toBe('REFERENCE_NOT_FOUND');
+    }
   });
 
   it('rejects a stale version on PATCH with the current version', async () => {

@@ -307,7 +307,7 @@ export const OPS_AUDIT_ACTIONS = [
   {
     code: 'entitlement_change.retried',
     description:
-      '重试权益变更：transition 的 retry 边，需 entitlement.execute + tenant.retry。命令表（o-t10）未落地时这条路径不可达，词先留着。',
+      '重试权益变更：transition 的 retry 边，需 entitlement.execute + tenant.retry。命令表（o-t10）已落地，但权益域的 execute 还没接上下发，所以这条路径仍未走通。',
   },
   {
     code: 'entitlement_change.executed',
@@ -355,6 +355,32 @@ export const OPS_AUDIT_ACTIONS = [
     code: 'tenant_command.timed_out',
     description:
       '租户命令下发超时：命令保持 pending（结果未知），attempts.outcome=timeout，必须先查远端状态再重试。',
+  },
+  // deployment 域，o-t11 新增，待运营端回写契约正文 §6.4。
+  //
+  // 四个词按「改的是哪一类东西」切开：建实例、改主档、推状态、登记升级。**登记
+  // 升级单独一个词**，因为它改的是 `currentVersion`——按 `deployment.updated`
+  // 筛会把「改了负责人」与「这台机器升到了 1.5.0」混在一起，而后者是这一域唯一
+  // 会被客户拿来说事的事实。升级记录本身只 INSERT，所以没有 update/delete 词。
+  {
+    code: 'deployment.created',
+    description:
+      '登记部署实例：POST /deployments 成功写入实例行时落这个词，摘要带 instanceNo / customerId / name / deploymentType / currentVersion / licenseId。',
+  },
+  {
+    code: 'deployment.updated',
+    description:
+      '改实例主档：PATCH /deployments/{id} 改名称、部署类型、环境标识、上线日期、维护到期、负责人、授权或合同时落这个词，前后摘要**只含变了的键**；`currentVersion` 不在可改范围内。',
+  },
+  {
+    code: 'deployment.transitioned',
+    description:
+      '实例状态迁移：POST /deployments/{id}/transition 的每一条合法边都落这个词，reason 原样入库（`retire` 必填），前后摘要带 from/to 的 status 与 action。',
+  },
+  {
+    code: 'deployment_version.recorded',
+    description:
+      '登记升级结果：POST /deployments/{id}/version-records 成功时落这个词，`entity_type` 为 `deployment_version_record`，摘要带 instanceId / fromVersion / toVersion / result 与登记后的 currentVersion——失败与回滚的记录里这个值等于登记前的值，那正是「只有 succeeded 推进」的证据。',
   },
 ] as const;
 

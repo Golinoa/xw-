@@ -2,7 +2,7 @@ BEGIN;
 
 
 SELECT
-  plan (78);
+  plan (81);
 
 
 -- ── 夹具 ────────────────────────────────────────────────────────────────────
@@ -997,6 +997,71 @@ SELECT
   );
 
 
+-- ── R：关联引用 ────────────────────────────────────────────────────────────
+-- R1/R2 原来用 `deployment_version` 证明「域还没落地时不校验」。o-t11 让三张被
+-- 引用表全部落地之后，那个前提就不存在了——同一句现在会被真的去查。改用一条
+-- **真实的**升级记录：现在要证的是「引用确实被校验」，而不是「校验被跳过」。
+--
+-- 造这两行要先回到属主身份：此刻会话是 `authenticated`，而本域两张表对它零权限
+-- （§7.2 的设计）。`RESET ROLE` 之后再 `SET LOCAL ROLE authenticated` 切回来，
+-- 否则后面所有断言都会以属主身份跑，「零权限」这个前提当场失效。
+RESET ROLE;
+
+
+INSERT INTO
+  ops.deployment_instances (
+    id,
+    customer_id,
+    name,
+    deployment_type,
+    current_version,
+    status
+  )
+VALUES
+  (
+    '00000000-0000-4000-8000-0000000007e9',
+    '00000000-0000-4000-8000-0000000007c1',
+    'support 测试实例',
+    'private',
+    '1.0.0',
+    'planned'
+  ),
+  (
+    '00000000-0000-4000-8000-0000000007ea',
+    '00000000-0000-4000-8000-0000000007c2',
+    'support 别家实例',
+    'private',
+    '1.0.0',
+    'planned'
+  );
+
+
+INSERT INTO
+  ops.deployment_version_records (
+    id,
+    instance_id,
+    from_version,
+    to_version,
+    executed_on,
+    executed_by,
+    result
+  )
+VALUES
+  (
+    '00000000-0000-4000-8000-0000000007f9',
+    '00000000-0000-4000-8000-0000000007e9',
+    '1.0.0',
+    '1.1.0',
+    '2026-10-31',
+    '00000000-0000-4000-8000-0000000007a1',
+    'succeeded'
+  );
+
+
+SET
+  local role authenticated;
+
+
 SELECT
   IS (
     ops.add_ticket_reference (
@@ -1007,7 +1072,7 @@ SELECT
       '00000000-0000-4000-8000-0000000007f9'
     ) ->> 'status',
     'ok',
-    'R1 a reference to a domain that has not landed yet is accepted (deployment_version)'
+    'R1 a reference to a real upgrade record is accepted'
   );
 
 
@@ -1062,10 +1127,7 @@ SELECT
   );
 
 
--- `ops.tenant_commands` 在 o-t10 落地了。R1/R2 原先用它证明「域未落地时不校验」，
--- 那张表一存在，同一句就会被真的去查、回 `reference_not_found`——断言本身没变，
--- 变化的是它测的那个前提。改成仍是空域的 `deployment_version`，另加这一条证明
--- 「表落地之后校验真的打开了」：同一句现在必须被拦。
+-- `ops.tenant_commands` 在 o-t10 落地了。同一句现在必须被拦。
 SELECT
   IS (
     ops.add_ticket_reference (
@@ -1077,6 +1139,61 @@ SELECT
     ) ->> 'status',
     'reference_not_found',
     'R5 a tenant_command reference is validated now that o-t10 has landed'
+  );
+
+
+-- o-t11 之后三个引用类型全部有表，没有「域未落地」这一档了。R6 把最后一个
+-- 类型也钉住：编造的升级记录 id 现在同样会被拦。
+SELECT
+  IS (
+    ops.add_ticket_reference (
+      (
+        current_setting('support.created')::jsonb #>> '{ticket,id}'
+      )::uuid,
+      'deployment_version',
+      '00000000-0000-4000-8000-0000000007fa'
+    ) ->> 'status',
+    'reference_not_found',
+    'R6 a fabricated deployment_version reference is refused now that o-t11 has landed'
+  );
+
+
+-- 契约 T-11 的另一条验收断言：「工单关联其他客户的部署实例 → 400
+-- `REFERENCE_CUSTOMER_MISMATCH`」。`create_ticket` 里这段守卫一直存在，但在
+-- o-t11 之前 `to_regclass` 让它整体跳过，所以一次都没被执行过。
+SELECT
+  IS (
+    ops.create_ticket (
+      '00000000-0000-4000-8000-0000000007c1',
+      '挂错客户的实例',
+      '这条应该被挡',
+      'bug',
+      'normal',
+      NULL,
+      NULL,
+      NULL,
+      '00000000-0000-4000-8000-0000000007ea'
+    ) ->> 'status',
+    'reference_customer_mismatch',
+    'R7 a ticket cannot point at another customer''s deployment instance'
+  );
+
+
+SELECT
+  IS (
+    ops.create_ticket (
+      '00000000-0000-4000-8000-0000000007c1',
+      '不存在的实例',
+      '这条也该被挡',
+      'bug',
+      'normal',
+      NULL,
+      NULL,
+      NULL,
+      '00000000-0000-4000-8000-0000000007ff'
+    ) ->> 'status',
+    'reference_not_found',
+    'R8 an unknown deployment instance is refused before the ticket is written'
   );
 
 
