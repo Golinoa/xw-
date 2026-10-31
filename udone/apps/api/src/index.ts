@@ -17,6 +17,7 @@ import { opsAccountRoutes } from './modules/ops/accounts/routes';
 import { opsAuthRoutes } from './modules/ops/auth/routes';
 import { opsCatalogRoutes } from './modules/ops/catalog/routes';
 import { opsContractRoutes } from './modules/ops/contracts/routes';
+import { opsReceivableRoutes } from './modules/ops/receivables/routes';
 import { opsCustomerRoutes } from './modules/ops/customers/routes';
 import { opsIdentityRoutes } from './modules/ops/identity/routes';
 import { opsMetaRoutes } from './modules/ops/meta/routes';
@@ -51,5 +52,6 @@ app.route('/', opsCustomerRoutes);
 app.route('/', opsCatalogRoutes);
 // 合同接在 catalog 之后：合同引用客户与套餐（套餐状态、客户资格），阅读顺序同依赖顺序。
 app.route('/', opsContractRoutes);
+app.route('/', opsReceivableRoutes);
 
 export default app;

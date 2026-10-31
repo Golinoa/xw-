@@ -14,4 +14,5 @@ export * from './contracts';
 export * from './customers';
 export * from './identity';
 export * from './meta';
+export * from './receivables';
 export * from './session';

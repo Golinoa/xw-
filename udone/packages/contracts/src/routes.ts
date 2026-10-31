@@ -98,6 +98,15 @@ import {
   opsCustomerUpdateRequestSchema,
   opsCustomerUpdateResponseSchema,
 } from './ops/customers';
+import {
+  opsReceivableDetailResponseSchema,
+  opsReceivableExtensionCreateRequestSchema,
+  opsReceivableExtensionCreateResponseSchema,
+  opsReceivableListQuerySchema,
+  opsReceivableListResponseSchema,
+  opsReceivablePlanCreateRequestSchema,
+  opsReceivablePlanCreateResponseSchema,
+} from './ops/receivables';
 import { opsMetaResponseSchema } from './ops/meta';
 import { opsPermissionListResponseSchema, opsSessionResponseSchema } from './ops/session';
 import {
@@ -698,6 +707,35 @@ export const OPS_ROUTES = {
     method: 'GET',
     path: '/api/v1/ops/contract-attachments/:attachmentId/access',
     response: opsContractAttachmentAccessResponseSchema,
+  }),
+
+  // ── billing 域：应收计划与展期（契约 §5.5 前四条）─────────────────────────
+  //
+  // 四条路径两种前缀：前三条挂在 `/receivables`，展期是
+  // `/receivables/{id}/extensions`。第 4 条不是 `/receivables/{id}/extend`——
+  // 契约把它写成「追加一条展期记录」，路径也就照资源命名，而不是照动作命名。
+  listOpsReceivables: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/receivables',
+    request: opsReceivableListQuerySchema,
+    response: opsReceivableListResponseSchema,
+  }),
+  createOpsReceivablePlan: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/receivables',
+    request: opsReceivablePlanCreateRequestSchema,
+    response: opsReceivablePlanCreateResponseSchema,
+  }),
+  getOpsReceivable: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/receivables/:receivableId',
+    response: opsReceivableDetailResponseSchema,
+  }),
+  createOpsReceivableExtension: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/receivables/:receivableId/extensions',
+    request: opsReceivableExtensionCreateRequestSchema,
+    response: opsReceivableExtensionCreateResponseSchema,
   }),
 } as const satisfies Record<string, RouteContract>;
 

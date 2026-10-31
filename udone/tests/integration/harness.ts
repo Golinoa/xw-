@@ -215,6 +215,16 @@ export interface CallOptions {
   organizationId?: string;
   headers?: Record<string, string>;
   /**
+   * 显式**不带** `Idempotency-Key`。
+   *
+   * 默认给每个非 GET 请求塞一个随机键，是因为绝大多数用例只想测业务分支，
+   * 不希望每条都写一遍 key。但「缺键必须 400」这条恰恰要证明相反的事，而
+   * `headers` 只能覆盖值、不能删键——传空串时 fetch 会把这个 header 整个丢掉，
+   * 结果是测试看起来在测缺键、实际发的是「键为空」，一旦哪天实现从
+   * 「header 存在」改成「header 非空」，两边都会绿。
+   */
+  omitIdempotencyKey?: boolean;
+  /**
    * 覆盖本次请求的绑定。
    *
    * 登录端点需要 GoTrue，而本地只有 PostgREST——所以替身是从这里进去的，
@@ -250,7 +260,9 @@ export async function call<T = unknown>(
     Authorization: `Bearer ${options.token ?? signToken(USERS[actor])}`,
     'X-Organization-ID': options.organizationId ?? ORG_ID,
     'Content-Type': 'application/json',
-    ...(method === 'GET' ? {} : { 'Idempotency-Key': crypto.randomUUID() }),
+    ...(method === 'GET' || options.omitIdempotencyKey
+      ? {}
+      : { 'Idempotency-Key': crypto.randomUUID() }),
     ...options.headers,
   };
 
