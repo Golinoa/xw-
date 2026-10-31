@@ -192,6 +192,45 @@ async function createSignedUrl(
   };
 }
 
+/**
+ * 把字节写到签名上传地址上。
+ *
+ * 签发的 URL 里已经带 `token` 查询串，PUT 时**不需要**再带 service_role——
+ * 带上反而有风险：把一个能读写整个存储的凭据放进一个「只该对这一个对象有效」
+ * 的请求里。凭据只在签发那一步用一次。
+ *
+ * 失败一律抛 `StorageSignError`：调用方（导出执行器）要把它翻成一次明确的
+ * 任务失败，而不是一个「succeeded 但文件不在」的任务行。
+ */
+export async function putStorageObject(
+  uploadUrl: string,
+  body: string | ArrayBuffer,
+  contentType: string,
+  detail: { bucket: StorageBucket; key: string },
+): Promise<void> {
+  let response: Response;
+  try {
+    response = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': contentType },
+      body,
+    });
+  } catch (cause) {
+    throw new StorageSignError(`storage unreachable while uploading: ${(cause as Error).message}`, {
+      bucket: detail.bucket,
+      key: detail.key,
+    });
+  }
+
+  if (!response.ok) {
+    throw new StorageSignError(`storage refused the upload with ${response.status}`, {
+      status: response.status,
+      bucket: detail.bucket,
+      key: detail.key,
+    });
+  }
+}
+
 /** 合同附件的上传地址。字段名沿用契约 §5.2 的 `uploadUrl` / `uploadExpiresAt`。 */
 export async function createSignedUpload(
   environment: StorageBindings,

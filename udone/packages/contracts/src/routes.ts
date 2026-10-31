@@ -160,6 +160,13 @@ import {
   opsSettingsUpdateRequestSchema,
 } from './ops/settings';
 import {
+  opsExportCreateRequestSchema,
+  opsExportCreateResponseSchema,
+  opsExportDetailResponseSchema,
+  opsExportListQuerySchema,
+  opsExportListResponseSchema,
+} from './ops/exports';
+import {
   opsTenantCommandAttemptListResponseSchema,
   opsTenantCommandCreateRequestSchema,
   opsTenantCommandCreateResponseSchema,
@@ -1219,6 +1226,23 @@ export const OPS_ROUTES = {
     path: '/api/v1/ops/dictionary-items/:itemId',
     request: opsDictionaryItemUpdateRequestSchema,
     response: opsDictionaryItemUpdateResponseSchema,
+  }),
+  listOpsExports: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/exports',
+    request: opsExportListQuerySchema,
+    response: opsExportListResponseSchema,
+  }),
+  createOpsExport: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/exports',
+    request: opsExportCreateRequestSchema,
+    response: opsExportCreateResponseSchema,
+  }),
+  getOpsExport: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/exports/:exportId',
+    response: opsExportDetailResponseSchema,
   }),
 } as const satisfies Record<string, RouteContract>;
 

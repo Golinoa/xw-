@@ -26,6 +26,7 @@ import { opsMetaRoutes } from './modules/ops/meta/routes';
 import { opsOverviewRoutes } from './modules/ops/overview/routes';
 import { opsReceiptRoutes } from './modules/ops/receipts/routes';
 import { opsSettingsRoutes } from './modules/ops/settings/routes';
+import { opsExportsRoutes } from './modules/ops/exports/routes';
 import { opsEntitlementRoutes } from './modules/ops/entitlements/routes';
 import { opsTenantIntegrationRoutes } from './modules/ops/tenant-integration/routes';
 import { opsTicketRoutes } from './modules/ops/tickets/routes';
@@ -78,6 +79,9 @@ app.route('/', opsTenantIntegrationRoutes);
 // 上线」正是它要回答的问题。两条线互不写对方的表。
 app.route('/', opsDeploymentRoutes);
 app.route('/', opsSettingsRoutes);
+// 导出接在设置页之后：它读的保留期（`retention.exportDays`）来自设置页，
+// 而设置页不依赖它——依赖方向仍然是自上而下。
+app.route('/', opsExportsRoutes);
 // 总览接在最后：它不写任何表，只跨域读——客户、合同、应收、收款、权益、租户、
 // 部署、工单。放在最后意味着它的依赖方向是「全都看过一遍」，而不是「被别人依赖」。
 app.route('/', opsOverviewRoutes);

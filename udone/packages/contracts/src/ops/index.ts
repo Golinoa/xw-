@@ -15,6 +15,7 @@ export * from './contracts';
 export * from './customers';
 export * from './deployment';
 export * from './entitlements';
+export * from './exports';
 export * from './identity';
 export * from './meta';
 export * from './overview';

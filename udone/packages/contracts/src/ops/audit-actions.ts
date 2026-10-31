@@ -397,6 +397,21 @@ export const OPS_AUDIT_ACTIONS = [
       '改字典条目：PATCH /dictionary-items/{itemId} 改文案、排序或启停都落这个词，前后摘要带 value / label / sortOrder / isActive。改文案与改启停不拆词——审计要回答的问题是「谁动过这个条目」。',
   },
   {
+    code: 'export.created',
+    description:
+      '发起导出：POST /exports 成功写入任务行时落这个词，`reason` 原样入库（U-17 要求必填），摘要带 exportNo / exportType / filters / status=queued。此时还不知道行数。',
+  },
+  {
+    code: 'export.completed',
+    description:
+      '导出完成：任务从 running 迁到 succeeded 时落这个词，摘要带 exportNo / exportType / filters / rowCount。**filters 与 rowCount 分两条审计落**（T-13 要求这一条里有两者），因为创建时算不出行数。',
+  },
+  {
+    code: 'export.failed',
+    description:
+      '导出失败：任务从 running 迁到 failed 时落这个词，reason 记失败分类（REQUESTER_LOST_PERMISSION / ROW_LIMIT_EXCEEDED / STORAGE_UNAVAILABLE / INTERNAL_ERROR）。`ops.exports` 没有失败原因列，这里是唯一记录处。',
+  },
+  {
     code: 'deployment_version.recorded',
     description:
       '登记升级结果：POST /deployments/{id}/version-records 成功时落这个词，`entity_type` 为 `deployment_version_record`，摘要带 instanceId / fromVersion / toVersion / result 与登记后的 currentVersion——失败与回滚的记录里这个值等于登记前的值，那正是「只有 succeeded 推进」的证据。',
