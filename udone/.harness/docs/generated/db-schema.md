@@ -3,10 +3,10 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 21
-- Tables discovered: 26
-- Functions discovered: 65
-- Indexes discovered: 37
+- Migration sources scanned: 22
+- Tables discovered: 32
+- Functions discovered: 84
+- Indexes discovered: 38
 - RLS policies discovered: 61
 - Triggers discovered: 2
 
@@ -33,3 +33,4 @@
 | `20261030000006_ops_identity_alignment.sql` | — | `ops.activate_invited_member`, `ops.touch_last_login`, `ops.invite_operator`, `ops.update_operator` | — | — | — |
 | `20261030000007_ops_customer_domain.sql` | `ops.customers`, `ops.customer_contacts` | `ops.mask_phone`, `ops.mask_email`, `ops.customer_reference_counts`, `ops.customer_json`, `ops.customer_contact_json`, `ops.customer_list_json`, `ops.customer_duplicate_matches`, `ops.list_customers`, `ops.create_customer`, `ops.check_customer_duplicates`, `ops.get_customer`, `ops.update_customer`, `ops.transition_customer`, `ops.customer_overview`, `ops.list_customer_contacts`, `ops.create_customer_contact`, `ops.update_customer_contact`, `ops.delete_customer_contact` | `customers_status_created_idx`, `customers_owner_idx`, `customers_name_idx`, `customer_contacts_primary_idx`, `customer_contacts_customer_idx` | — | — |
 | `20261030000008_ops_idempotency_scope_key.sql` | — | — | — | — | — |
+| `20261030000009_ops_catalog_domain.sql` | `ops.products`, `ops.product_sales_modes`, `ops.packages`, `ops.package_price_versions`, `ops.feature_definitions`, `ops.package_features` | `ops.catalog_reference_counts`, `ops.product_json`, `ops.package_json`, `ops.price_version_json`, `ops.feature_json`, `ops.package_feature_json`, `ops.list_products`, `ops.create_product`, `ops.update_product`, `ops.list_packages`, `ops.create_package`, `ops.get_package`, `ops.update_package`, `ops.create_package_price_version`, `ops.list_package_price_versions`, `ops.transition_package`, `ops.list_features`, `ops.create_feature`, `ops.update_feature` | `packages_status_product_idx` | — | — |
