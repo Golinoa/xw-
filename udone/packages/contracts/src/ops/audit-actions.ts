@@ -319,6 +319,46 @@ export const OPS_AUDIT_ACTIONS = [
     description:
       '发放权益快照：每次 create_snapshot 真的插入新行时落这个词（命中同内容的既有快照不落），摘要带 sourceType / sourceId / targetScope / contentHash / lineCount。',
   },
+  {
+    code: 'tenant_mapping.created',
+    description:
+      '建立租户映射：mappingStatus 恒为 pending，摘要带 mappingNo / customerId / productId / udoneOrganizationId。',
+  },
+  {
+    code: 'tenant_mapping.updated',
+    description:
+      '修改租户映射：只记 udoneOrganizationId / externalRef 两个字段的前后值——其余列不通过 PATCH 改，写进来会让审计看起来动了很多实际没动的字段。',
+  },
+  {
+    code: 'tenant_command.created',
+    description:
+      '登记租户命令：状态恒为 pending（「已受理」而非「已完成」），摘要带 commandNo / commandType / expectedSyncVersion / changeRequestId。',
+  },
+  {
+    code: 'tenant_command.retried',
+    description:
+      '重试租户命令：failed → retrying，复用同一幂等键，不新建命令。永久错误不可重试。',
+  },
+  {
+    code: 'tenant_command.cancelled',
+    description:
+      '取消租户命令：只有一次都没发出去过（attemptCount=0）才能取消；已发出的要收回走 revoke 命令。',
+  },
+  {
+    code: 'tenant_command.succeeded',
+    description:
+      '租户命令下发成功：远端确认后才落这个词，同时 syncVersion +1、映射状态摘要更新。',
+  },
+  {
+    code: 'tenant_command.failed',
+    description:
+      '租户命令下发失败：摘要带 errorCategory / errorCode；permanent 不排下一次重试。',
+  },
+  {
+    code: 'tenant_command.timed_out',
+    description:
+      '租户命令下发超时：命令保持 pending（结果未知），attempts.outcome=timeout，必须先查远端状态再重试。',
+  },
 ] as const;
 
 /** 动作码的平铺列表。给筛选下拉、日志白名单这类「只要字符串」的地方用。 */

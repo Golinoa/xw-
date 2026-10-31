@@ -1121,8 +1121,9 @@ begin
     );
   end if;
 
-  -- 被引用对象是否存在：三张表本轮都不存在（o-t09 / o-t10 / o-t11），
-  -- 表不在就跳过，落地后自动开始校验（设计要点 6）。
+  -- 被引用对象是否存在：`tenant_commands`（o-t10）与 `entitlement_change_requests`
+  -- （o-t09）已落地，`deployment_version_records`（o-t11）还没有。表不在就跳过，
+  -- 落地后自动开始校验（设计要点 6）——R5 就是「落地即生效」的那条证明。
   if p_ref_type = 'tenant_command' and to_regclass('ops.tenant_commands') is not null then
     execute $sql$select exists (select 1 from ops.tenant_commands as target_row where target_row.id = $1)$sql$
     into reference_exists using p_ref_id;

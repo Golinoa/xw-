@@ -3,12 +3,12 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 29
-- Tables discovered: 52
-- Functions discovered: 183
-- Indexes discovered: 75
+- Migration sources scanned: 30
+- Tables discovered: 55
+- Functions discovered: 201
+- Indexes discovered: 81
 - RLS policies discovered: 61
-- Triggers discovered: 4
+- Triggers discovered: 5
 
 | Migration | Tables | Functions | Indexes | Policies | Triggers |
 |---|---|---|---|---|---|
@@ -41,3 +41,4 @@
 | `20261031000004_ops_billing_receipts.sql` | `ops.receipts`, `ops.receipt_allocations`, `ops.receipt_allocation_reversals`, `ops.refunds` | `ops.receipt_allocated_net`, `ops.receipt_refundable`, `ops.allowed_receipt_actions`, `ops.operator_ref`, `ops.receipt_json`, `ops.refund_json`, `ops.list_receipts`, `ops.get_receipt`, `ops.record_receipt`, `ops.transition_receipt`, `ops.allocate_receipt`, `ops.reverse_receipt`, `ops.reverse_allocation`, `ops.list_refunds`, `ops.record_refund`, `ops.transition_refund` | `receipts_customer_status_idx`, `receipts_transaction_date_idx`, `receipts_status_idx`, `receipts_reference_no_idx`, `receipt_allocations_receipt_idx`, `receipt_allocations_receivable_idx`, `receipt_allocation_reversals_allocation_idx`, `refunds_receipt_idx`, `refunds_customer_idx`, `refunds_status_idx` | — | — |
 | `20261031000005_ops_billing_allocation_shape.sql` | — | `ops.allocation_json`, `ops.reversal_json`, `ops.get_receivable`, `ops.get_receipt` | — | — | — |
 | `20261031000006_ops_entitlement_domain.sql` | `ops.entitlement_snapshots`, `ops.entitlement_snapshot_lines`, `ops.subscriptions`, `ops.private_licenses`, `ops.entitlement_change_requests` | `ops.entitlement_snapshot_immutable`, `ops.allowed_subject_actions`, `ops.allowed_change_request_actions`, `ops.feature_lines_base`, `ops.feature_lines_apply`, `ops.feature_lines_sorted`, `ops.snapshot_content_hash`, `ops.snapshot_lines_json`, `ops.snapshot_summary_json`, `ops.snapshot_json`, `ops.subject_json`, `ops.change_request_json`, `ops.change_request_diff`, `ops.create_snapshot`, `ops.entitlement_contract_status_allows`, `ops.create_subscription`, `ops.create_license`, `ops.transition_entitlement_subject`, `ops.create_entitlement_change_request`, `ops.transition_entitlement_change_request`, `ops.apply_change_request_snapshot`, `ops.list_subscriptions`, `ops.get_subscription`, `ops.list_licenses`, `ops.get_license`, `ops.list_entitlement_snapshots`, `ops.get_entitlement_snapshot`, `ops.list_entitlement_change_requests`, `ops.get_entitlement_change_request` | `entitlement_snapshots_customer_idx`, `entitlement_snapshots_valid_from_idx`, `subscriptions_status_idx`, `subscriptions_customer_idx`, `subscriptions_open_item_key`, `private_licenses_status_idx`, `private_licenses_customer_idx`, `private_licenses_open_instance_key`, `entitlement_change_requests_status_idx`, `entitlement_change_requests_subject_idx` | — | `entitlement_snapshots_immutable`, `entitlement_snapshot_lines_immutable` |
+| `20261031000007_ops_tenant_integration_domain.sql` | `ops.tenant_mappings`, `ops.tenant_commands`, `ops.tenant_command_attempts` | `ops.tenant_command_attempt_immutable`, `ops.allowed_command_actions`, `ops.command_required_permission`, `ops.tenant_retry_backoff`, `ops.tenant_mapping_json`, `ops.tenant_command_json`, `ops.tenant_attempt_json`, `ops.tenant_command_attempts_json`, `ops.create_tenant_mapping`, `ops.update_tenant_mapping`, `ops.create_tenant_command`, `ops.transition_tenant_command`, `ops.record_tenant_command_attempt`, `ops.list_tenant_mappings`, `ops.get_tenant_mapping`, `ops.list_tenant_commands`, `ops.get_tenant_command`, `ops.list_tenant_command_attempts` | `tenant_mappings_customer_idx`, `tenant_mappings_status_idx`, `tenant_commands_status_idx`, `tenant_commands_mapping_idx`, `tenant_commands_next_retry_idx`, `tenant_command_attempts_command_idx` | — | `tenant_command_attempts_immutable` |

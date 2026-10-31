@@ -2,7 +2,7 @@ BEGIN;
 
 
 SELECT
-  plan (77);
+  plan (78);
 
 
 -- ── 夹具 ────────────────────────────────────────────────────────────────────
@@ -1003,11 +1003,11 @@ SELECT
       (
         current_setting('support.created')::jsonb #>> '{ticket,id}'
       )::uuid,
-      'tenant_command',
+      'deployment_version',
       '00000000-0000-4000-8000-0000000007f9'
     ) ->> 'status',
     'ok',
-    'R1 a reference to a domain that has not landed yet is accepted'
+    'R1 a reference to a domain that has not landed yet is accepted (deployment_version)'
   );
 
 
@@ -1017,7 +1017,7 @@ SELECT
       (
         current_setting('support.created')::jsonb #>> '{ticket,id}'
       )::uuid,
-      'tenant_command',
+      'deployment_version',
       '00000000-0000-4000-8000-0000000007f9'
     ) ->> 'status',
     'reference_exists',
@@ -1059,6 +1059,24 @@ SELECT
     ),
     1::bigint,
     'R4 linking writes exactly one linked event, the duplicate wrote none'
+  );
+
+
+-- `ops.tenant_commands` 在 o-t10 落地了。R1/R2 原先用它证明「域未落地时不校验」，
+-- 那张表一存在，同一句就会被真的去查、回 `reference_not_found`——断言本身没变，
+-- 变化的是它测的那个前提。改成仍是空域的 `deployment_version`，另加这一条证明
+-- 「表落地之后校验真的打开了」：同一句现在必须被拦。
+SELECT
+  IS (
+    ops.add_ticket_reference (
+      (
+        current_setting('support.created')::jsonb #>> '{ticket,id}'
+      )::uuid,
+      'tenant_command',
+      '00000000-0000-4000-8000-0000000007f9'
+    ) ->> 'status',
+    'reference_not_found',
+    'R5 a tenant_command reference is validated now that o-t10 has landed'
   );
 
 
