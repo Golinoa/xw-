@@ -3,7 +3,7 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 36
+- Migration sources scanned: 37
 - Tables discovered: 60
 - Functions discovered: 239
 - Indexes discovered: 88
@@ -48,3 +48,4 @@
 | `20261031000011_ops_settings_dictionaries.sql` | `ops.dictionaries`, `ops.dictionary_items` | `ops.ops_settings_json`, `ops.get_ops_settings`, `ops.update_ops_settings`, `ops.dictionary_item_json`, `ops.list_dictionaries`, `ops.create_dictionary_item`, `ops.update_dictionary_item` | `dictionary_items_dictionary_idx` | — | — |
 | `20261031000012_contract_attachment_object_check.sql` | — | `ops.contract_attachment_location`, `ops.complete_contract_attachment` | — | — | — |
 | `20261031000013_ops_exports.sql` | `ops.exports` | `ops.export_type_permission`, `ops.operator_has_permission`, `ops.export_json`, `ops.export_filter_texts`, `ops.create_export`, `ops.list_exports`, `ops.get_export`, `ops.claim_export`, `ops.export_rows_for`, `ops.export_fetch_rows`, `ops.finish_export`, `ops.abort_export`, `ops.expire_exports` | `exports_requested_idx`, `exports_status_created_idx` | — | — |
+| `20261031000014_ops_trigger_function_revoke.sql` | — | — | — | — | — |
