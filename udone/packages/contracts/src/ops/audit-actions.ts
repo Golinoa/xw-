@@ -107,6 +107,53 @@ export const OPS_AUDIT_ACTIONS = [
     description:
       '改功能键：PATCH /features/{featureKey} 改显示名、单位、描述或启停时落这个词，`entity_type` 为 `feature`，前后摘要只带变更过的键。主键不可改。',
   },
+  // 合同域，o-t06 新增，待运营端回写契约正文 §6.4（其中四个词族甚至不在 §6.4 现有词表里）。
+  //
+  // 八个词按「改的是哪一类东西」切开，与客户域 / catalog 同原则：状态迁移单独一个
+  // 词（它带 from/to/action），混进 `contract.updated` 之后按后者筛选会同时命中
+  // 「改了付款条件」与「终止了合同」。变更单的**创建**与**裁决**分成两个词，
+  // 因为它们由不同的人做（申请是 `contract.write`、审批是 `contract.approve`），
+  // 合成一个词会让「谁批的」只能靠摘要里的 operatorId 反推。
+  {
+    code: 'contract.created',
+    description:
+      '新建合同：POST /contracts 成功写入合同行与条目时落这个词，摘要带 contractNo / customerId / salesMode / itemCount / totalAmount。',
+  },
+  {
+    code: 'contract.updated',
+    description:
+      '改合同：PATCH /contracts/{id} 改付款条件、税务备注、业务备注、到期日或条目集合时落这个词，前后摘要带 `{before:{…},after:{…}}` 且**只含变了的键**，不做全字段转储。',
+  },
+  {
+    code: 'contract.transitioned',
+    description:
+      '合同状态迁移：POST /contracts/{id}/transition 的每一条合法边都落这个词，前后摘要带 `{from,to,reason}`（reason 必填，审计页直接展示）。',
+  },
+  {
+    code: 'contract.version_created',
+    description:
+      '生成版本快照：`activate` 写第 1 版、变更单 `apply` 写后续版本时落这个词，摘要带 versionNo / changeReason。版本表只 INSERT。',
+  },
+  {
+    code: 'contract.amendment_created',
+    description:
+      '新建变更单：POST /contracts/{id}/amendments 成功写入变更单行时落这个词，摘要带 amendmentNo / reason 与只含变了的键的 before/after 摘要。',
+  },
+  {
+    code: 'contract.amendment_decided',
+    description:
+      '裁决变更单：POST /contracts/{id}/amendments/{aid}/transition 的 submit / approve / reject / apply 都落这个词，摘要带 amendmentNo / from / to / reason。',
+  },
+  {
+    code: 'contract.attachment_added',
+    description:
+      '合同附件：`POST /contracts/{id}/attachments`（申请上传）与 `POST /contract-attachments/{id}/complete`（确认完成）都落这个词，摘要带 attachmentId / fileName / contentType / byteSize / status，不带 storage_path 的签名参数。',
+  },
+  {
+    code: 'contract.renewed',
+    description:
+      '续约：POST /contracts/{id}/renewals 成功时落这个词，摘要带 sourceContractId / newContractId / effectiveOn / expiresOn；原合同不改，所以不落 contract.updated。',
+  },
 ] as const;
 
 /** 动作码的平铺列表。给筛选下拉、日志白名单这类「只要字符串」的地方用。 */

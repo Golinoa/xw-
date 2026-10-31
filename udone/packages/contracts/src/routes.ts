@@ -55,6 +55,31 @@ import {
   opsProductUpdateRequestSchema,
 } from './ops/catalog';
 import {
+  opsContractAmendmentCreateRequestSchema,
+  opsContractAmendmentCreateResponseSchema,
+  opsContractAmendmentTransitionRequestSchema,
+  opsContractAmendmentTransitionResponseSchema,
+  opsContractAttachmentAccessResponseSchema,
+  opsContractAttachmentCompleteRequestSchema,
+  opsContractAttachmentCompleteResponseSchema,
+  opsContractAttachmentCreateRequestSchema,
+  opsContractAttachmentCreateResponseSchema,
+  opsContractAttachmentListResponseSchema,
+  opsContractCreateRequestSchema,
+  opsContractCreateResponseSchema,
+  opsContractDetailResponseSchema,
+  opsContractEntitlementPreviewResponseSchema,
+  opsContractListQuerySchema,
+  opsContractListResponseSchema,
+  opsContractRenewalRequestSchema,
+  opsContractRenewalResponseSchema,
+  opsContractTransitionRequestSchema,
+  opsContractTransitionResponseSchema,
+  opsContractUpdateRequestSchema,
+  opsContractUpdateResponseSchema,
+  opsContractVersionListResponseSchema,
+} from './ops/contracts';
+import {
   opsCustomerContactCreateRequestSchema,
   opsCustomerContactDeleteResponseSchema,
   opsCustomerContactListResponseSchema,
@@ -580,6 +605,99 @@ export const OPS_ROUTES = {
     path: '/api/v1/ops/features/:featureKey',
     request: opsFeatureUpdateRequestSchema,
     response: opsFeatureResponseSchema,
+  }),
+  /**
+   * 合同（契约 §3.3 / §5.4，**十四个**端点）。
+   *
+   * 顺序照契约表：集合 → 单条 → 单条上的动作与子资源，最后才是挂在
+   * `/contract-attachments/` 下的两条。最后两条的前缀**不是** `/contracts/{id}/`
+   * ——写错就是 404，而类型系统对路径字符串里的段名没有任何约束，只有
+   * `route-parity.test.ts` 能发现「清单里写了、路由没挂」，发现不了「挂到了错的
+   * 前缀上但恰好能匹配」。所以这两条单独成组、带注释，方便下一轮核对。
+   *
+   * 列表带 `page`/`pageSize`（RPC 签名有 `p_page`/`p_page_size`），但**没有**
+   * `sort`/`order`：签名里没有这两个参数，在契约里加上它们会得到一个「传了但被
+   * 忽略」的排序器。
+   */
+  listOpsContracts: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/contracts',
+    request: opsContractListQuerySchema,
+    response: opsContractListResponseSchema,
+  }),
+  createOpsContract: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/contracts',
+    request: opsContractCreateRequestSchema,
+    response: opsContractCreateResponseSchema,
+  }),
+  getOpsContract: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/contracts/:contractId',
+    response: opsContractDetailResponseSchema,
+  }),
+  updateOpsContract: defineRoute({
+    method: 'PATCH',
+    path: '/api/v1/ops/contracts/:contractId',
+    request: opsContractUpdateRequestSchema,
+    response: opsContractUpdateResponseSchema,
+  }),
+  transitionOpsContract: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/contracts/:contractId/transition',
+    request: opsContractTransitionRequestSchema,
+    response: opsContractTransitionResponseSchema,
+  }),
+  listOpsContractVersions: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/contracts/:contractId/versions',
+    response: opsContractVersionListResponseSchema,
+  }),
+  createOpsContractAmendment: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/contracts/:contractId/amendments',
+    request: opsContractAmendmentCreateRequestSchema,
+    response: opsContractAmendmentCreateResponseSchema,
+  }),
+  transitionOpsContractAmendment: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/contracts/:contractId/amendments/:amendmentId/transition',
+    request: opsContractAmendmentTransitionRequestSchema,
+    response: opsContractAmendmentTransitionResponseSchema,
+  }),
+  createOpsContractRenewal: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/contracts/:contractId/renewals',
+    request: opsContractRenewalRequestSchema,
+    response: opsContractRenewalResponseSchema,
+  }),
+  getOpsContractEntitlementPreview: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/contracts/:contractId/entitlement-preview',
+    response: opsContractEntitlementPreviewResponseSchema,
+  }),
+  listOpsContractAttachments: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/contracts/:contractId/attachments',
+    response: opsContractAttachmentListResponseSchema,
+  }),
+  createOpsContractAttachment: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/contracts/:contractId/attachments',
+    request: opsContractAttachmentCreateRequestSchema,
+    response: opsContractAttachmentCreateResponseSchema,
+  }),
+  /** 附件前缀独立：`/contract-attachments/{id}/...`，不属于任何一份合同路径。 */
+  completeOpsContractAttachment: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/contract-attachments/:attachmentId/complete',
+    request: opsContractAttachmentCompleteRequestSchema,
+    response: opsContractAttachmentCompleteResponseSchema,
+  }),
+  accessOpsContractAttachment: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/contract-attachments/:attachmentId/access',
+    response: opsContractAttachmentAccessResponseSchema,
   }),
 } as const satisfies Record<string, RouteContract>;
 
