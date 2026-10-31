@@ -78,6 +78,16 @@ export const OPS_INVITEE_USER = requiredEnv('UDONE_TEST_OPS_INVITEE_USER_ID');
  */
 export const OPS_INVITED_USER = requiredEnv('UDONE_TEST_OPS_INVITED_USER_ID');
 
+/**
+ * 第二个财务账号（`finance_ops`，不是管理员）。
+ *
+ * 职责分离要求「收款登记人 ≠ 审核人」，而其余夹具里只有一个有 `receipt.approve`
+ * 的运营成员。没有这个人，收款链路在集成层只能证明到「自审被 403 挡住」——
+ * 审核之后的核销、撤销、退款、退满迁移一条都跑不到，而它们恰恰是本域风险最高
+ * 的部分。用 `finance_ops` 而不是管理员：真实世界里审收款的是财务。
+ */
+export const OPS_FINANCE_USER = requiredEnv('UDONE_TEST_OPS_FINANCE_USER_ID');
+
 /** 三个固定账号，与 scripts/db/local-db.mjs 的夹具一一对应。 */
 export const USERS = {
   admin: requiredEnv('UDONE_TEST_ADMIN_ID'),

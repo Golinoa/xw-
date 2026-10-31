@@ -154,6 +154,61 @@ export const OPS_AUDIT_ACTIONS = [
     description:
       '续约：POST /contracts/{id}/renewals 成功时落这个词，摘要带 sourceContractId / newContractId / effectiveOn / expiresOn；原合同不改，所以不落 contract.updated。',
   },
+  // billing 下半，o-t08 新增，待运营端回写契约正文 §6.4。
+  //
+  // 收款链路的九个词按「这条流水是什么」切开，不是按端点切：一笔收款依次是
+  // recorded → approved（或 rejected）→ reconciled，冲正是 reversed；核销的
+  // 撤销单独一个词（`receipt.allocation_reversed`），`entity_type` 是
+  // `receipt_allocation` 而不是 `receipt`——撤销的对象是那一条分配，不是整笔钱。
+  //
+  // `receipt.rejected` 的拼写由契约 §3.4 直接点名（「写审计 receipt.rejected」），
+  // 其余八个按同一形态补齐；驳回**不改变收款状态**（仍是 recorded），所以
+  // 「这笔单被驳回过」只能从审计里看到——这正是它必须单独一个词的原因。
+  {
+    code: 'receipt.recorded',
+    description:
+      '登记收款：POST /receipts 成功写入收款行时落这个词，摘要带 receiptNo / customerId / contractId / amount / currency / methodCode / status。',
+  },
+  {
+    code: 'receipt.approved',
+    description:
+      '审核通过：POST /receipts/{id}/transition 的 approve 边，前后摘要带 status 与 approvedBy；登记人自审会被 403 挡住，走不到这里。',
+  },
+  {
+    code: 'receipt.rejected',
+    description:
+      '驳回收款：POST /receipts/{id}/transition 的 reject 边，reason 必填并原样入库；状态不变（仍为 recorded），驳回事实只存在于审计里。',
+  },
+  {
+    code: 'receipt.reconciled',
+    description:
+      '核销收款：POST /receipts/{id}/allocations 成功时落这个词（每核销一轮一条），摘要带 allocatedTotal 与 receivableIds；追加核销也是这个动作。',
+  },
+  {
+    code: 'receipt.reversed',
+    description:
+      '冲正收款：POST /receipts/{id}/reverse 成功时落这个词，摘要带 from/to 与 amount；仍有有效核销时会先被 HAS_ALLOCATIONS 挡住。',
+  },
+  {
+    code: 'receipt.allocation_reversed',
+    description:
+      '撤销核销：POST /receipt-allocations/{id}/reverse 成功时落这个词，`entity_type` 为 `receipt_allocation`，前后摘要带 reversedAmount 与所属 receiptId / receivableId。',
+  },
+  {
+    code: 'refund.recorded',
+    description:
+      '登记退款：POST /refunds 成功写入退款行时落这个词，摘要带 refundNo / receiptId / amount / currency / status。',
+  },
+  {
+    code: 'refund.approved',
+    description:
+      '审核退款：POST /refunds/{id}/transition 的 approve 边，摘要带 approvedTotal 与 receiptStatus——累计已审核退款额等于收款额时收款会迁到 refunded，这一步就发生在同一次调用里。',
+  },
+  {
+    code: 'refund.cancelled',
+    description:
+      '取消退款：POST /refunds/{id}/transition 的 cancel 边，reason 必填；取消后这部分额度重新可退，所以它和 approved 是两个词而不是同一个词的两个值。',
+  },
 ] as const;
 
 /** 动作码的平铺列表。给筛选下拉、日志白名单这类「只要字符串」的地方用。 */

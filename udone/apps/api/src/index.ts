@@ -21,6 +21,7 @@ import { opsReceivableRoutes } from './modules/ops/receivables/routes';
 import { opsCustomerRoutes } from './modules/ops/customers/routes';
 import { opsIdentityRoutes } from './modules/ops/identity/routes';
 import { opsMetaRoutes } from './modules/ops/meta/routes';
+import { opsReceiptRoutes } from './modules/ops/receipts/routes';
 import { opsTicketRoutes } from './modules/ops/tickets/routes';
 
 export const app = new Hono<ApiEnvironment>();
@@ -57,5 +58,8 @@ app.route('/', opsReceivableRoutes);
 // 工单接在应收之后：它只引用客户、产品、合同（三张都已落地），不引用收款链路。
 // 内部顺序有硬约束——`/tickets/assignable-operators` 必须先于 `/tickets/:ticketId`。
 app.route('/', opsTicketRoutes);
+// 收款接在工单之后：它引用客户、合同、应收三者，且是唯一在事务里跨域改余额的
+// 模块（核销同时动 receipts 与多行 receivables）。放在最后读起来最清楚。
+app.route('/', opsReceiptRoutes);
 
 export default app;

@@ -1,4 +1,10 @@
-import { z, type OpsReceivable, type OpsReceivableExtension } from '@erp/contracts';
+import {
+  z,
+  type OpsBillingAllocation,
+  type OpsBillingReversal,
+  type OpsReceivable,
+  type OpsReceivableExtension,
+} from '@erp/contracts';
 
 /**
  * billing 域 RPC 返回值（snake_case）与出口形状（camelCase）之间的一层。
@@ -46,6 +52,45 @@ export const receivableExtensionRowSchema = z.object({
   created_at: z.string().min(1),
 });
 
+/**
+ * 核销分配 / 撤销流水：**billing 域两个模块共用**，所以放在这里而不是
+ * `receipts/protocol.ts`。
+ *
+ * `apps/api/src/modules/ops/receipts/protocol.ts` 会 import 这三个 schema。
+ * 反向（这里 import 收款模块）不行：会形成模块环，而环在 ESM 里报出来的是
+ * 「用到时还是 undefined」，与「字段名写错」长得一样。
+ *
+ * 键名与库里一致（snake_case），出站由 `toBillingAllocation` 转 camelCase。
+ */
+export const operatorRefRowSchema = z.object({
+  id: z.string().min(1),
+  display_name: z.string().min(1),
+});
+
+export const billingAllocationRowSchema = z.object({
+  id: z.string().min(1),
+  receipt_id: z.string().min(1),
+  receipt_no: z.string().min(1),
+  receivable_id: z.string().min(1),
+  period_no: z.number().int().min(1),
+  contract_id: z.string().min(1),
+  due_date: z.string().min(1),
+  amount: z.number(),
+  reversed_amount: z.number(),
+  allocated_by: operatorRefRowSchema.nullable(),
+  allocated_at: z.string().min(1),
+});
+
+export const billingReversalRowSchema = z.object({
+  id: z.string().min(1),
+  allocation_id: z.string().min(1),
+  receivable_id: z.string().min(1),
+  amount: z.number(),
+  reason: z.string().min(1),
+  reversed_by: operatorRefRowSchema.nullable(),
+  created_at: z.string().min(1),
+});
+
 export const receivableSummaryEnvelopeSchema = z.object({
   total_amount: z.number(),
   settled_amount: z.number(),
@@ -87,10 +132,9 @@ export const receivableDetailEnvelopeSchema = z.discriminatedUnion('status', [
   z.object({
     status: z.literal('ok'),
     receivable: receivableRowSchema,
-    /** T-08 之前恒为空数组；用松形状，表落地后不必再改一次 schema。 */
-    allocations: z.array(z.record(z.string(), z.unknown())),
+    allocations: z.array(billingAllocationRowSchema),
     extensions: z.array(receivableExtensionRowSchema),
-    reversals: z.array(z.record(z.string(), z.unknown())),
+    reversals: z.array(billingReversalRowSchema),
   }),
   z.object({ status: z.literal('receivable_not_found') }),
 ]);
@@ -149,6 +193,42 @@ export function toReceivableExtension(
     newDueDate: row.new_due_date,
     reason: row.reason,
     createdBy: row.created_by ?? null,
+    createdAt: row.created_at,
+  };
+}
+
+export function toBillingAllocation(
+  row: z.output<typeof billingAllocationRowSchema>,
+): OpsBillingAllocation {
+  return {
+    id: row.id,
+    receiptId: row.receipt_id,
+    receiptNo: row.receipt_no,
+    receivableId: row.receivable_id,
+    periodNo: row.period_no,
+    contractId: row.contract_id,
+    dueDate: row.due_date,
+    amount: row.amount,
+    reversedAmount: row.reversed_amount,
+    allocatedBy: row.allocated_by
+      ? { id: row.allocated_by.id, displayName: row.allocated_by.display_name }
+      : null,
+    allocatedAt: row.allocated_at,
+  };
+}
+
+export function toBillingReversal(
+  row: z.output<typeof billingReversalRowSchema>,
+): OpsBillingReversal {
+  return {
+    id: row.id,
+    allocationId: row.allocation_id,
+    receivableId: row.receivable_id,
+    amount: row.amount,
+    reason: row.reason,
+    reversedBy: row.reversed_by
+      ? { id: row.reversed_by.id, displayName: row.reversed_by.display_name }
+      : null,
     createdAt: row.created_at,
   };
 }

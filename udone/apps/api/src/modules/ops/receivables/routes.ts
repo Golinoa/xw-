@@ -19,6 +19,8 @@ import {
   receivableExtensionCreateEnvelopeSchema,
   receivableListEnvelopeSchema,
   receivablePlanCreateEnvelopeSchema,
+  toBillingAllocation,
+  toBillingReversal,
   toReceivable,
   toReceivableExtension,
 } from './protocol';
@@ -307,9 +309,9 @@ opsReceivableRoutes.get(OPS_ROUTES.getOpsReceivable.path, requireOpsAuth(), asyn
   if (result.status === 'ok') {
     return respond(context, 'getOpsReceivable', {
       receivable: toReceivable(result.receivable),
-      allocations: result.allocations,
+      allocations: result.allocations.map((row) => toBillingAllocation(row)),
       extensions: result.extensions.map(toReceivableExtension),
-      reversals: result.reversals,
+      reversals: result.reversals.map((row) => toBillingReversal(row)),
     });
   }
 

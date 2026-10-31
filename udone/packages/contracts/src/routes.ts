@@ -108,6 +108,25 @@ import {
   opsReceivablePlanCreateResponseSchema,
 } from './ops/receivables';
 import {
+  opsReceiptAllocationCreateRequestSchema,
+  opsReceiptAllocationCreateResponseSchema,
+  opsReceiptAllocationReverseRequestSchema,
+  opsReceiptAllocationReverseResponseSchema,
+  opsReceiptCreateRequestSchema,
+  opsReceiptCreateResponseSchema,
+  opsReceiptDetailResponseSchema,
+  opsReceiptListResponseSchema,
+  opsReceiptReverseRequestSchema,
+  opsReceiptReverseResponseSchema,
+  opsReceiptTransitionRequestSchema,
+  opsReceiptTransitionResponseSchema,
+  opsRefundCreateRequestSchema,
+  opsRefundCreateResponseSchema,
+  opsRefundListResponseSchema,
+  opsRefundTransitionRequestSchema,
+  opsRefundTransitionResponseSchema,
+} from './ops/receipts';
+import {
   opsTicketAssignRequestSchema,
   opsTicketAssignableOperatorsResponseSchema,
   opsTicketCreateRequestSchema,
@@ -817,6 +836,68 @@ export const OPS_ROUTES = {
     path: '/api/v1/ops/tickets/:ticketId/references',
     request: opsTicketReferenceCreateRequestSchema,
     response: opsTicketReferenceCreateResponseSchema,
+  }),
+  // ── billing 下半：收款 / 核销 / 退款（契约 §5.5）─────────────────────────
+  //
+  // 十条路由的路径形状刻意与契约逐字一致：`receipts/{id}/allocations` 是核销
+  // （子资源），`receipt-allocations/{id}/reverse` 是撤销核销（独立资源）——
+  // 后者不挂在收款下面，因为一条分配一旦存在，撤销它的人手里只有分配 id。
+  listOpsReceipts: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/receipts',
+    response: opsReceiptListResponseSchema,
+  }),
+  createOpsReceipt: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/receipts',
+    request: opsReceiptCreateRequestSchema,
+    response: opsReceiptCreateResponseSchema,
+  }),
+  getOpsReceipt: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/receipts/:receiptId',
+    response: opsReceiptDetailResponseSchema,
+  }),
+  transitionOpsReceipt: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/receipts/:receiptId/transition',
+    request: opsReceiptTransitionRequestSchema,
+    response: opsReceiptTransitionResponseSchema,
+  }),
+  createOpsReceiptAllocation: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/receipts/:receiptId/allocations',
+    request: opsReceiptAllocationCreateRequestSchema,
+    response: opsReceiptAllocationCreateResponseSchema,
+  }),
+  reverseOpsReceipt: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/receipts/:receiptId/reverse',
+    request: opsReceiptReverseRequestSchema,
+    response: opsReceiptReverseResponseSchema,
+  }),
+  reverseOpsReceiptAllocation: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/receipt-allocations/:allocationId/reverse',
+    request: opsReceiptAllocationReverseRequestSchema,
+    response: opsReceiptAllocationReverseResponseSchema,
+  }),
+  listOpsRefunds: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/refunds',
+    response: opsRefundListResponseSchema,
+  }),
+  createOpsRefund: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/refunds',
+    request: opsRefundCreateRequestSchema,
+    response: opsRefundCreateResponseSchema,
+  }),
+  transitionOpsRefund: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/refunds/:refundId/transition',
+    request: opsRefundTransitionRequestSchema,
+    response: opsRefundTransitionResponseSchema,
   }),
 } as const satisfies Record<string, RouteContract>;
 

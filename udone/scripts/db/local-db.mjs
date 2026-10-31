@@ -85,6 +85,14 @@ const OPS_INVITEE_USER_ID = 'a1000000-0000-4000-8000-0000000000f4';
 const OPS_INVITED_USER_ID = 'a1000000-0000-4000-8000-0000000000f5';
 const OPS_INVITED_OPERATOR_ID = 'a2000000-0000-4000-8000-000000000005';
 
+// 第二个财务账号。职责分离要求「收款登记人 ≠ 审核人」，而夹具里只有一个
+// 有 `receipt.approve` 的运营成员——没有这个人，收款流程在集成层就只走到
+// 「自审被 403 挡住」为止，审核之后的核销、退款、退满迁移全部无法验证。
+// 给它 `finance_ops`（而不是 platform_admin）：真实世界里审核收款的就是财务，
+// 用管理员代审会掩盖「权限够但角色不对」这类问题。
+const OPS_FINANCE_USER_ID = 'a1000000-0000-4000-8000-0000000000f6';
+const OPS_FINANCE_OPERATOR_ID = 'a2000000-0000-4000-8000-000000000006';
+
 let serverProcess = null;
 let postgrestProcess = null;
 let gatewayServer = null;
@@ -522,13 +530,15 @@ INSERT INTO auth.users (id, email) VALUES
   ('${OPS_DISABLED_USER_ID}', 'ops-disabled@integration.test'),
   ('${OPS_VIEWER_USER_ID}', 'ops-viewer@integration.test'),
   ('${OPS_INVITEE_USER_ID}', 'ops-invitee@integration.test'),
-  ('${OPS_INVITED_USER_ID}', 'ops-invited@integration.test');
+  ('${OPS_INVITED_USER_ID}', 'ops-invited@integration.test'),
+  ('${OPS_FINANCE_USER_ID}', 'ops-finance@integration.test');
 
 INSERT INTO ops.operators (id, user_id, email, display_name, status) VALUES
   ('${OPS_OPERATOR_ID}', '${OPS_USER_ID}', 'ops-admin@integration.test', 'Integration Ops', 'active'),
   ('${OPS_DISABLED_OPERATOR_ID}', '${OPS_DISABLED_USER_ID}', 'ops-disabled@integration.test', 'Integration Ops (disabled)', 'disabled'),
   ('${OPS_VIEWER_OPERATOR_ID}', '${OPS_VIEWER_USER_ID}', 'ops-viewer@integration.test', 'Integration Ops (viewer)', 'active'),
-  ('${OPS_INVITED_OPERATOR_ID}', '${OPS_INVITED_USER_ID}', 'ops-invited@integration.test', 'Integration Ops (invited)', 'invited');
+  ('${OPS_INVITED_OPERATOR_ID}', '${OPS_INVITED_USER_ID}', 'ops-invited@integration.test', 'Integration Ops (invited)', 'invited'),
+  ('${OPS_FINANCE_OPERATOR_ID}', '${OPS_FINANCE_USER_ID}', 'ops-finance@integration.test', 'Integration Finance', 'active');
 
 INSERT INTO ops.operator_roles (operator_id, role_id, granted_by)
 SELECT '${OPS_OPERATOR_ID}', role.id, '${OPS_OPERATOR_ID}'
@@ -541,6 +551,10 @@ FROM ops.roles AS role WHERE role.code = 'ops_viewer';
 INSERT INTO ops.operator_roles (operator_id, role_id, granted_by)
 SELECT '${OPS_INVITED_OPERATOR_ID}', role.id, '${OPS_OPERATOR_ID}'
 FROM ops.roles AS role WHERE role.code = 'ops_viewer';
+
+INSERT INTO ops.operator_roles (operator_id, role_id, granted_by)
+SELECT '${OPS_FINANCE_OPERATOR_ID}', role.id, '${OPS_OPERATOR_ID}'
+FROM ops.roles AS role WHERE role.code = 'finance_ops';
 `,
     'utf8',
   );
@@ -583,6 +597,7 @@ async function http(...extra) {
           UDONE_TEST_OPS_VIEWER_USER_ID: OPS_VIEWER_USER_ID,
           UDONE_TEST_OPS_INVITEE_USER_ID: OPS_INVITEE_USER_ID,
           UDONE_TEST_OPS_INVITED_USER_ID: OPS_INVITED_USER_ID,
+          UDONE_TEST_OPS_FINANCE_USER_ID: OPS_FINANCE_USER_ID,
         },
       },
     );
@@ -747,6 +762,7 @@ export {
   OPS_USER_ID,
   OPS_OPERATOR_ID,
   OPS_DISABLED_USER_ID,
+  OPS_FINANCE_USER_ID,
   JWT_SECRET,
   REST_PORT,
   DB_NAME,

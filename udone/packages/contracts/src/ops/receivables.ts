@@ -5,6 +5,7 @@ import {
   pageSizeSchema,
   pagedResponseSchema,
 } from '../pagination';
+import { opsBillingAllocationSchema, opsBillingReversalSchema } from './billing-shared';
 
 /**
  * billing 域（契约 §3.4 / §5.5 的**前四个**端点：应收计划与展期）。
@@ -168,15 +169,18 @@ export const opsReceivablePlanCreateResponseSchema = z.object({
 export type OpsReceivablePlanCreateResponse = z.infer<typeof opsReceivablePlanCreateResponseSchema>;
 
 /**
- * 详情。`allocations` / `reversals` 指向 T-08 才落地的表，本轮恒为空数组——
- * 用松形状（`z.record`）而不是 `z.array(z.never())`：表落地后这里不必再改一次
- * schema，前端也不会因为「多了一个字段」被判 400。
+ * 详情。
+ *
+ * `allocations` / `reversals` 上一轮是松形状（`z.record`）：两张表还没落地，
+ * 只能给个「什么东西都收」的壳。T-08 把表建出来之后，松形状就从「宽容」变成
+ * 「什么都不校验」——`respond()` 拿它兜底，等于这两块没有任何出站保护。
+ * 现在换成与 `GET /receipts/{id}` 完全相同的 schema。
  */
 export const opsReceivableDetailResponseSchema = z.object({
   receivable: opsReceivableSchema,
-  allocations: z.array(z.record(z.string(), z.unknown())),
+  allocations: z.array(opsBillingAllocationSchema),
   extensions: z.array(opsReceivableExtensionSchema),
-  reversals: z.array(z.record(z.string(), z.unknown())),
+  reversals: z.array(opsBillingReversalSchema),
 });
 export type OpsReceivableDetailResponse = z.infer<typeof opsReceivableDetailResponseSchema>;
 
