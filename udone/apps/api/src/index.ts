@@ -15,6 +15,7 @@ import { financeRoutes } from './modules/finance/routes';
 import { financeApplicationRoutes } from './modules/finance-applications/routes';
 import { opsAccountRoutes } from './modules/ops/accounts/routes';
 import { opsAuthRoutes } from './modules/ops/auth/routes';
+import { opsCatalogRoutes } from './modules/ops/catalog/routes';
 import { opsCustomerRoutes } from './modules/ops/customers/routes';
 import { opsIdentityRoutes } from './modules/ops/identity/routes';
 import { opsMetaRoutes } from './modules/ops/meta/routes';
@@ -45,5 +46,7 @@ app.route('/', opsMetaRoutes);
 app.route('/', opsIdentityRoutes);
 app.route('/', opsAccountRoutes);
 app.route('/', opsCustomerRoutes);
+// 产品目录接在客户域之后：两者没有交叉路径，顺序只影响阅读（客户 → 目录 → 合同）。
+app.route('/', opsCatalogRoutes);
 
 export default app;

@@ -31,6 +31,30 @@ import {
 } from './ops/accounts';
 import { opsLoginRequestSchema, opsLogoutResponseSchema, opsTokenResponseSchema } from './ops/auth';
 import {
+  opsFeatureCreateRequestSchema,
+  opsFeatureListQuerySchema,
+  opsFeatureListResponseSchema,
+  opsFeatureResponseSchema,
+  opsFeatureUpdateRequestSchema,
+  opsPackageCreateRequestSchema,
+  opsPackageCreateResponseSchema,
+  opsPackageDetailResponseSchema,
+  opsPackageListQuerySchema,
+  opsPackageListResponseSchema,
+  opsPackagePriceVersionCreateRequestSchema,
+  opsPackagePriceVersionCreateResponseSchema,
+  opsPackageTransitionRequestSchema,
+  opsPackageTransitionResponseSchema,
+  opsPackageUpdateRequestSchema,
+  opsPackageUpdateResponseSchema,
+  opsPriceVersionListResponseSchema,
+  opsProductCreateRequestSchema,
+  opsProductListQuerySchema,
+  opsProductListResponseSchema,
+  opsProductResponseSchema,
+  opsProductUpdateRequestSchema,
+} from './ops/catalog';
+import {
   opsCustomerContactCreateRequestSchema,
   opsCustomerContactDeleteResponseSchema,
   opsCustomerContactListResponseSchema,
@@ -471,6 +495,91 @@ export const OPS_ROUTES = {
     method: 'DELETE',
     path: '/api/v1/ops/customers/:customerId/contacts/:contactId',
     response: opsCustomerContactDeleteResponseSchema,
+  }),
+  /**
+   * 产品目录（契约 §3.2 / §5.3，十三个端点）。
+   *
+   * 顺序照契约表：产品 → 套餐 → 套餐的子资源（价格版本、迁移）→ 功能键。
+   * 三个列表**不带分页参数**：本轮 RPC 签名里没有 `p_page`/`p_page_size`，
+   * 在这里加 `page`/`pageSize` 会得到「前端传了、后端忽略」的分页器——
+   * 显示「共 1 页」而实际有 40 条，比没有分页更糟。
+   */
+  listOpsProducts: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/products',
+    request: opsProductListQuerySchema,
+    response: opsProductListResponseSchema,
+  }),
+  createOpsProduct: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/products',
+    request: opsProductCreateRequestSchema,
+    response: opsProductResponseSchema,
+  }),
+  updateOpsProduct: defineRoute({
+    method: 'PATCH',
+    path: '/api/v1/ops/products/:productId',
+    request: opsProductUpdateRequestSchema,
+    response: opsProductResponseSchema,
+  }),
+  listOpsPackages: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/packages',
+    request: opsPackageListQuerySchema,
+    response: opsPackageListResponseSchema,
+  }),
+  createOpsPackage: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/packages',
+    request: opsPackageCreateRequestSchema,
+    response: opsPackageCreateResponseSchema,
+  }),
+  getOpsPackage: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/packages/:packageId',
+    response: opsPackageDetailResponseSchema,
+  }),
+  updateOpsPackage: defineRoute({
+    method: 'PATCH',
+    path: '/api/v1/ops/packages/:packageId',
+    request: opsPackageUpdateRequestSchema,
+    response: opsPackageUpdateResponseSchema,
+  }),
+  listOpsPackagePriceVersions: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/packages/:packageId/price-versions',
+    response: opsPriceVersionListResponseSchema,
+  }),
+  createOpsPackagePriceVersion: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/packages/:packageId/price-versions',
+    request: opsPackagePriceVersionCreateRequestSchema,
+    response: opsPackagePriceVersionCreateResponseSchema,
+  }),
+  transitionOpsPackage: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/packages/:packageId/transition',
+    request: opsPackageTransitionRequestSchema,
+    response: opsPackageTransitionResponseSchema,
+  }),
+  listOpsFeatures: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/features',
+    request: opsFeatureListQuerySchema,
+    response: opsFeatureListResponseSchema,
+  }),
+  createOpsFeature: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/features',
+    request: opsFeatureCreateRequestSchema,
+    response: opsFeatureResponseSchema,
+  }),
+  /** `featureKey` 是路径参数而不是 body 字段：它是业务主键，改它等于换一个功能键。 */
+  updateOpsFeature: defineRoute({
+    method: 'PATCH',
+    path: '/api/v1/ops/features/:featureKey',
+    request: opsFeatureUpdateRequestSchema,
+    response: opsFeatureResponseSchema,
   }),
 } as const satisfies Record<string, RouteContract>;
 

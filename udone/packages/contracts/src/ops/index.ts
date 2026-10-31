@@ -9,6 +9,7 @@
 export * from './accounts';
 export * from './audit-actions';
 export * from './auth';
+export * from './catalog';
 export * from './customers';
 export * from './identity';
 export * from './meta';

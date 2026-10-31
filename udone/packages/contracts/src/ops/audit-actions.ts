@@ -61,6 +61,52 @@ export const OPS_AUDIT_ACTIONS = [
     description:
       '联系人变更：联系人的新建、编辑、删除都落这个词，`entity_type` 为 `customer_contact`，摘要只带姓名与 isPrimary，不带电话/邮箱原值。',
   },
+  // 产品目录，o-t05 新增，待运营端回写契约正文 §6.4。
+  //
+  // 八个词同样按「改的是哪一类东西」切开：`package.transitioned` 单独一个词，
+  // 因为状态迁移带 from/to 与动作，混进 `package.updated` 之后按后者筛选会同时
+  // 命中「改了套餐名」与「下架了套餐」。`feature.*` 的 `entity_type` 是 `feature`
+  // （主键是 `feature_key`，没有 uuid）。
+  {
+    code: 'product.created',
+    description:
+      '新建产品：POST /products 成功写入产品行（含销售方式开关）时落这个词，摘要带 code / name / lifecycleStatus / salesModes。',
+  },
+  {
+    code: 'product.updated',
+    description:
+      '改产品：PATCH /products/{productId} 改名称、描述、生命周期状态或销售方式时落这个词，前后摘要只带变更过的键。',
+  },
+  {
+    code: 'package.created',
+    description:
+      '新建套餐：POST /packages 成功写入套餐行、权益行与首条价格版本时落这个词，摘要带 productId / internalName / salesMode / billingType / listPrice / priceVersionNo。',
+  },
+  {
+    code: 'package.updated',
+    description:
+      '改套餐：PATCH /packages/{packageId} 改内部名、客户名或权益集合时落这个词，前后摘要只带变更过的键（权益摘要只带 featureKey 与 enabled）。',
+  },
+  {
+    code: 'package.transitioned',
+    description:
+      '套餐状态迁移：POST /packages/{packageId}/transition 的每一条合法边都落这个词，前后摘要带 from/to 的 status 与 action（activate / retire）以及 reason。',
+  },
+  {
+    code: 'package.price_version_created',
+    description:
+      '新建价格版本：POST /packages/{packageId}/price-versions 成功时落这个词，摘要带 versionNo / price / currency / termMonths / effectiveFrom；价格版本只 INSERT，没有 update/delete 词。',
+  },
+  {
+    code: 'feature.created',
+    description:
+      '新建功能键：POST /features 成功写入定义行时落这个词，`entity_type` 为 `feature`，摘要带 featureKey / displayName / valueType / unit。',
+  },
+  {
+    code: 'feature.updated',
+    description:
+      '改功能键：PATCH /features/{featureKey} 改显示名、单位、描述或启停时落这个词，`entity_type` 为 `feature`，前后摘要只带变更过的键。主键不可改。',
+  },
 ] as const;
 
 /** 动作码的平铺列表。给筛选下拉、日志白名单这类「只要字符串」的地方用。 */
