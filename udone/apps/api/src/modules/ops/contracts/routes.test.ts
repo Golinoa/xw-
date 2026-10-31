@@ -147,6 +147,31 @@ interface StubOptions {
   permissions?: string[];
   /** `rpc/<name>` → 响应体。没给的名字一律当作「不该被调用」。 */
   rpc?: Record<string, unknown>;
+  /**
+   * 存储签名端点的行为。`fail` 用来证明「拿不到签名时回 503，而不是回一个
+   * 点不开的地址」——后者会 201，客户端以为传成功了。
+   */
+  storage?: 'ok' | 'fail';
+}
+
+/**
+ * 存储签名的桩。
+ *
+ * 单测不启动本地 Storage 替身（它有自己的行为测试，跑在 `pnpm test` 里），
+ * 这里只负责回形状：上传回 `{url}`、下载回 `{signedURL}`，都是 Supabase 的
+ * 相对路径，且**路径原样带回**——`uploadUrl` 的按段编码与层级断言只有原样
+ * 带回才验得到真正的拼装。
+ */
+function stubStorageSign(url: string) {
+  const upload = url.includes('/object/upload/sign/');
+  const marker = upload ? '/object/upload/sign/' : '/object/sign/';
+  const key = url.slice(url.indexOf(marker) + marker.length);
+  // 两个字段都带 token：Supabase 的上传签名把 token 同时放进 `url` 与 `token`
+  // 两个键。只回 `url` 而不带 token 的桩会让「上传地址是否可直用」这条断言
+  // 永远绿——因为它根本没法被点开。
+  return upload
+    ? { url: `${marker}${key}?token=stub-token`, token: 'stub-token' }
+    : { signedURL: `${marker}${key}?token=stub-token` };
 }
 
 function json(body: unknown, status = 200) {
@@ -170,6 +195,14 @@ function stubFetch(options: StubOptions = {}) {
 
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+
+    if (url.includes('/storage/v1/object/')) {
+      if (options.storage === 'fail') {
+        return json({ statusCode: '500', error: 'InternalError', message: 'boom' }, 500);
+      }
+      return json(stubStorageSign(url));
+    }
+
     const rpcName = url.split('/rpc/')[1]?.split('?')[0];
 
     if (rpcName === 'get_current_ops_context') return json([opsContextRow(permissions)]);
@@ -1240,6 +1273,22 @@ describe('POST /api/v1/ops/contracts/{contractId}/attachments', () => {
       p_file_name: '合同扫描件.pdf',
       p_content_type: 'application/pdf',
       p_byte_size: 2048,
+    });
+  });
+
+  it('answers 503 instead of 201 when the storage refuses to sign', async () => {
+    // 元数据已经在库里（pending），但上传地址拿不到。回 201 会让客户端以为
+    // 「可以开始传了」，而那个 URL 是服务器编出来的——对象永远不会到存储里。
+    stubFetch({
+      storage: 'fail',
+      rpc: { create_contract_attachment: { status: 'ok', attachment: attachmentRow() } },
+    });
+
+    const response = await call(url, { method: 'POST', headers: IDEMPOTENCY_KEY, body });
+
+    expect(response.status).toBe(503);
+    expect(response.body).toMatchObject({
+      details: { reason: 'STORAGE_UNAVAILABLE', bucket: 'ops-contracts' },
     });
   });
 

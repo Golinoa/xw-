@@ -45,9 +45,26 @@ describe('repository engineering gates', () => {
   it('limits Vitest discovery to project test roots and excludes managed worktrees', () => {
     const config = read('vitest.config.ts');
 
-    expect(config).toContain(
-      "include: ['apps/**/*.test.ts', 'packages/**/*.test.ts', 'tests/**/*.test.ts']",
+    // 逐项断言而不是整行比对：include 迟早会多一个目录（这次加了 scripts/），
+    // 整行匹配失败会把「有人把 include 放开成 **/*.test.ts」和「精确地多了
+    // 一个目录」报成同一个错。前者是真问题，后者不是。
+    for (const root of [
+      'apps/**/*.test.ts',
+      'packages/**/*.test.ts',
+      'tests/**/*.test.ts',
+      'scripts/**/*.test.mjs',
+    ]) {
+      expect(config).toContain(`'${root}'`);
+    }
+
+    // 真正要守的是这条：任何通配到全仓的 include 都会让「单元测试不需要数据库」
+    // 失效——tests/integration 一旦被扫进来，没起库的机器上会整片红。
+    const includeBlock = config.slice(
+      config.indexOf('include:'),
+      config.indexOf(']', config.indexOf('include:')),
     );
+    expect(includeBlock).not.toContain("'**/*.test");
+
     expect(config).toContain("'**/.worktrees/**'");
   });
 

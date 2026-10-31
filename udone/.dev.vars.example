@@ -25,6 +25,12 @@ SUPABASE_JWT_SECRET=
 # 邀请链接的落地页，不带尾斜杠。留空时邀请接口不返回可点链接。
 APP_BASE_URL=
 
+# 对象存储的 host（不带 `/storage/v1`），签名地址由它拼出来。
+# 生产填 https://<project-ref>.supabase.co；本地 `pnpm db:local:http` 会注入
+# 网关地址，所以本地这份留空也能跑。留空且没有注入时回落到 127.0.0.1:54321，
+# 症状是附件端点 503 而不是「签名不对」。
+OPS_STORAGE_PUBLIC_URL=
+
 # ── 运行策略 ──
 # 本地无 GoTrue，要跑自签令牌用例才改成 true；改在 .dev.vars 里，不要改本文件。
 # wrangler.toml 里出现这个名字即门禁红（生产禁止打开）。

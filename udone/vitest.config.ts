@@ -12,7 +12,14 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['apps/**/*.test.ts', 'packages/**/*.test.ts', 'tests/**/*.test.ts'],
+    include: [
+      'apps/**/*.test.ts',
+      'packages/**/*.test.ts',
+      'tests/**/*.test.ts',
+      // 本地测试栈自己的组件（Storage 替身）用 .mjs 写：它由 db 脚本加载，
+      // 走 tsc 会要求给 `scripts/` 建一套 path 别名，而它只被这两个 .mjs 用到。
+      'scripts/**/*.test.mjs',
+    ],
     // 集成测试需要真实数据库与 PostgREST，走 vitest.integration.config.ts。
     exclude: [
       '**/.worktrees/**',

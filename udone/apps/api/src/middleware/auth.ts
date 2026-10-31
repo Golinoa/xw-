@@ -52,6 +52,14 @@ export interface ApiEnvironment {
     SUPABASE_JWT_SECRET?: string;
     APP_BASE_URL?: string;
     APP_VERSION?: string;
+    /**
+     * 对象存储的公开基址（host，不带 `/storage/v1`）。签名地址由它拼出来。
+     *
+     * 不配置时回落到本地 Supabase shim 的 54321：生产必须配成项目地址，否则
+     * 签发出去的 URL 指向 localhost——这类错误在浏览器里表现为「下载没反应」，
+     * 而不是一个报错，所以它必须是一个显式配置项而不是推断出来的值。
+     */
+    OPS_STORAGE_PUBLIC_URL?: string;
     ALLOWED_ORIGINS?: string;
     RATE_LIMIT_PER_MINUTE?: string;
     CF_VERSION_METADATA?: WorkerVersionMetadata;

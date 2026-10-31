@@ -20,6 +20,7 @@ import { parseJson, parseParams, respond } from '../../../lib/contract';
 import { RestConflictError, RestRequestError, createRestClient } from '../../../lib/rest-client';
 import type { ApiEnvironment } from '../../../middleware/auth';
 import { ApiHttpError } from '../../../middleware/error-handler';
+import { StorageSignError, createSignedDownload, createSignedUpload } from '../storage/sign';
 import { requireOpsAuth } from '../../../middleware/ops-auth';
 import { requireOpsPermission } from '../../../middleware/ops-permission';
 import {
@@ -273,56 +274,23 @@ function itemPayload(items: readonly OpsContractItemInput[]) {
   }));
 }
 
-/** 本地/联调缺省值，与 §8 一致（Supabase 本地 shim 的默认端口）。 */
-const DEFAULT_OPS_STORAGE_URL = 'http://127.0.0.1:54321';
-
 /**
- * Storage 的公开基址。
+ * 存储不可用 → 503。
  *
- * `OPS_STORAGE_PUBLIC_URL` 还没进 `ApiEnvironment['Bindings']`（那属于
- * `middleware/auth.ts`，不在本轮写边界里），所以这里做一次窄化读取并回落到 §8 的
- * 缺省值。接进 Bindings + `wrangler.toml` 之后，这一处可以改成直接读
- * `context.env.OPS_STORAGE_PUBLIC_URL`。
+ * 不用 500：500 说的是「这段代码有 bug」，503 说的是「依赖暂时不可用」，
+ * 客户端的处置完全不同（重试 vs 报障）。错误码沿用既有约定。
  */
-function storageBase(environment: ApiEnvironment['Bindings']): string {
-  const configured = (environment as { OPS_STORAGE_PUBLIC_URL?: string }).OPS_STORAGE_PUBLIC_URL;
-  return (configured ?? DEFAULT_OPS_STORAGE_URL).replace(/\/+$/, '');
+function storageUnavailable(cause: unknown): ApiHttpError {
+  const detail = cause instanceof StorageSignError ? cause.detail : {};
+  return new ApiHttpError(503, ERROR_CODES.INTERNAL_ERROR, 'Object storage is unavailable', {
+    ...detail,
+    reason: 'STORAGE_UNAVAILABLE',
+  });
 }
 
-/**
- * Storage 路径里的每一段单独编码。
- *
- * `storage_path` 的最后一段是用户给的文件名（可能是中文、空格、`#`）。整段拼上去
- * 不编码，`#` 会把 URL 截断成「对象不存在」；整条 `encodeURIComponent` 又会把 `/`
- * 也编码掉，路径层级没了。按段编码是唯一同时保住层级与字符的做法。
- */
-function encodeStoragePath(storagePath: string): string {
-  return storagePath.split('/').map(encodeURIComponent).join('/');
-}
-
-/** 上传地址 + 过期时间（now + 5 分钟，§8）。 */
-function signedUploadUrl(context: Context<ApiEnvironment>, storagePath: string) {
-  const token = crypto.randomUUID();
-  return {
-    uploadUrl: `${storageBase(context.env)}/storage/v1/object/upload/sign/ops-contracts/${encodeStoragePath(storagePath)}?token=${token}`,
-    uploadExpiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-  };
-}
-
-/**
- * 下载地址 + 过期时间。
- *
- * 与上传地址同构（`/object/sign/` 而不是 `/object/upload/sign/`）。§8 只写死了上传
- * 那一条，下载这一条是照它的格式推的——已记入交付报告，等联调时与真实 Storage
- * 的签名端点核对。
- */
-function signedDownloadUrl(context: Context<ApiEnvironment>, storagePath: string) {
-  const token = crypto.randomUUID();
-  return {
-    url: `${storageBase(context.env)}/storage/v1/object/sign/ops-contracts/${encodeStoragePath(storagePath)}?token=${token}`,
-    expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-  };
-}
+// 签名 URL 的拼装搬到 `modules/ops/storage/sign.ts` 了。原因不是「文件太长」，
+// 而是原来那一段**自己拼 token**：`crypto.randomUUID()` 当签名值，Supabase
+// 一律 400。它在本地的桩里永远绿，在线上永远失败。签名必须由存储签。
 
 /** `GET /api/v1/ops/contracts` */
 opsContractRoutes.get(OPS_ROUTES.listOpsContracts.path, requireOpsAuth(), async (context) => {
@@ -884,12 +852,14 @@ opsContractRoutes.post(
 
     if (result.status === 'ok') {
       const attachment = toContractAttachment(result.attachment);
-      return respond(
-        context,
-        'createOpsContractAttachment',
-        { attachment, ...signedUploadUrl(context, attachment.storagePath) },
-        201,
+      // 元数据已经落库（状态 pending），但拿不到签名时回 503 而不是 201：
+      // 一个点不开的上传地址会让客户端以为「传过了」，而对象从来没有到存储里。
+      const signed = await createSignedUpload(context.env, attachment.storagePath).catch(
+        (cause) => {
+          throw storageUnavailable(cause);
+        },
       );
+      return respond(context, 'createOpsContractAttachment', { attachment, ...signed }, 201);
     }
 
     switch (result.status) {
@@ -979,11 +949,16 @@ opsContractRoutes.get(
     }
 
     const attachment = toContractAttachment(result.attachment);
+    const signed = await createSignedDownload(context.env, attachment.storagePath).catch(
+      (cause) => {
+        throw storageUnavailable(cause);
+      },
+    );
     return respond(context, 'accessOpsContractAttachment', {
       attachmentId: attachment.id,
       storagePath: attachment.storagePath,
       accessScope: attachment.accessScope,
-      ...signedDownloadUrl(context, attachment.storagePath),
+      ...signed,
     });
   },
 );

@@ -216,6 +216,10 @@ export function apiEnv(overrides: Partial<ApiEnvironment['Bindings']> = {}) {
     SUPABASE_JWT_SECRET: JWT_SECRET,
     // 默认 60/分钟不够用：一个文件里几十次请求会自己把自己限流。
     RATE_LIMIT_PER_MINUTE: '100000',
+    // 与 REST 同源：本地网关同时代理 `/rest/v1` 与 `/storage/v1`，和线上
+    // 「一个 project host 什么都干」的形态一致。没配就会回落到 54321 那个
+    // 没人监听的端口，症状是附件端点 503 而不是「签名不对」。
+    OPS_STORAGE_PUBLIC_URL: process.env.OPS_STORAGE_PUBLIC_URL ?? REST_URL,
     AUTH_VERIFIER: verifier(),
     ...overrides,
   } satisfies ApiEnvironment['Bindings'];

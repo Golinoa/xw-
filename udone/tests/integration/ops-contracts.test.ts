@@ -650,6 +650,35 @@ describe('POST /api/v1/ops/contracts/{contractId}/attachments', () => {
     expect(expiresAt - Date.now()).toBeLessThanOrEqual(5 * 60 * 1000 + 1000);
   });
 
+  it('uploads and downloads the same bytes through the signed URLs', async () => {
+    // 这条是「本地存储环境能不能用」的唯一证明。前面几条只断言 URL 字符串，
+    // 而字符串在上一版（随机 UUID 当 token）里一样是对的——那个地址在真实
+    // Storage 上必然 400。传过字节、读回同一份字节，才算签名真的成立。
+    const created = await call<{ attachment: AttachmentBody; uploadUrl: string }>(
+      `${CONTRACTS}/${mainContract.id}/attachments`,
+      {
+        method: 'POST',
+        token: opsToken,
+        body: { fileName: '实地传输.pdf', contentType: 'application/pdf', byteSize: 5 },
+      },
+    );
+    expectStatus(created, 201);
+
+    const payload = 'hello';
+    const uploaded = await fetch(created.body.uploadUrl, { method: 'PUT', body: payload });
+    expect(uploaded.status).toBe(200);
+
+    const access = await call<{ url: string; expiresAt: string }>(
+      `${CONTRACT_ATTACHMENTS}/${created.body.attachment.id}/access`,
+      { token: opsToken },
+    );
+    expectStatus(access, 200);
+
+    const downloaded = await fetch(access.body.url);
+    expect(downloaded.status).toBe(200);
+    expect(await downloaded.text()).toBe(payload);
+  });
+
   it('lists the attachments of a contract', async () => {
     const response = await call<{ items: AttachmentBody[] }>(
       `${CONTRACTS}/${mainContract.id}/attachments`,

@@ -27,6 +27,8 @@ import { join, resolve } from 'node:path';
 import { Readable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 
+import { createStorageServer } from './local-storage.mjs';
+
 const ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const WORK_DIR = process.env.UDONE_LOCAL_PG_HOME ?? join(homedir(), '.udone-local-pg');
 const DATA_DIR = join(WORK_DIR, 'data');
@@ -42,6 +44,11 @@ const PG_ZIP_URL =
 // 参数名、返回列名、SQLSTATE 到 HTTP 状态码的映射，都只有经过它才成立。
 // 本机没有 Docker / Supabase CLI，所以直接用官方单文件二进制连原生 PostgreSQL。
 const REST_PORT = process.env.UDONE_LOCAL_REST_PORT ?? '55433';
+// Storage 是第三个上游。它刻意不监听在网关端口上：`/rest/v1` 与
+// `/storage/v1` 同源是线上的形态（Supabase 的 Kong 按前缀分流），但实现上
+// 把它们放在两个进程里，才能验出「转发错了上游」这类错误——同一个进程里
+// 两条路由写错时会安静地走到对方的 handler。
+const STORAGE_DIR = join(WORK_DIR, 'storage');
 const JWT_SECRET = process.env.UDONE_LOCAL_JWT_SECRET ?? 'udone-local-integration-jwt-secret';
 const POSTGREST_DIR = join(WORK_DIR, 'postgrest');
 const POSTGREST_BIN = join(POSTGREST_DIR, 'postgrest.exe');
@@ -105,6 +112,7 @@ const OPS_SALES_OPERATOR_ID = 'a2000000-0000-4000-8000-000000000007';
 let serverProcess = null;
 let postgrestProcess = null;
 let gatewayServer = null;
+let storageService = null;
 
 const sleep = (ms) => new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
 
@@ -443,46 +451,69 @@ async function startPostgrest() {
   // PostgREST 直接在根路径上提供 API，而客户端拼的是 `/rest/v1/...`
   // ——生产环境里这一段前缀由 Supabase 的网关（Kong）剥掉。
   // 不在客户端或仓储层去掉前缀：那等于为了迁就测试环境去改被测代码。
+  await startStorage();
   await startGateway();
   console.log(`PostgREST 已启动：http://127.0.0.1:${REST_PORT}`);
 }
 
 /**
- * 只做一件事：把 `/rest/v1/<x>` 转发到 PostgREST 的 `/<x>`。
- * 不加鉴权、不改响应、不重试——任何多余逻辑都会让「验证的是 PostgREST 行为」
- * 这句话打折扣。其它前缀一律 501，明确表示 GoTrue 不在这个栈里。
+ * 启动本地 Storage 替身。端口用 0 让系统分配：固定端口在并行跑多个
+ * worktree 时会撞，而撞了之后的症状是「上一个进程的旧对象还在」，比端口
+ * 冲突本身难查得多。
+ */
+async function startStorage() {
+  const service = createStorageServer({ root: STORAGE_DIR, jwtSecret: JWT_SECRET, port: 0 });
+  const actualPort = await service.listen();
+  storageService = { service, port: actualPort };
+  console.log(`Storage 已启动：http://127.0.0.1:${actualPort}`);
+}
+
+/**
+ * 按前缀把 `/rest/v1/*` 与 `/storage/v1/*` 转发到两个上游。
+ *
+ * 这一层只做转发、不改响应，是因为它模拟的是 Supabase 的 Kong：网关被
+ * 认为不可见，任何加在这里的逻辑都等于「只在测试环境存在的中间件」，会让
+ * 通过的用例说不出线上是否也过。其它前缀一律 501，明确表示 Auth 不在此栈。
  */
 function startGateway() {
+  const upstreams = [
+    { prefix: '/rest/v1', port: Number(REST_PORT) + 1 },
+    { prefix: '/storage/v1', port: storageService ? storageService.port : 0 },
+  ];
+
   const server = createServer((request, response) => {
     const url = request.url ?? '/';
-    if (!url.startsWith('/rest/v1')) {
+    const upstream = upstreams.find((candidate) => url.startsWith(candidate.prefix));
+
+    if (!upstream) {
       response.writeHead(501, { 'Content-Type': 'application/json' });
       response.end(
         JSON.stringify({
-          message: 'local stack only proxies /rest/v1; Supabase Auth is not emulated',
+          message:
+            'local stack only proxies /rest/v1 and /storage/v1; Supabase Auth is not emulated',
         }),
       );
       return;
     }
 
-    const upstream = httpRequest(
-      {
-        host: '127.0.0.1',
-        port: Number(REST_PORT) + 1,
-        path: url.slice('/rest/v1'.length) || '/',
-        method: request.method,
-        headers: { ...request.headers, host: `127.0.0.1:${Number(REST_PORT) + 1}` },
-      },
-      (upstreamResponse) => {
-        response.writeHead(upstreamResponse.statusCode ?? 502, upstreamResponse.headers);
-        upstreamResponse.pipe(response);
-      },
-    );
-    upstream.on('error', (cause) => {
+    // `/storage/v1` 不剥前缀：替身自己的路由就带这一段，剥了要另写一套。
+    const target = {
+      host: '127.0.0.1',
+      port: upstream.port,
+      path: upstream.prefix === '/rest/v1' ? url.slice('/rest/v1'.length) || '/' : url,
+      method: request.method,
+      headers: { ...request.headers, host: `127.0.0.1:${upstream.port}` },
+    };
+
+    const forwarded = httpRequest(target, (upstreamResponse) => {
+      response.writeHead(upstreamResponse.statusCode ?? 502, upstreamResponse.headers);
+      upstreamResponse.pipe(response);
+    });
+    forwarded.on('error', (cause) => {
       response.writeHead(502, { 'Content-Type': 'application/json' });
       response.end(JSON.stringify({ message: `upstream failed: ${cause.message}` }));
     });
-    request.pipe(upstream);
+    request.pipe(forwarded);
   });
 
   return new Promise((resolvePromise, rejectPromise) => {
@@ -498,6 +529,12 @@ function stopGateway() {
   if (!gatewayServer) return;
   gatewayServer.close();
   gatewayServer = null;
+}
+
+async function stopStorage() {
+  if (!storageService) return;
+  await storageService.service.close();
+  storageService = null;
 }
 
 function stopPostgrest() {
@@ -602,6 +639,11 @@ async function http(...extra) {
         env: {
           ...process.env,
           UDONE_REST_URL: `http://127.0.0.1:${REST_PORT}`,
+          // Storage 与 REST 同源（都走网关），与线上「同一个 project host」
+          // 一致：前端拿到的签名 URL 里 host 若与 API 不同，跨源 cookie 与
+          // CORS 会多出一层只有在真机上才炸的差异。
+          UDONE_STORAGE_URL: `http://127.0.0.1:${REST_PORT}`,
+          OPS_STORAGE_PUBLIC_URL: `http://127.0.0.1:${REST_PORT}`,
           UDONE_LOCAL_JWT_SECRET: JWT_SECRET,
           UDONE_TEST_ORG_ID: ORG_ID,
           UDONE_TEST_ADMIN_ID: USER_IDS.admin,
@@ -623,6 +665,7 @@ async function http(...extra) {
     });
   } finally {
     stopGateway();
+    await stopStorage();
     stopPostgrest();
     stop();
   }
