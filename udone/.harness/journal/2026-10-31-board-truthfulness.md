@@ -70,3 +70,23 @@
 - 未验证：新增判据只在本地仓库（两个 worktree 共享对象库）跑过；若换到只有
   浅克隆的环境，`cat-file` 对未被 fetch 的历史提交会判为不可达——届时要么加深
   克隆，要么接受「至少一条可达」这个宽松判据仍然兜得住。
+
+## 推送与一次静默的触发器回退（2026-10-31 11:58）
+
+- **推送已完成**：`feat/business-slice` → `origin/feat/business-slice`，92 个提交
+  （`git rev-list --count origin/main..HEAD`），已设 upstream，本地与远端 0/0。
+  业务端从此不再只有一份。
+- **推完立刻核对「会不会触发」，结果不会。** 根 `.workflow/ci.yml` 的
+  `push.branches` 仍是 `precise: [main]`。分支上了远端，流水线依然一次都不跑。
+- **原因链**：`620a210` 当天已经修过——改成 `prefix: [main, feat/]`（同类别多条是
+  并集，混用 precise 与 prefix 会变交集，这条坑写在提交信息里）。随后 `42833d0`
+  把 `udone/.workflow/ci.yml` **移动**到仓库根（`R051`），移动的是未修的那份，
+  直接覆盖了修复；同一次移动里 `frontend-quality.yml` 也不在树里了（现在
+  `.workflow/` 只剩 `ci.yml` 与两支 release）。此后没有人重跑「推送后到底触发没有」，
+  于是 10-30 到 10-31 一直处在「分支没推 + 推了也不会跑」的双重假象里。
+- **修法**：按 `620a210` 的写法把 `prefix: [main, feat/]` 加回去，并在注释里写明
+  这次回退的原因——移动配置文件要按内容核对，不能按路径核对（路径对了，内容可能是旧的）。
+- **未验证**：Gitee Go 侧是否启用该流水线、推送是否真的拉起一次构建，命令行看不到，
+  只能在网页确认。`frontend-quality.yml` 是否要恢复也留待判断：当前 `ci.yml` 已覆盖
+  format / lint / typecheck / test / build / schema:check / check:deploy 七道，前端
+  单独一条流水线是否还有独立价值，要按当时的拆分理由重新看。

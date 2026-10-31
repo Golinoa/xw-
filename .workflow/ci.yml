@@ -20,8 +20,17 @@ displayName: udone 质量门禁
 triggers:
   push:
     branches:
-      precise:
+      # 只用 prefix 一个类别，别和 precise 混用。
+      # Gitee Go 文档：「分支匹配的多种规则是【交集】关系，同时设置只有满足所有规则才触发」。
+      # 同一类别内多条是并集，所以 main 与 feat/ 都写进 prefix：main 本身也满足 main 前缀。
+      #
+      # 这段修复在 620a210 写过一次，后来 42833d0 把 udone/.workflow/ci.yml 移动到仓库根时
+      # 覆盖掉了——移动的那份是未修版，于是触发器悄悄退回 precise:[main]，而没人重跑过
+      # 「推送后到底触发没有」。10-31 推送 feat/business-slice 时才发现：分支已上远端，
+      # 流水线仍然一次都不会跑。移动配置文件时，要按内容核对而不是按路径核对。
+      prefix:
         - main
+        - feat/
   pr:
     branches:
       precise:
