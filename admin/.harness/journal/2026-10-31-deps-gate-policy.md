@@ -2,15 +2,21 @@
 
 ## 1. 结论（数字全部取自本次命令输出）
 
-| 指标 | 上一轮（5e169f5 之后） | 本次 |
+| 指标 | 本轮开跑前实测 | 本次（收口后） |
 | --- | --- | --- |
-| 全量 advisory | 18（critical 2 → 已清 / high 4 / moderate 10 / low 4 → 记账口径见下） | **18**（critical 0 / high **2** / moderate 12 / low 4） |
-| high | 4 | **2** |
-| 其中进上线产物的 high | 4 条里 3 条（未分级，按全量算） | **2 条**（@vue/server-renderer、zod），均在白名单内 |
-| 开发期工具链 high | — | **0** |
+| 全量 advisory | **31**（critical 0 / high 9 / moderate 15 / low 7） | **18**（critical 0 / high **2** / moderate 12 / low 4） |
+| high | 9 | **2** |
+| 其中进上线产物的 high | 未分级，9 条一律按阻塞算 | **2 条**（@vue/server-renderer、zod），均在白名单内 |
+| 开发期工具链 high | 未区分 | **0**（node-forge 已升到修复版） |
 | `quality:dependencies` 退出码 | **1**（永远红） | **0**（首次绿） |
 
-上一轮记的「50 → 18 条 = 4 low / 10 moderate / 4 high」与本次起点一致（本轮开跑前实测同样是 18 条），但**成分不同**：本轮把 4 条 high 里的 2 条真的修掉了，另 2 条走豁免。
+**31 与上一轮记账的 18 对不上，差在审计源而不是依赖**：上一轮记的是 18 条（high 4），本轮开跑前同一条命令实测 31 条（high 9）——多出来的 5 条 high 全是 node-forge，同一批 advisory 在上一轮只回来 1 条。不是依赖变了，是审计库补了条目。这也解释了为什么「上一轮清完就是 18」这句话不能直接当基线用：**advisory 数量是外部输入，不是本地状态**。
+
+逐条对账（31 → 18）：
+- node-forge 6 条 high + 3 条 moderate + 3 条 low → 0/0/0：5 条 high 由升到 1.4.2 修掉；第 6 条（`patched <0.0.0` 那条 RSA PKCS#1 v1.5 验签）升级后也不再报警，**原因未核实**——可能是它的 affected 区间本来就不含 1.4.2，也可能是审计源撤了该条目，两种都符合实测。所以这里只记「升级后不报了」，不记成「这条被修好了」：`patched <0.0.0` 意味着上游没有发布修复版，这个事实不因为扫描结果消失而改变。
+- follow-redirects 1 条 high → 0：区间上界抬到 1.16.2。
+- 其余 @vue/server-renderer、zod 两条 high 原样保留，进白名单。
+- moderate 15 → 12 正好是 node-forge 那 3 条；low 7 → 4 正好是 node-forge 那 3 条。
 
 ## 2. 上一轮记错了一件事：node-forge 不是「上游没有修复版本」
 
