@@ -88,6 +88,15 @@ export const OPS_INVITED_USER = requiredEnv('UDONE_TEST_OPS_INVITED_USER_ID');
  */
 export const OPS_FINANCE_USER = requiredEnv('UDONE_TEST_OPS_FINANCE_USER_ID');
 
+/**
+ * 销售账号（`sales_ops`）：有 `entitlement.request`，**没有** `entitlement.approve`。
+ *
+ * 权益域要证明的不只是「自批被 403 拦住」，还有「换个人就能批」。夹具里此前
+ * 只有平台管理员能提单也能批，于是跨人审批那条正路在集成层一步都走不到——
+ * 这一对权限差异（request 有、approve 无）正是它的前提。
+ */
+export const OPS_SALES_USER = requiredEnv('UDONE_TEST_OPS_SALES_USER_ID');
+
 /** 三个固定账号，与 scripts/db/local-db.mjs 的夹具一一对应。 */
 export const USERS = {
   admin: requiredEnv('UDONE_TEST_ADMIN_ID'),

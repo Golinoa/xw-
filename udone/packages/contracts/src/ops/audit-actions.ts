@@ -209,6 +209,116 @@ export const OPS_AUDIT_ACTIONS = [
     description:
       '取消退款：POST /refunds/{id}/transition 的 cancel 边，reason 必填；取消后这部分额度重新可退，所以它和 approved 是两个词而不是同一个词的两个值。',
   },
+  // 权益域，o-t09 新增。订阅与授权各八个动作词——两张表共用一套状态机
+  // （契约 §3.5），但 `entity_type` 不同，筛选「这台机器的授权被暂停过吗」
+  // 和「这个租户的订阅被暂停过吗」是两种查询，不能合成一个词。
+  //
+  // 注意 `*.expired` 对应的是 `mark_expired` 这个**人工**动作，不是自然到期：
+  // 到期是时间的结果，不是一次操作，写进审计只会让「谁按了什么」变成噪声。
+  {
+    code: 'subscription.created',
+    description:
+      '建订阅草案：POST /subscriptions 成功写入订阅行与首张快照时落这个词，摘要带 subscriptionNo / contractItemId / currentSnapshotId / status。',
+  },
+  {
+    code: 'subscription.submitted',
+    description:
+      '提交订阅审批：POST /subscriptions/{id}/transition 的 submit 边，前后摘要带 status。',
+  },
+  {
+    code: 'subscription.approved',
+    description: '审批通过订阅：transition 的 approve 边，订阅从 pending_approval 迁到 active。',
+  },
+  {
+    code: 'subscription.rejected',
+    description:
+      '驳回订阅：transition 的 reject 边，reason 必填；驳回后回到 draft 而不是终态——申请人是被要求改内容重提。',
+  },
+  {
+    code: 'subscription.suspended',
+    description:
+      '暂停订阅：transition 的 suspend 边，reason 必填。本轮不下发命令（tenant_commands 属 o-t10），所以这次暂停只到运营侧为止。',
+  },
+  {
+    code: 'subscription.resumed',
+    description: '恢复订阅：transition 的 resume 边，reason 必填。',
+  },
+  {
+    code: 'subscription.revoked',
+    description: '撤销订阅：transition 的 revoke 边，reason 必填，属高风险动作（契约 §4）。',
+  },
+  {
+    code: 'subscription.expired',
+    description:
+      '标记订阅到期：transition 的 mark_expired 边，守卫是 ends_on < today。自然到期不落这个词。',
+  },
+  {
+    code: 'license.created',
+    description:
+      '建私有化授权草案：POST /licenses 成功写入授权行与首张快照时落这个词，摘要带 licenseNo / licenseMode / currentSnapshotId。',
+  },
+  {
+    code: 'license.submitted',
+    description: '提交授权审批：POST /licenses/{id}/transition 的 submit 边。',
+  },
+  {
+    code: 'license.approved',
+    description: '审批通过授权：transition 的 approve 边，授权从 pending_approval 迁到 active。',
+  },
+  {
+    code: 'license.rejected',
+    description: '驳回授权：transition 的 reject 边，reason 必填，回到 draft。',
+  },
+  {
+    code: 'license.suspended',
+    description: '暂停授权：transition 的 suspend 边，reason 必填。',
+  },
+  {
+    code: 'license.resumed',
+    description: '恢复授权：transition 的 resume 边，reason 必填。',
+  },
+  {
+    code: 'license.revoked',
+    description: '撤销授权：transition 的 revoke 边，reason 必填，属高风险动作。',
+  },
+  {
+    code: 'license.expired',
+    description: '标记授权到期：transition 的 mark_expired 边，守卫是 valid_to < today。',
+  },
+  {
+    code: 'entitlement_change.requested',
+    description:
+      '提权益变更：POST /subscriptions|licenses/{id}/change-requests 成功时落这个词，前后摘要带完整权益行（before / after），是「谁改了什么」的唯一记录。',
+  },
+  {
+    code: 'entitlement_change.approved',
+    description:
+      '批准权益变更：POST /entitlement-change-requests/{id}/transition 的 approve 边；申请人自批会被 403 挡住，走不到这里。',
+  },
+  {
+    code: 'entitlement_change.rejected',
+    description: '驳回权益变更：transition 的 reject 边，reason 必填。',
+  },
+  {
+    code: 'entitlement_change.cancelled',
+    description:
+      '取消权益变更：transition 的 cancel 边。取消只需要 request 或 approve 之一——提单的人可以自己收回，审批人也可以否掉。',
+  },
+  {
+    code: 'entitlement_change.retried',
+    description:
+      '重试权益变更：transition 的 retry 边，需 entitlement.execute + tenant.retry。命令表（o-t10）未落地时这条路径不可达，词先留着。',
+  },
+  {
+    code: 'entitlement_change.executed',
+    description:
+      '执行权益变更：transition 的 execute 边，订阅/授权的 current_snapshot_id 被换成 proposed，摘要带 changeType。',
+  },
+  {
+    code: 'entitlement_snapshot.created',
+    description:
+      '发放权益快照：每次 create_snapshot 真的插入新行时落这个词（命中同内容的既有快照不落），摘要带 sourceType / sourceId / targetScope / contentHash / lineCount。',
+  },
 ] as const;
 
 /** 动作码的平铺列表。给筛选下拉、日志白名单这类「只要字符串」的地方用。 */

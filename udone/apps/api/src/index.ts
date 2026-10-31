@@ -22,6 +22,7 @@ import { opsCustomerRoutes } from './modules/ops/customers/routes';
 import { opsIdentityRoutes } from './modules/ops/identity/routes';
 import { opsMetaRoutes } from './modules/ops/meta/routes';
 import { opsReceiptRoutes } from './modules/ops/receipts/routes';
+import { opsEntitlementRoutes } from './modules/ops/entitlements/routes';
 import { opsTicketRoutes } from './modules/ops/tickets/routes';
 
 export const app = new Hono<ApiEnvironment>();
@@ -61,5 +62,8 @@ app.route('/', opsTicketRoutes);
 // 收款接在工单之后：它引用客户、合同、应收三者，且是唯一在事务里跨域改余额的
 // 模块（核销同时动 receipts 与多行 receivables）。放在最后读起来最清楚。
 app.route('/', opsReceiptRoutes);
+// 权益接在收款之后：它只引用客户、合同、合同条目与功能字典，不引用任何
+// 金额链路——订阅与授权是「卖出去的权利」，与「收到多少钱」是两条线。
+app.route('/', opsEntitlementRoutes);
 
 export default app;
