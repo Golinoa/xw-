@@ -64,8 +64,9 @@
 
 - 分支 `feat/business-slice`，HEAD 之前为 `329ad59`（contract 域）；本次两个提交：
   `c0041b9`（可达性判据）+ 本条 journal。工作树干净，两个 worktree 均无脏文件。
-- 看板 `SEED_VERSION 33` · 99 卡（68 done / 0 doing / 28 todo / 3 blocked）·
-  协作 24 项（8 未闭环 / 16 已闭环）。
+- 看板 `SEED_VERSION 34` · 100 卡（69 done / 0 doing / 28 todo / 3 blocked）·
+  协作 24 项（8 未闭环 / 16 已闭环）。第 100 张卡是本轮自己（`d-evidence`）：
+  整理动作也按既有习惯上卡，证据就是 `c0041b9`，正好被新判据校验一遍。
 - 未验证：新增判据只在本地仓库（两个 worktree 共享对象库）跑过；若换到只有
   浅克隆的环境，`cat-file` 对未被 fetch 的历史提交会判为不可达——届时要么加深
   克隆，要么接受「至少一条可达」这个宽松判据仍然兜得住。
