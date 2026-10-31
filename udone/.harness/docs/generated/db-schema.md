@@ -3,10 +3,10 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 23
-- Tables discovered: 37
-- Functions discovered: 107
-- Indexes discovered: 45
+- Migration sources scanned: 25
+- Tables discovered: 40
+- Functions discovered: 116
+- Indexes discovered: 49
 - RLS policies discovered: 61
 - Triggers discovered: 2
 
@@ -35,3 +35,5 @@
 | `20261030000008_ops_idempotency_scope_key.sql` | — | — | — | — | — |
 | `20261030000009_ops_catalog_domain.sql` | `ops.products`, `ops.product_sales_modes`, `ops.packages`, `ops.package_price_versions`, `ops.feature_definitions`, `ops.package_features` | `ops.catalog_reference_counts`, `ops.product_json`, `ops.package_json`, `ops.price_version_json`, `ops.feature_json`, `ops.package_feature_json`, `ops.list_products`, `ops.create_product`, `ops.update_product`, `ops.list_packages`, `ops.create_package`, `ops.get_package`, `ops.update_package`, `ops.create_package_price_version`, `ops.list_package_price_versions`, `ops.transition_package`, `ops.list_features`, `ops.create_feature`, `ops.update_feature` | `packages_status_product_idx` | — | — |
 | `20261030000010_ops_contract_domain.sql` | `ops.contracts`, `ops.contract_items`, `ops.contract_versions`, `ops.contract_amendments`, `ops.contract_attachments` | `ops.contract_reference_counts`, `ops.contract_json`, `ops.contract_item_json`, `ops.contract_version_json`, `ops.amendment_json`, `ops.attachment_json`, `ops.contract_items_normalize`, `ops.contract_items_store`, `ops.contract_snapshot_json`, `ops.list_contracts`, `ops.create_contract`, `ops.get_contract`, `ops.update_contract`, `ops.transition_contract`, `ops.list_contract_versions`, `ops.create_contract_amendment`, `ops.transition_contract_amendment`, `ops.renew_contract`, `ops.contract_entitlement_preview`, `ops.list_contract_attachments`, `ops.create_contract_attachment`, `ops.complete_contract_attachment`, `ops.contract_attachment_access` | `contracts_customer_status_idx`, `contracts_status_expires_idx`, `contracts_sales_owner_idx`, `contract_items_contract_idx`, `contract_items_package_idx`, `contract_amendments_contract_idx`, `contract_attachments_contract_idx` | — | — |
+| `20261031000001_ops_settings.sql` | `ops.settings` | `ops.setting_int` | — | — | — |
+| `20261031000002_ops_billing_receivables.sql` | `ops.receivables`, `ops.receivable_extensions` | `ops.receivable_today`, `ops.receivable_status`, `ops.receivable_json`, `ops.list_receivables`, `ops.get_receivable`, `ops.create_receivable_plan`, `ops.extend_receivable`, `ops.get_contract` | `receivables_due_idx`, `receivables_customer_due_idx`, `receivables_contract_idx`, `receivable_extensions_receivable_idx` | — | — |

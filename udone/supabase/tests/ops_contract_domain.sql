@@ -2448,22 +2448,30 @@ SELECT
   );
 
 
--- 三张域表本轮不存在：替身表建在同一事务里，`to_regclass` 在运行期就能看见它，
--- 断言完立刻 drop。最终整个测试文件回滚，不会留下任何东西。
-CREATE TABLE ops.receivables (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  contract_id uuid NOT NULL
-);
-
-
+-- T-07 落地后 `ops.receivables` 是真表，原先的同事务替身表会撞名
+-- （`relation "receivables" already exists`，整个文件在 setup 阶段中断）。
+-- 改成插真实行：合同引用计数与终止守卫读的是同一张表，真表能证明的东西比替身多
+-- ——替身只有两列，真表的 CHECK、唯一键与客户外键一并被这行数据走了一遍。
 INSERT INTO
-  ops.receivables (contract_id)
+  ops.receivables (
+    contract_id,
+    customer_id,
+    period_no,
+    due_date,
+    amount,
+    currency
+  )
 SELECT
-  id
+  contract.id,
+  contract.customer_id,
+  1,
+  (ops.receivable_today () + 30),
+  1000.00,
+  contract.currency
 FROM
-  ops.contracts
+  ops.contracts AS contract
 WHERE
-  business_note = '主合同';
+  contract.business_note = '主合同';
 
 
 SELECT
@@ -2509,9 +2517,6 @@ SELECT
 
 
 DELETE FROM ops.receivables;
-
-
-DROP TABLE ops.receivables;
 
 
 DELETE FROM contract_step;
