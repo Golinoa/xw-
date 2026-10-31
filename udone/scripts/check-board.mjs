@@ -34,6 +34,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -94,6 +95,40 @@ const EXEMPT = /无独立提交|证据缺失/;
 const UNLOCK = /解锁条件/;
 const LOCATOR = new RegExp(`${HASH_SHAPE}|§\\s*\\d|第\\s*\\d+\\s*行|\\bL\\d+`);
 
+// 上面那条正则只保证证据「长得像」提交哈希，不保证「查得到」。实测撞到过一次：
+// a-import 引用的 63a38dc 是合并前三仓时代的提交，合并成单仓时没有保留旧历史，
+// 对象库里干净地没有这个 commit —— 卡片是 done、board:check 是绿的，任何人照着
+// 哈希去核对都会在第一步失败。这种「形似证据」比没有证据更糟：没有会让人去补，
+// 形似会让人以为核过了。所以补一条可达性检查。
+//
+// 判据用「至少一条可达」而不是「全部可达」：卡片里常有一句「原哈希 xxx 属合并前
+// 仓库、现不可达」的说明，那段说明必须留在卡片里（否则半年后没人知道为什么换），
+// 所以不能因为夹带了一个历史哈希就判红。全是悬空哈希才红。
+//
+// 没有 git（比如在 CI 里只拷了看板）时整项跳过，不误判成失败。
+const HASH_ALL = new RegExp(HASH_SHAPE, 'g');
+const repoRoot = (() => {
+  const probe = spawnSync('git', ['rev-parse', '--show-toplevel'], { cwd: here, encoding: 'utf8' });
+  return probe.status === 0 ? probe.stdout.trim() : null;
+})();
+const reachCache = new Map();
+const hashLive = (hash) => {
+  if (!reachCache.has(hash)) {
+    const r = spawnSync('git', ['cat-file', '-e', `${hash}^{commit}`], {
+      cwd: repoRoot,
+      stdio: 'ignore',
+    });
+    reachCache.set(hash, r.status === 0);
+  }
+  return reachCache.get(hash);
+};
+const danglingHashes = (text) => {
+  if (!repoRoot) return [];
+  const hashes = String(text ?? '').match(HASH_ALL) || [];
+  if (hashes.length === 0) return [];
+  return hashes.some((h) => hashLive(h)) ? [] : [...new Set(hashes)];
+};
+
 // 两端共用一个看板，第一人称在这里没有唯一指代：读的人容易把「我」读成自己，
 // 而「对方」把工程分歧写成了私人往来。只认「业务端」「运营端」。
 // 「自我」「其他」是正常词，用后视排除。
@@ -139,6 +174,13 @@ for (const task of tasks) {
     if (task.progress !== 100) fail(`${where}: done 但 progress=${task.progress}`);
     if (!HASH.test(task.desc) && !EXEMPT.test(task.desc)) {
       fail(`${where}: done 但 desc 指不出提交（也没有写「无独立提交」）`);
+    } else if (!EXEMPT.test(task.desc)) {
+      const dead = danglingHashes(task.desc);
+      if (dead.length > 0) {
+        fail(
+          `${where}: done 引用的提交在仓库里查不到（${dead.join('、')}）——形似证据比没有证据更糟`,
+        );
+      }
     }
   } else {
     if (task.end) fail(`${where}: 未完成却写了 end（不把估算当排期）`);
@@ -219,6 +261,12 @@ if (!collabMatch) {
       // 第一版这里写的是 /已/，结果任何中文句子都能过 —— 变异测试当场把它打穿。
       if (c.status === 'closed' && !LOCATOR.test(String(c.evidence))) {
         fail(`协作 ${at}: closed 但证据定位不了（要提交哈希、§章节号 或 行号）`);
+      } else if (c.status === 'closed') {
+        // 与 done 卡同一条理：章节号/行号无法机器核对，哈希可以。
+        const dead = danglingHashes(c.evidence);
+        if (dead.length > 0) {
+          fail(`协作 ${at}: closed 引用的提交查不到（${dead.join('、')}）`);
+        }
       }
     }
 
