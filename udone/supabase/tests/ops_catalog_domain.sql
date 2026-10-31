@@ -1793,64 +1793,97 @@ SELECT
   );
 
 
--- 合同域本轮不存在：替身表建在同一事务里，`to_regclass` 在运行期就能看见它，
--- 断言完立刻 drop。草拟/评审中的条目才算引用，已签署的不算。
-CREATE TABLE ops.contracts (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  status text NOT NULL,
-  customer_id uuid
-);
-
-
-CREATE TABLE ops.contract_items (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  contract_id uuid NOT NULL REFERENCES ops.contracts (id) ON DELETE CASCADE,
-  product_id uuid,
-  package_id uuid
-);
-
-
+-- T-06（第 23 个迁移）落地后 `ops.contracts` / `ops.contract_items` 是真实表。
+-- 这里原来建的是同事务内的替身表，真实表存在时会撞名，所以改为写真实行。
+-- 真实表 `customer_id` 是 NOT NULL + FK，本文件此前没有客户夹具，补一个。
+-- `catalog_reference_counts` 只数 `status in ('draft','reviewing')` 的条目：
+-- 草拟中的算引用，已签署的不算。
 INSERT INTO
-  ops.contracts (status)
+  ops.customers (name, status)
 VALUES
-  ('draft'),
-  ('signed');
+  ('套餐引用夹具客户', 'active');
 
 
 INSERT INTO
-  ops.contract_items (contract_id, package_id)
+  ops.contracts (contract_no, customer_id, sales_mode, status)
 SELECT
-  contract.id,
-  (
-    SELECT
-      id
-    FROM
-      ops.packages
-    WHERE
-      internal_name = 'PRO 版 2027'
-  )
+  'HT-REF-CAT-DRAFT',
+  id,
+  'saas',
+  'draft'
 FROM
-  ops.contracts AS contract
+  ops.customers
 WHERE
-  contract.status = 'draft';
+  name = '套餐引用夹具客户';
 
 
 INSERT INTO
-  ops.contract_items (contract_id, package_id)
+  ops.contracts (contract_no, customer_id, sales_mode, status)
+SELECT
+  'HT-REF-CAT-SIGNED',
+  id,
+  'saas',
+  'signed'
+FROM
+  ops.customers
+WHERE
+  name = '套餐引用夹具客户';
+
+
+INSERT INTO
+  ops.contract_items (
+    contract_id,
+    package_id,
+    sales_mode,
+    billing_type,
+    unit_price,
+    amount,
+    item_name_snapshot,
+    line_no
+  )
 SELECT
   contract.id,
-  (
-    SELECT
-      id
-    FROM
-      ops.packages
-    WHERE
-      internal_name = 'PRO 版 2027'
-  )
+  package.id,
+  'saas',
+  'periodic',
+  0,
+  0,
+  package.internal_name,
+  1
 FROM
   ops.contracts AS contract
+  CROSS JOIN ops.packages AS package
 WHERE
-  contract.status = 'signed';
+  contract.contract_no = 'HT-REF-CAT-DRAFT'
+  AND package.internal_name = 'PRO 版 2027';
+
+
+INSERT INTO
+  ops.contract_items (
+    contract_id,
+    package_id,
+    sales_mode,
+    billing_type,
+    unit_price,
+    amount,
+    item_name_snapshot,
+    line_no
+  )
+SELECT
+  contract.id,
+  package.id,
+  'saas',
+  'periodic',
+  0,
+  0,
+  package.internal_name,
+  1
+FROM
+  ops.contracts AS contract
+  CROSS JOIN ops.packages AS package
+WHERE
+  contract.contract_no = 'HT-REF-CAT-SIGNED'
+  AND package.internal_name = 'PRO 版 2027';
 
 
 DELETE FROM catalog_step;
@@ -1984,28 +2017,47 @@ SELECT
 
 
 -- ── 产品停用守卫 ────────────────────────────────────────────────────────────
+-- 用 contract_no 精确定位：前面「套餐 retire」那组已经造过一条 draft 合同，
+-- 若按 status 匹配会把条目挂到两条合同上，产品引用计数就说不清是哪一个造成的。
 INSERT INTO
-  ops.contracts (status)
-VALUES
-  ('draft');
+  ops.contracts (contract_no, customer_id, sales_mode, status)
+SELECT
+  'HT-REF-CAT-PRODUCT',
+  id,
+  'saas',
+  'draft'
+FROM
+  ops.customers
+WHERE
+  name = '套餐引用夹具客户';
 
 
 INSERT INTO
-  ops.contract_items (contract_id, product_id)
+  ops.contract_items (
+    contract_id,
+    product_id,
+    sales_mode,
+    billing_type,
+    unit_price,
+    amount,
+    item_name_snapshot,
+    line_no
+  )
 SELECT
   contract.id,
-  (
-    SELECT
-      id
-    FROM
-      ops.products
-    WHERE
-      code = 'ERP-SAAS'
-  )
+  product.id,
+  'saas',
+  'periodic',
+  0,
+  0,
+  product.name,
+  1
 FROM
   ops.contracts AS contract
+  CROSS JOIN ops.products AS product
 WHERE
-  contract.status = 'draft';
+  contract.contract_no = 'HT-REF-CAT-PRODUCT'
+  AND product.code = 'ERP-SAAS';
 
 
 SELECT
@@ -2136,12 +2188,8 @@ SELECT
   );
 
 
-DROP TABLE ops.contract_items;
-
-
-DROP TABLE ops.contracts;
-
-
+-- 这里不能再 DROP：两张表现在都是 T-06 的真实表，删掉会破坏同库后续测试文件。
+-- 替身表时代的 drop 清理随替身表一起移除；测试整体在事务里回滚，不留残留。
 -- ── 审计 ────────────────────────────────────────────────────────────────────
 SELECT
   ok (

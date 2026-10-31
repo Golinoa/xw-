@@ -3,10 +3,10 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 22
-- Tables discovered: 32
-- Functions discovered: 84
-- Indexes discovered: 38
+- Migration sources scanned: 23
+- Tables discovered: 37
+- Functions discovered: 107
+- Indexes discovered: 45
 - RLS policies discovered: 61
 - Triggers discovered: 2
 
@@ -34,3 +34,4 @@
 | `20261030000007_ops_customer_domain.sql` | `ops.customers`, `ops.customer_contacts` | `ops.mask_phone`, `ops.mask_email`, `ops.customer_reference_counts`, `ops.customer_json`, `ops.customer_contact_json`, `ops.customer_list_json`, `ops.customer_duplicate_matches`, `ops.list_customers`, `ops.create_customer`, `ops.check_customer_duplicates`, `ops.get_customer`, `ops.update_customer`, `ops.transition_customer`, `ops.customer_overview`, `ops.list_customer_contacts`, `ops.create_customer_contact`, `ops.update_customer_contact`, `ops.delete_customer_contact` | `customers_status_created_idx`, `customers_owner_idx`, `customers_name_idx`, `customer_contacts_primary_idx`, `customer_contacts_customer_idx` | — | — |
 | `20261030000008_ops_idempotency_scope_key.sql` | — | — | — | — | — |
 | `20261030000009_ops_catalog_domain.sql` | `ops.products`, `ops.product_sales_modes`, `ops.packages`, `ops.package_price_versions`, `ops.feature_definitions`, `ops.package_features` | `ops.catalog_reference_counts`, `ops.product_json`, `ops.package_json`, `ops.price_version_json`, `ops.feature_json`, `ops.package_feature_json`, `ops.list_products`, `ops.create_product`, `ops.update_product`, `ops.list_packages`, `ops.create_package`, `ops.get_package`, `ops.update_package`, `ops.create_package_price_version`, `ops.list_package_price_versions`, `ops.transition_package`, `ops.list_features`, `ops.create_feature`, `ops.update_feature` | `packages_status_product_idx` | — | — |
+| `20261030000010_ops_contract_domain.sql` | `ops.contracts`, `ops.contract_items`, `ops.contract_versions`, `ops.contract_amendments`, `ops.contract_attachments` | `ops.contract_reference_counts`, `ops.contract_json`, `ops.contract_item_json`, `ops.contract_version_json`, `ops.amendment_json`, `ops.attachment_json`, `ops.contract_items_normalize`, `ops.contract_items_store`, `ops.contract_snapshot_json`, `ops.list_contracts`, `ops.create_contract`, `ops.get_contract`, `ops.update_contract`, `ops.transition_contract`, `ops.list_contract_versions`, `ops.create_contract_amendment`, `ops.transition_contract_amendment`, `ops.renew_contract`, `ops.contract_entitlement_preview`, `ops.list_contract_attachments`, `ops.create_contract_attachment`, `ops.complete_contract_attachment`, `ops.contract_attachment_access` | `contracts_customer_status_idx`, `contracts_status_expires_idx`, `contracts_sales_owner_idx`, `contract_items_contract_idx`, `contract_items_package_idx`, `contract_amendments_contract_idx`, `contract_attachments_contract_idx` | — | — |

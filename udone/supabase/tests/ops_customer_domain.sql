@@ -1000,16 +1000,17 @@ SELECT
   );
 
 
-CREATE TABLE ops.contracts (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  customer_id uuid
-);
-
-
+-- T-06（第 23 个迁移）落地后 `ops.contracts` 是真实表。这里原来建的是同事务内的
+-- 替身表，真实表存在时会撞名（`relation "contracts" already exists`），所以改为
+-- 直接写一行真实合同。`customer_reference_counts` 只按 customer_id 计数、不过滤
+-- 状态，因此任何状态都能证明「终止被引用」这条守卫。
 INSERT INTO
-  ops.contracts (customer_id)
+  ops.contracts (contract_no, customer_id, sales_mode, status)
 SELECT
-  id
+  'HT-REF-CUS-01',
+  id,
+  'saas',
+  'active'
 FROM
   ops.customers
 WHERE
@@ -1063,9 +1064,8 @@ SELECT
   );
 
 
-DROP TABLE ops.contracts;
-
-
+-- 这里不能再 DROP：ops.contracts 是 T-06 的真实表，删掉会破坏同库后续测试文件。
+-- 替身表时代的 drop 清理随替身表一起移除；测试整体在事务里回滚，不留残留。
 -- ── 编号唯一 ────────────────────────────────────────────────────────────────
 INSERT INTO
   ops.customers (customer_no, name, status)
