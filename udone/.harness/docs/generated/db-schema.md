@@ -3,10 +3,10 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 25
-- Tables discovered: 40
-- Functions discovered: 116
-- Indexes discovered: 49
+- Migration sources scanned: 26
+- Tables discovered: 43
+- Functions discovered: 134
+- Indexes discovered: 55
 - RLS policies discovered: 61
 - Triggers discovered: 2
 
@@ -37,3 +37,4 @@
 | `20261030000010_ops_contract_domain.sql` | `ops.contracts`, `ops.contract_items`, `ops.contract_versions`, `ops.contract_amendments`, `ops.contract_attachments` | `ops.contract_reference_counts`, `ops.contract_json`, `ops.contract_item_json`, `ops.contract_version_json`, `ops.amendment_json`, `ops.attachment_json`, `ops.contract_items_normalize`, `ops.contract_items_store`, `ops.contract_snapshot_json`, `ops.list_contracts`, `ops.create_contract`, `ops.get_contract`, `ops.update_contract`, `ops.transition_contract`, `ops.list_contract_versions`, `ops.create_contract_amendment`, `ops.transition_contract_amendment`, `ops.renew_contract`, `ops.contract_entitlement_preview`, `ops.list_contract_attachments`, `ops.create_contract_attachment`, `ops.complete_contract_attachment`, `ops.contract_attachment_access` | `contracts_customer_status_idx`, `contracts_status_expires_idx`, `contracts_sales_owner_idx`, `contract_items_contract_idx`, `contract_items_package_idx`, `contract_amendments_contract_idx`, `contract_attachments_contract_idx` | — | — |
 | `20261031000001_ops_settings.sql` | `ops.settings` | `ops.setting_int` | — | — | — |
 | `20261031000002_ops_billing_receivables.sql` | `ops.receivables`, `ops.receivable_extensions` | `ops.receivable_today`, `ops.receivable_status`, `ops.receivable_json`, `ops.list_receivables`, `ops.get_receivable`, `ops.create_receivable_plan`, `ops.extend_receivable`, `ops.get_contract` | `receivables_due_idx`, `receivables_customer_due_idx`, `receivables_contract_idx`, `receivable_extensions_receivable_idx` | — | — |
+| `20261031000003_ops_support_tickets.sql` | `ops.tickets`, `ops.ticket_events`, `ops.ticket_references` | `ops.business_day_start`, `ops.allowed_ticket_actions`, `ops.ticket_due_at`, `ops.ticket_is_overdue`, `ops.ticket_json`, `ops.assignable_operators_json`, `ops.append_ticket_event`, `ops.list_tickets`, `ops.get_ticket`, `ops.ticket_event_json`, `ops.list_ticket_timeline`, `ops.list_assignable_operators`, `ops.create_ticket`, `ops.update_ticket`, `ops.assign_ticket`, `ops.transition_ticket`, `ops.add_ticket_event`, `ops.add_ticket_reference` | `tickets_status_priority_idx`, `tickets_assignee_status_idx`, `tickets_customer_idx`, `tickets_due_idx`, `ticket_events_ticket_created_idx`, `ticket_references_ref_idx` | — | — |
