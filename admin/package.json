@@ -63,7 +63,7 @@
     "reinstall": "pnpm clean --del-lock && pnpm install",
     "test:unit": "pnpm --filter @vben/web-antd run test:unit",
     "quality:toolchain": "node scripts/quality/check-toolchain.mjs",
-    "quality:dependencies": "pnpm --registry=https://registry.npmjs.org audit --audit-level high",
+    "quality:dependencies": "node scripts/quality/check-deps-audit.mjs",
     "quality:licenses": "node scripts/quality/check-licenses.mjs",
     "quality:secret-scan": "secretlint \"**/*\" \".*\" \"**/.*\" --no-terminalLink",
     "quality:negative": "node scripts/quality/verify-quality-gates.mjs",

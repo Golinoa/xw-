@@ -16,18 +16,17 @@
 # 也不可用。本文件用 Gitee Go 的 stages/step/npmbuild@1 + goals 表达等价流程；
 # GitHub 那份保留为 GitHub 侧资产（若仓库将来镜像到 GitHub 仍可用）。
 #
-# 已知会红的一步：goals 末尾的 `pnpm run quality:check` 含
-# `quality:dependencies`（全锁文件 npm audit --audit-level high），当前锁文件
-# 仍有未升级的高危 advisory（详见 admin/.harness/journal/2026-10-29-quality-gate-audit.md
-# §4.1）。在依赖升级完成前，本流水线会在此步骤失败——这是**真实失败**，
-# 不是配置错误，也不允许通过跳过检查来变绿。
+# 关于第 11 步 quality:dependencies（2026-10-31 改写）：
+# 上一版这段写的是「已知会红在 dependencies，等依赖升级完成」。现在不红了，但
+# 换的不是版本，是**口径**——D-11 裁决为「白名单 + 到期日」，实现见
+# admin/scripts/quality/check-deps-audit.mjs：只对进上线产物的依赖阻断（判据是
+# @vben/web-antd 的生产依赖可达集，不是 pnpm audit --prod），够得着的 critical/
+# high 必须命中带 owner 与到期日的白名单，到期即失效、依赖已不告警也失效。
+# 实跑：18 条 advisory（critical 0 / high 2 / moderate 12 / low 4），两条 high
+# 均在白名单内（到期 2027-01-28），门禁退出码 0。
 #
-# 2026-10-30 更正一处事实：上面那句「会红在 dependencies」此前**从未被验证过**。
-# 触发器修好后按 quality:check 的 11 步顺序实跑，先红在第 8 步
-# `quality:secret-scan`（api/__tests__/env.test.ts 的 BasicAuth 误报，已用单行
-# 定向抑制修掉），根本没走到 dependencies。也就是说「已知红在哪一步」这个结论
-# 本身就是没人跑过链条时的推测——和「有 yml 就等于有 CI」是同一类错误。
-# 修复后 11 步实跑结果：第 1–10 步全绿，唯一失败仍在第 11 步 quality:dependencies。
+# 仍缺一条证据：**Gitee 网页侧的执行记录**。本地把 11 步跑通不等于 Gitee Go 跑过，
+# 命令行看不到网页侧结果。这句从 a0.4 挂到现在，不因为本地变绿而消失。
 # ============================================================
 version: "1.0"
 name: frontend-quality

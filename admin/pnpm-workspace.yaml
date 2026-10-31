@@ -31,11 +31,19 @@ overrides:
   '@ctrl/tinycolor': 'catalog:'
   brace-expansion@>=5.0.0 <6.0.0: 5.0.12
   clsx: 'catalog:'
-  # 以下四条都是「受影响区间内抬到最近的修复版」，不锁全量版本：
+  # 以下各条都是「受影响区间内抬到最近的修复版」，不锁全量版本：
   # 上游自己发新版后这些规则自动失效，不会长期钉住依赖树。
-  # 逐个对应的 advisory 见 .harness/journal/2026-10-30-deps-audit-round1.md。
-  follow-redirects@>=1.16.0 <1.16.1: 1.16.1
+  # 逐个对应的 advisory 见 .harness/journal/2026-10-30-deps-audit-round1.md
+  # 与 2026-10-31-deps-gate-policy.md。
+  # 1.16.1 只挡住「跨 realm sensitiveHeaders 被共用」那一条；「cross-realm 数组
+  # 共享」的绕过要 1.16.2，所以区间上界从 1.16.1 抬到 1.16.2。
+  follow-redirects@>=1.16.0 <1.16.2: 1.16.2
   glob@>=10.2.0 <10.5.0: 10.5.0
+  # node-forge 装的是 1.4.0，6 条 high 里 5 条写的是 patched >=1.4.1 —— 也就是
+  # **有修复版，只是没装**。上一轮把它们记成「上游没有修复版本」是错的：只有
+  # GHSA 那条「RSA PKCS#1 v1.5 签名验签」写成 patched <0.0.0（真的没有修复版）。
+  # 这里抬到 1.4.2（而非 1.4.1），因为 1.4.1 之后还有一条 X.509 绕过。
+  node-forge@>=1.0.0 <1.4.1: 1.4.2
   pinia: 'catalog:'
   source-map-js@>=1.0.0 <1.2.2: 1.2.2
   # 唯一的 critical：oxfmt 0.51.0 把 tinypool 钉死在 2.1.0，落在

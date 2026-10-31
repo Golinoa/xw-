@@ -35,8 +35,13 @@ apps/web-antd/src/api/__tests__/env.test.ts
   @secretlint/secretlint-rule-preset-recommend > @secretlint/secretlint-rule-basicauth
 ```
 
-那行是 `assertApiBaseUrl('https://user:pass@ops.example.com/api')`——**待拒绝的
+那行是 `assertApiBaseUrl('https://<user>:<pass>@ops.example.com/api')` 形状的输入——**待拒绝的
 输入**，用例断言它必须抛错。规则判对了（它确实长得像凭据），是夹具需要声明豁免。
+
+**10-31 补记**：这段最初把凭据原样抄进了 journal，于是 `quality:secret-scan` 在扫
+文档时命中了它自己——一份「讲怎么修 secret-scan 误报」的文档被判成泄漏，修一次
+文档又红一次。改成占位写法（`<user>:<pass>`）而不是给 md 也加抑制：文档里没有
+必要出现形似凭据的字符串，占位不损失任何信息。
 
 **结论比修复本身重要**：yml 里「已知红在某一步」这句话此前从未被验证过，因为
 链条在第 8 步就断了，根本走不到第 11 步。这跟「有 yml 就当有 CI」是同一类错误：
