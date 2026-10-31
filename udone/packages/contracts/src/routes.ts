@@ -107,6 +107,23 @@ import {
   opsReceivablePlanCreateRequestSchema,
   opsReceivablePlanCreateResponseSchema,
 } from './ops/receivables';
+import {
+  opsTicketAssignRequestSchema,
+  opsTicketAssignableOperatorsResponseSchema,
+  opsTicketCreateRequestSchema,
+  opsTicketDetailResponseSchema,
+  opsTicketEventCreateRequestSchema,
+  opsTicketEventCreateResponseSchema,
+  opsTicketListQuerySchema,
+  opsTicketListResponseSchema,
+  opsTicketReferenceCreateRequestSchema,
+  opsTicketReferenceCreateResponseSchema,
+  opsTicketResponseSchema,
+  opsTicketTimelineResponseSchema,
+  opsTicketTransitionRequestSchema,
+  opsTicketUpdateRequestSchema,
+  opsTicketWriteResponseSchema,
+} from './ops/tickets';
 import { opsMetaResponseSchema } from './ops/meta';
 import { opsPermissionListResponseSchema, opsSessionResponseSchema } from './ops/session';
 import {
@@ -736,6 +753,70 @@ export const OPS_ROUTES = {
     path: '/api/v1/ops/receivables/:receivableId/extensions',
     request: opsReceivableExtensionCreateRequestSchema,
     response: opsReceivableExtensionCreateResponseSchema,
+  }),
+  listOpsTickets: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/tickets',
+    request: opsTicketListQuerySchema,
+    response: opsTicketListResponseSchema,
+  }),
+  /**
+   * 静态路径必须排在 `/tickets/:ticketId` 之前。
+   *
+   * 契约 §5.6 的脚注专门点了这一条：Hono 按注册顺序匹配，若 `:ticketId` 先注册，
+   * `assignable-operators` 会被当成一个 ticketId，而它不是 uuid——用户看到的是
+   * 「工单不存在」，不是「路由写错了」。
+   */
+  listOpsTicketAssignableOperators: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/tickets/assignable-operators',
+    response: opsTicketAssignableOperatorsResponseSchema,
+  }),
+  createOpsTicket: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/tickets',
+    request: opsTicketCreateRequestSchema,
+    response: opsTicketResponseSchema,
+  }),
+  getOpsTicket: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/tickets/:ticketId',
+    response: opsTicketDetailResponseSchema,
+  }),
+  updateOpsTicket: defineRoute({
+    method: 'PATCH',
+    path: '/api/v1/ops/tickets/:ticketId',
+    request: opsTicketUpdateRequestSchema,
+    response: opsTicketResponseSchema,
+  }),
+  assignOpsTicket: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/tickets/:ticketId/assign',
+    request: opsTicketAssignRequestSchema,
+    response: opsTicketWriteResponseSchema,
+  }),
+  transitionOpsTicket: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/tickets/:ticketId/transition',
+    request: opsTicketTransitionRequestSchema,
+    response: opsTicketWriteResponseSchema,
+  }),
+  listOpsTicketTimeline: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/tickets/:ticketId/timeline',
+    response: opsTicketTimelineResponseSchema,
+  }),
+  createOpsTicketEvent: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/tickets/:ticketId/events',
+    request: opsTicketEventCreateRequestSchema,
+    response: opsTicketEventCreateResponseSchema,
+  }),
+  createOpsTicketReference: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/tickets/:ticketId/references',
+    request: opsTicketReferenceCreateRequestSchema,
+    response: opsTicketReferenceCreateResponseSchema,
   }),
 } as const satisfies Record<string, RouteContract>;
 

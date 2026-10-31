@@ -21,6 +21,7 @@ import { opsReceivableRoutes } from './modules/ops/receivables/routes';
 import { opsCustomerRoutes } from './modules/ops/customers/routes';
 import { opsIdentityRoutes } from './modules/ops/identity/routes';
 import { opsMetaRoutes } from './modules/ops/meta/routes';
+import { opsTicketRoutes } from './modules/ops/tickets/routes';
 
 export const app = new Hono<ApiEnvironment>();
 
@@ -53,5 +54,8 @@ app.route('/', opsCatalogRoutes);
 // 合同接在 catalog 之后：合同引用客户与套餐（套餐状态、客户资格），阅读顺序同依赖顺序。
 app.route('/', opsContractRoutes);
 app.route('/', opsReceivableRoutes);
+// 工单接在应收之后：它只引用客户、产品、合同（三张都已落地），不引用收款链路。
+// 内部顺序有硬约束——`/tickets/assignable-operators` 必须先于 `/tickets/:ticketId`。
+app.route('/', opsTicketRoutes);
 
 export default app;
