@@ -22,5 +22,6 @@ export * from './reports';
 export * from './receipts';
 export * from './receivables';
 export * from './session';
+export * from './settings';
 export * from './tenant-integration';
 export * from './tickets';

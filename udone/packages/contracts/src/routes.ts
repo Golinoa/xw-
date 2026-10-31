@@ -150,6 +150,16 @@ import {
   opsTenantSyncFailureReportResponseSchema,
 } from './ops/reports';
 import {
+  opsDictionaryItemCreateRequestSchema,
+  opsDictionaryItemCreateResponseSchema,
+  opsDictionaryItemUpdateRequestSchema,
+  opsDictionaryItemUpdateResponseSchema,
+  opsDictionaryListQuerySchema,
+  opsDictionaryListResponseSchema,
+  opsSettingsResponseSchema,
+  opsSettingsUpdateRequestSchema,
+} from './ops/settings';
+import {
   opsTenantCommandAttemptListResponseSchema,
   opsTenantCommandCreateRequestSchema,
   opsTenantCommandCreateResponseSchema,
@@ -1180,6 +1190,35 @@ export const OPS_ROUTES = {
     path: '/api/v1/ops/reports/deployment-versions',
     request: opsDeploymentVersionReportQuerySchema,
     response: opsDeploymentVersionReportResponseSchema,
+  }),
+  getOpsSettings: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/settings',
+    response: opsSettingsResponseSchema,
+  }),
+  updateOpsSettings: defineRoute({
+    method: 'PATCH',
+    path: '/api/v1/ops/settings',
+    request: opsSettingsUpdateRequestSchema,
+    response: opsSettingsResponseSchema,
+  }),
+  listOpsDictionaries: defineRoute({
+    method: 'GET',
+    path: '/api/v1/ops/dictionaries',
+    request: opsDictionaryListQuerySchema,
+    response: opsDictionaryListResponseSchema,
+  }),
+  createOpsDictionaryItem: defineRoute({
+    method: 'POST',
+    path: '/api/v1/ops/dictionaries/:code/items',
+    request: opsDictionaryItemCreateRequestSchema,
+    response: opsDictionaryItemCreateResponseSchema,
+  }),
+  updateOpsDictionaryItem: defineRoute({
+    method: 'PATCH',
+    path: '/api/v1/ops/dictionary-items/:itemId',
+    request: opsDictionaryItemUpdateRequestSchema,
+    response: opsDictionaryItemUpdateResponseSchema,
   }),
 } as const satisfies Record<string, RouteContract>;
 

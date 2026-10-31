@@ -377,6 +377,25 @@ export const OPS_AUDIT_ACTIONS = [
     description:
       '实例状态迁移：POST /deployments/{id}/transition 的每一条合法边都落这个词，reason 原样入库（`retire` 必填），前后摘要带 from/to 的 status 与 action。',
   },
+  // 设置页，o-t13 新增。三个词按「改的是哪一张表」切：参数项是 `settings`，
+  // 字典条目是 `dictionary_item`。参数项没有 created / deleted——它只有三行，
+  // 由迁移植入，端点只能改值；字典条目有 created / updated，没有 deleted，
+  // 因为停用（`isActive=false`）才是它的删除语义。
+  {
+    code: 'settings.updated',
+    description:
+      '改运营参数：PATCH /settings 成功时落这个词，前后摘要**只含变了的键**（camelCase，与请求体同名），entity_id 为空——参数项是三行，没有单一实体可指。',
+  },
+  {
+    code: 'dictionary.item_created',
+    description:
+      '新增字典条目：POST /dictionaries/{code}/items 成功时落这个词，摘要带 dictionaryCode / value / label / sortOrder。',
+  },
+  {
+    code: 'dictionary.item_updated',
+    description:
+      '改字典条目：PATCH /dictionary-items/{itemId} 改文案、排序或启停都落这个词，前后摘要带 value / label / sortOrder / isActive。改文案与改启停不拆词——审计要回答的问题是「谁动过这个条目」。',
+  },
   {
     code: 'deployment_version.recorded',
     description:
