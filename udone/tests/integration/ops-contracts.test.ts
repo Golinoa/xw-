@@ -711,9 +711,38 @@ describe('POST /api/v1/ops/contract-attachments/{attachmentId}/complete', () => 
     expect(response.body).toMatchObject({ code: 'VALIDATION_ERROR' });
   });
 
-  it('marks the attachment stored', async () => {
+  it('answers 409 when the bytes were never uploaded (contract §5.4 #13)', async () => {
+    // `mainAttachment` 的元数据在 beforeAll 就落了库，对象从没进过存储。
+    // 此前这条会 200：函数只看数据库那一行的状态，而那一行在 create 时就有了。
+    // 「未上传」这句判断现在真的去问存储，所以它是可以被触发的。
+    const response = await call(`${CONTRACT_ATTACHMENTS}/${mainAttachment.id}/complete`, {
+      method: 'POST',
+      token: opsToken,
+      body: {},
+    });
+    expectStatus(response, 409);
+    expect(response.body).toMatchObject({
+      code: 'STATE_CONFLICT',
+      details: { reason: 'ATTACHMENT_NOT_UPLOADED' },
+    });
+  });
+
+  it('marks the attachment stored once the bytes are there', async () => {
+    const created = await call<{ attachment: AttachmentBody; uploadUrl: string }>(
+      `${CONTRACTS}/${mainContract.id}/attachments`,
+      {
+        method: 'POST',
+        token: opsToken,
+        body: { fileName: '待确认.pdf', contentType: 'application/pdf', byteSize: 5 },
+      },
+    );
+    expectStatus(created, 201);
+
+    const uploaded = await fetch(created.body.uploadUrl, { method: 'PUT', body: 'hello' });
+    expect(uploaded.status).toBe(200);
+
     const response = await call<{ attachment: AttachmentBody }>(
-      `${CONTRACT_ATTACHMENTS}/${mainAttachment.id}/complete`,
+      `${CONTRACT_ATTACHMENTS}/${created.body.attachment.id}/complete`,
       {
         method: 'POST',
         token: opsToken,
@@ -722,7 +751,34 @@ describe('POST /api/v1/ops/contract-attachments/{attachmentId}/complete', () => 
     );
     expectStatus(response, 200);
     expect(response.body.attachment.status).toBe('stored');
-    expect(response.body.attachment.checksumSha256).toBe('a'.repeat(64));
+  });
+
+  it('treats a repeated complete as a retry, not as "never uploaded"', async () => {
+    // 这条曾是 409：完成判定写成「状态不是 pending」，于是第二次调用一个
+    // **已经 stored、还能下载**的附件，会被告知「文件还没上传」。
+    const created = await call<{ attachment: AttachmentBody; uploadUrl: string }>(
+      `${CONTRACTS}/${mainContract.id}/attachments`,
+      {
+        method: 'POST',
+        token: opsToken,
+        body: { fileName: '重试确认.pdf', contentType: 'application/pdf', byteSize: 5 },
+      },
+    );
+    expectStatus(created, 201);
+    await fetch(created.body.uploadUrl, { method: 'PUT', body: 'hello' });
+
+    const first = await call<{ attachment: AttachmentBody }>(
+      `${CONTRACT_ATTACHMENTS}/${created.body.attachment.id}/complete`,
+      { method: 'POST', token: opsToken, body: {} },
+    );
+    expectStatus(first, 200);
+
+    const retry = await call<{ attachment: AttachmentBody }>(
+      `${CONTRACT_ATTACHMENTS}/${created.body.attachment.id}/complete`,
+      { method: 'POST', token: opsToken, body: {} },
+    );
+    expectStatus(retry, 200);
+    expect(retry.body.attachment.status).toBe('stored');
   });
 
   it('returns 404 for an unknown attachment', async () => {

@@ -20,7 +20,12 @@ import { parseJson, parseParams, respond } from '../../../lib/contract';
 import { RestConflictError, RestRequestError, createRestClient } from '../../../lib/rest-client';
 import type { ApiEnvironment } from '../../../middleware/auth';
 import { ApiHttpError } from '../../../middleware/error-handler';
-import { StorageSignError, createSignedDownload, createSignedUpload } from '../storage/sign';
+import {
+  StorageSignError,
+  createSignedDownload,
+  createSignedUpload,
+  headStorageObject,
+} from '../storage/sign';
 import { requireOpsAuth } from '../../../middleware/ops-auth';
 import { requireOpsPermission } from '../../../middleware/ops-permission';
 import {
@@ -30,6 +35,7 @@ import {
   contractAttachmentCompleteEnvelopeSchema,
   contractAttachmentCreateEnvelopeSchema,
   contractAttachmentListEnvelopeSchema,
+  contractAttachmentLocationEnvelopeSchema,
   contractCreateEnvelopeSchema,
   contractDetailEnvelopeSchema,
   contractEntitlementPreviewEnvelopeSchema,
@@ -896,6 +902,30 @@ opsContractRoutes.post(
     const params = parseParams(context, z.object({ attachmentId: z.string().min(1) }));
     const body = await parseJson(context, opsContractAttachmentCompleteRequestSchema);
 
+    // 先确认对象真的在存储里，再推进状态。
+    //
+    // 为什么必须先读：如果先 complete 再校验，一次失败的校验会留下
+    // `stored` 但存储里没有文件的行——那个状态比拒绝更糟，因为列表里它会
+    // 正常显示，点下载才 404。
+    const location = await callOpsRpc(
+      context,
+      'contract_attachment_location',
+      { p_attachment_id: params.attachmentId },
+      contractAttachmentLocationEnvelopeSchema,
+    );
+
+    if (location.status === 'attachment_not_found') throw missing('attachment');
+
+    const object = await headStorageObject(context.env, location.storage_path).catch((cause) => {
+      throw storageUnavailable(cause);
+    });
+
+    if (object === null) {
+      // 契约 §5.4 第 13 条：409 `STATE_CONFLICT`（未上传）。这一条此前永远
+      // 不会触发——函数只看数据库状态，而那一行在 create 时就写好了。
+      throw stateConflict('ATTACHMENT_NOT_UPLOADED');
+    }
+
     const result = await callOpsRpc(
       context,
       'complete_contract_attachment',
@@ -916,8 +946,8 @@ opsContractRoutes.post(
     switch (result.status) {
       case 'attachment_not_found':
         throw missing('attachment');
-      case 'attachment_not_uploaded':
-        throw stateConflict('ATTACHMENT_NOT_UPLOADED');
+      case 'invalid_checksum':
+        throw rejected('INVALID_CHECKSUM', { field: result.field });
       default:
         throw rejected('REQUEST_REJECTED');
     }

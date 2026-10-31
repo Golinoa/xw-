@@ -28,7 +28,7 @@ const MAX_BYTES = 50 * 1024 * 1024;
 
 const b64url = (buffer) => Buffer.from(buffer).toString('base64url');
 
-function signToken(secret, payload) {
+export function signToken(secret, payload) {
   const header = b64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
   const body = b64url(JSON.stringify(payload));
   const data = `${header}.${body}`;
@@ -148,6 +148,7 @@ function encodeKey(key) {
  * @param {object} options
  * @param {string} options.root      对象落盘目录（默认 $WORK_DIR/storage）
  * @param {string} options.jwtSecret 与 PostgREST 共用同一个 secret
+ * @param {string} [options.serviceKey] 签发端点要求的 service_role key
  * @param {string[]} [options.buckets]
  * @param {number} [options.port]
  */
@@ -159,9 +160,41 @@ export function createStorageServer({ root, jwtSecret, buckets = DEFAULT_BUCKETS
   const hasBucket = (bucket) => buckets.includes(bucket);
 
   /**
-   * 校验直连请求的 Bearer。本地没有 JWT 签发链的全部角色，只要求
-   * 「有 token 且验得过」——服务端调度的 service_role 与用户令牌在这里等价，
-   * 因为这条路径验的是「不经签名拿不到」，不是「谁的令牌能拿」。
+   * 签发端点只认 service_role。
+   *
+   * 线上这一点是硬的：`/object/sign/` 走 Kong → storage-api，没带 service_role
+   * 就 401。替身此前**完全不鉴权**，于是「忘了带凭据」在本地一路绿，到线上
+   * 每个附件端点都 401——和当初「随机 UUID 当签名」是同一类缺陷：本地缺少
+   * 线上会拒绝的约束，缺的那一条恰好是被测的那一条。
+   *
+   * `apikey` 也要求存在：Supabase 的网关先校验它再看 `Authorization`，只带
+   * 后者的请求在真机上会被拦在网关。值不校验——本地只有一个项目，没有
+   * anon / service 的区分意义。
+   */
+  const serviceRoleToken = (request) => {
+    const header = request.headers.authorization ?? '';
+    const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+    const verified = verifyToken(jwtSecret, token);
+    // 不比对固定字符串：Supabase 认的是「一个签得过、且 role 是 service_role
+    // 的 JWT」，不是某一个特定值。绑死字符串会让本地多出一条线上不存在的
+    // 约束——夹具自己签一个 service 令牌就会失败，而真机上那样做是对的。
+    return verified.ok && verified.payload?.role === 'service_role';
+  };
+
+  const requireServiceRole = (request) => {
+    if (!serviceRoleToken(request)) {
+      return { ok: false, message: 'Expected a service_role key in the Authorization header' };
+    }
+    if (!request.headers.apikey) {
+      return { ok: false, message: 'Missing apikey header (the gateway checks it first)' };
+    }
+    return { ok: true };
+  };
+
+  /**
+   * 校验直连请求的 Bearer。直读 private bucket 有两条合法路径：service_role
+   * （后端代读）或一个验得过的用户令牌（本地没有 storage policy，所以这条在
+   * 线上会被 RLS 拒掉，本地放过它只为了不让替身比线上更严）。
    */
   const requireBearer = (request) => {
     const header = request.headers.authorization ?? '';
@@ -198,6 +231,11 @@ export function createStorageServer({ root, jwtSecret, buckets = DEFAULT_BUCKETS
         }
 
         if (method === 'POST') {
+          const authorized = requireServiceRole(request);
+          if (!authorized.ok) {
+            sendError(response, 401, 'Unauthorized', authorized.message);
+            return;
+          }
           const body = await readBody(request);
           const parsed = body.length === 0 ? {} : JSON.parse(body.toString());
           const expiresIn = Number(parsed.expiresIn ?? 60);
@@ -262,6 +300,11 @@ export function createStorageServer({ root, jwtSecret, buckets = DEFAULT_BUCKETS
         }
 
         if (method === 'POST') {
+          const authorized = requireServiceRole(request);
+          if (!authorized.ok) {
+            sendError(response, 401, 'Unauthorized', authorized.message);
+            return;
+          }
           const body = await readBody(request);
           const parsed = body.length === 0 ? {} : JSON.parse(body.toString());
           const expiresIn = Number(parsed.expiresIn ?? 60);

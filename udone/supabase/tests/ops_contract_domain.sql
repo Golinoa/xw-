@@ -2,7 +2,7 @@ BEGIN;
 
 
 SELECT
-  plan (144);
+  plan (148);
 
 
 -- ── 夹具 ────────────────────────────────────────────────────────────────────
@@ -2857,8 +2857,26 @@ SELECT
       )::uuid,
       'not-a-checksum'
     ) ->> 'status',
-    'attachment_not_uploaded',
-    'a malformed checksum is refused'
+    'invalid_checksum',
+    'a malformed checksum is refused with its own word, not as "not uploaded"'
+  );
+
+
+-- 校验和格式错与「文件没上传」是两件事，客户端据此给的提示也不同：前者改请求体，
+-- 后者先去传文件。共用一个词时它只能笼统说一句「有问题」。
+SELECT
+  IS (
+    ops.complete_contract_attachment (
+      (
+        SELECT
+          payload #>> '{attachment,id}'
+        FROM
+          contract_step
+      )::uuid,
+      'not-a-checksum'
+    ) ->> 'field',
+    'checksumSha256',
+    'the refusal names the field so the form can highlight it'
   );
 
 
@@ -2920,8 +2938,57 @@ SELECT
       ),
       repeat('b', 64)
     ) ->> 'status',
-    'attachment_not_uploaded',
-    'completing an already stored attachment is refused'
+    'ok',
+    'completing an already stored attachment is a retry, not an error'
+  );
+
+
+-- 幂等返回不能顺手改行：重试没有产生新的上传，`uploaded_at` 与 `version`
+-- 若跟着动，「这个附件何时被上传」的答案会随请求次数漂移。
+SELECT
+  IS (
+    (
+      SELECT
+        attachment.version
+      FROM
+        ops.contract_attachments AS attachment
+      WHERE
+        attachment.file_name = '合同扫描.pdf'
+    ),
+    2,
+    'a repeated complete leaves version alone'
+  );
+
+
+-- ── 附件的存储位置（API 在 complete 前用它做对象存在性校验） ────────────────
+-- 断言路径形状而不是「等于表里那一列」：后者是自证——函数就是从那一列取的，
+-- 它错了函数也错，而「以 contracts/ 开头的三段路径」是契约 §8 真正要求的东西。
+SELECT
+  ok (
+    (
+      SELECT
+        ops.contract_attachment_location (attachment.id) #>> '{storage_path}'
+      FROM
+        ops.contract_attachments AS attachment
+      WHERE
+        attachment.file_name = '合同扫描.pdf'
+    ) ~ '^contracts/[0-9a-f-]{36}/[0-9a-f-]{36}/',
+    'L1 location hands the API a path shaped like contracts/{contract}/{attachment}/…'
+  );
+
+
+SELECT
+  IS (
+    (
+      SELECT
+        ops.contract_attachment_location (attachment.id) ->> 'attachment_status'
+      FROM
+        ops.contract_attachments AS attachment
+      WHERE
+        attachment.file_name = '合同扫描.pdf'
+    ),
+    'stored',
+    'L2 location also reports the row status, so the caller need not query twice'
   );
 
 

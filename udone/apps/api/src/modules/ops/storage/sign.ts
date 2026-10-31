@@ -44,6 +44,30 @@ export class StorageSignError extends Error {
   }
 }
 
+/**
+ * 把存储回的相对路径拼成绝对地址。
+ *
+ * 三种回法都要拼对，而且**不能出现 `/storage/v1/storage/v1`**：
+ *
+ * - `/object/sign/...`（Supabase 的 HTTP 直调，最常见）
+ * - `object/sign/...`（少了前导斜杠；拼错会变成 `storage/v1object/...`，
+ *   浏览器把它当成端口号后面的一整段路径，表现为 404 而不是报错）
+ * - `/storage/v1/object/sign/...`（前面挂了反向代理的实现会带上）
+ *
+ * 这行代码此前是 `${base}/storage/v1${relative}` 一个模板串，三种里只有
+ * 第一种对。第二种与第三种都属于「只有真机才会遇到」，本地替身永远回第一种，
+ * 所以它不可能在本地被发现——这也是为什么 C-122 把「前缀」列成待核对项。
+ * 与其等核对，不如把三种都接住：多一个分支的代价远小于上线后逐个端点排查。
+ */
+export function joinStorageUrl(base: string, relative: string): string {
+  // 自建实现（MinIO 前置代理、CDN）可能直接回绝对地址，这时候不能再拼 host。
+  if (/^https?:\/\//i.test(relative)) return relative;
+
+  const path = relative.startsWith('/') ? relative : `/${relative}`;
+  if (path === '/storage/v1' || path.startsWith('/storage/v1/')) return `${base}${path}`;
+  return `${base}/storage/v1${path}`;
+}
+
 type StorageBindings = ApiEnvironment['Bindings'];
 
 export function storageBaseOf(environment: StorageBindings): string {
@@ -66,6 +90,35 @@ interface SignedUrl {
   /** 可直接给前端的绝对地址。 */
   url: string;
   expiresAt: string;
+}
+
+/**
+ * 签发请求要用 service_role。
+ *
+ * 上一版这个请求只有 `Content-Type`，一个凭据都不带。本地替身不鉴权，于是
+ * 它全绿；而 Supabase 的 `/object/sign/` 在 Kong 之后要求 service_role，
+ * 未带凭据一律 401。**这正是「随机 UUID 当签名」的同一类缺陷的第二次**——
+ * 本地缺少线上会拒绝的约束。所以现在两端同时收紧：这里带凭据，替身也校验。
+ *
+ * 缺配置时直接抛，不发一个注定 401 的请求：`storage answered 401` 会让人去
+ * 查桶和策略，而真正缺的是一个环境变量。
+ */
+function storageAuthHeaders(
+  environment: StorageBindings,
+  bucket: StorageBucket,
+  objectKey: string,
+): Record<string, string> {
+  const serviceKey = environment.SUPABASE_SERVICE_ROLE_KEY;
+  if (typeof serviceKey !== 'string' || serviceKey === '') {
+    throw new StorageSignError(
+      'storage credentials are not configured (SUPABASE_SERVICE_ROLE_KEY is empty)',
+      { bucket, key: objectKey },
+    );
+  }
+
+  // `apikey` 与 `Authorization` 都要：Supabase 的网关先校验前者再看后者，
+  // 只带一个的请求在真机上会被拦在网关，而错误是 401，看不出少的是哪个。
+  return { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey };
 }
 
 /**
@@ -92,15 +145,103 @@ async function createSignedUrl(
   try {
     response = await fetch(`${base}${path}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...storageAuthHeaders(environment, bucket, key),
+      },
       body: JSON.stringify({ expiresIn: SIGNED_URL_TTL_SECONDS }),
     });
   } catch (cause) {
+    if (cause instanceof StorageSignError) throw cause;
     throw new StorageSignError(`storage unreachable: ${(cause as Error).message}`, {
       bucket,
       key,
     });
   }
+
+  if (!response.ok) {
+    // 404 单独说一句：它几乎总是「bucket 没建」（`ops-exports` 是新建的，
+    // 部署时漏建过一次就会是这里），而 `storage answered 404` 这句话让运维
+    // 去查对象路径，查半天才发现少了整个 bucket。
+    const message =
+      response.status === 404
+        ? `storage cannot find bucket "${bucket}" or the object in it`
+        : `storage answered ${response.status}`;
+    throw new StorageSignError(message, { status: response.status, bucket, key });
+  }
+
+  const body = (await response.json()) as {
+    url?: unknown;
+    signedURL?: unknown;
+    signedUrl?: unknown;
+  };
+  // 字段名按 mode 取主线，只在主线缺失时看已知别名：`signedURL` 是 Supabase
+  // HTTP 直调的写法，`signedUrl` 是少数代理改写过的写法。两个都认，但都要求
+  // 是字符串——「有哪个用哪个」的危险在于取到 undefined 后静默拼出 `undefined`
+  // 这种字符串，所以这里先取再验类型，验不过一律抛。
+  const candidates = mode === 'upload' ? [body.url] : [body.signedURL, body.signedUrl];
+  const relative = candidates.find((value): value is string => typeof value === 'string');
+
+  if (typeof relative !== 'string' || relative === '') {
+    throw new StorageSignError('storage response is missing the signed path', { bucket, key });
+  }
+
+  return {
+    url: joinStorageUrl(base, relative),
+    expiresAt: new Date(Date.now() + SIGNED_URL_TTL_SECONDS * 1000).toISOString(),
+  };
+}
+
+/** 合同附件的上传地址。字段名沿用契约 §5.2 的 `uploadUrl` / `uploadExpiresAt`。 */
+export async function createSignedUpload(
+  environment: StorageBindings,
+  key: string,
+  bucket: StorageBucket = STORAGE_BUCKETS.contracts,
+): Promise<{ uploadUrl: string; uploadExpiresAt: string }> {
+  const signed = await createSignedUrl(environment, bucket, key, 'upload');
+  return { uploadUrl: signed.url, uploadExpiresAt: signed.expiresAt };
+}
+
+/** 下载地址。bucket 默认合同附件，导出走 `STORAGE_BUCKETS.exports`。 */
+export async function createSignedDownload(
+  environment: StorageBindings,
+  key: string,
+  bucket: StorageBucket = STORAGE_BUCKETS.contracts,
+): Promise<SignedUrl> {
+  return createSignedUrl(environment, bucket, key, 'download');
+}
+
+/**
+ * 问存储「这个对象在不在」，在就带大小回来。
+ *
+ * 存在性校验只能由 API 做：数据库不知道 Storage。这个函数就是那句话的落点。
+ *
+ * 返回 `null` 表示 404（对象确实不在），**不是**错误——「不在」是一个正常
+ * 答案，调用方要据此回 409 而不是 503。除此之外的非 2xx 才是真异常。
+ */
+export async function headStorageObject(
+  environment: StorageBindings,
+  key: string,
+  bucket: StorageBucket = STORAGE_BUCKETS.contracts,
+): Promise<{ byteSize: number } | null> {
+  const base = storageBaseOf(environment);
+  const path = `/storage/v1/object/${bucket}/${encodeStorageKey(key)}`;
+
+  let response: Response;
+  try {
+    response = await fetch(`${base}${path}`, {
+      method: 'HEAD',
+      headers: storageAuthHeaders(environment, bucket, key),
+    });
+  } catch (cause) {
+    if (cause instanceof StorageSignError) throw cause;
+    throw new StorageSignError(`storage unreachable: ${(cause as Error).message}`, {
+      bucket,
+      key,
+    });
+  }
+
+  if (response.status === 404) return null;
 
   if (!response.ok) {
     throw new StorageSignError(`storage answered ${response.status}`, {
@@ -110,34 +251,8 @@ async function createSignedUrl(
     });
   }
 
-  const body = (await response.json()) as { url?: string; signedURL?: string };
-  const relative = mode === 'upload' ? body.url : body.signedURL;
-  if (typeof relative !== 'string' || relative === '') {
-    throw new StorageSignError('storage response is missing the signed path', { bucket, key });
-  }
-
-  // 存储可能回相对路径（Supabase 就是），也可能回绝对 URL（自建实现常见）。
-  const url = relative.startsWith('http') ? relative : `${base}/storage/v1${relative}`;
-
-  return {
-    url,
-    expiresAt: new Date(Date.now() + SIGNED_URL_TTL_SECONDS * 1000).toISOString(),
-  };
-}
-
-/** 合同附件的上传地址。字段名沿用契约 §5.2 的 `uploadUrl` / `uploadExpiresAt`。 */
-export async function createSignedUpload(
-  environment: StorageBindings,
-  key: string,
-): Promise<{ uploadUrl: string; uploadExpiresAt: string }> {
-  const signed = await createSignedUrl(environment, STORAGE_BUCKETS.contracts, key, 'upload');
-  return { uploadUrl: signed.url, uploadExpiresAt: signed.expiresAt };
-}
-
-/** 合同附件的下载地址。 */
-export async function createSignedDownload(
-  environment: StorageBindings,
-  key: string,
-): Promise<SignedUrl> {
-  return createSignedUrl(environment, STORAGE_BUCKETS.contracts, key, 'download');
+  // `Content-Length` 可能缺失（分块响应）；缺失不当作 0，因为 0 会被上层
+  // 当成「空文件」而拒掉一个其实正常的对象。
+  const length = response.headers.get('content-length');
+  return { byteSize: length === null ? Number.NaN : Number(length) };
 }

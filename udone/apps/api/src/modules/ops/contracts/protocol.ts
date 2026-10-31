@@ -479,8 +479,31 @@ export const contractAttachmentCreateEnvelopeSchema = z.discriminatedUnion('stat
 export const contractAttachmentCompleteEnvelopeSchema = z.discriminatedUnion('status', [
   z.object({ status: z.literal('ok'), attachment: contractAttachmentRowSchema }),
   z.object({ status: z.literal('attachment_not_found') }),
-  /** `status <> 'pending'` 时不可再确认（§8）。 */
-  z.object({ status: z.literal('attachment_not_uploaded') }),
+  /**
+   * 校验和格式不对（不是 64 位十六进制）。
+   *
+   * 这个词原来借用 `attachment_not_uploaded`，而那个词说的是另一件事——
+   * 「文件还没传上来」。两件事共用一个词之后，客户端无法区分「检查你的
+   * 请求体」与「先把文件传上来」，只能笼统提示一句。
+   */
+  z.object({ status: z.literal('invalid_checksum'), field: z.string() }),
+]);
+
+/**
+ * 附件的存储位置。`complete` 之前先用它拿路径去做对象存在性校验。
+ *
+ * 顺序是「先读、再核、后改」：如果先改再核，一次失败的校验会留下已经
+ * stored 的行，而对象不在存储里——那个状态比拒绝更糟。
+ */
+export const contractAttachmentLocationEnvelopeSchema = z.discriminatedUnion('status', [
+  z.object({
+    status: z.literal('ok'),
+    storage_path: z.string().min(1),
+    file_name: z.string().min(1),
+    byte_size: z.number(),
+    attachment_status: z.enum(['pending', 'stored']),
+  }),
+  z.object({ status: z.literal('attachment_not_found') }),
 ]);
 
 export const contractAttachmentAccessEnvelopeSchema = z.discriminatedUnion('status', [

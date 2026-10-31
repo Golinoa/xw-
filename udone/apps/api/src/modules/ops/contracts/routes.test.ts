@@ -148,10 +148,14 @@ interface StubOptions {
   /** `rpc/<name>` → 响应体。没给的名字一律当作「不该被调用」。 */
   rpc?: Record<string, unknown>;
   /**
-   * 存储签名端点的行为。`fail` 用来证明「拿不到签名时回 503，而不是回一个
-   * 点不开的地址」——后者会 201，客户端以为传成功了。
+   * 存储端点的行为。
+   *
+   * - `fail`：验「拿不到签名时回 503，而不是回一个点不开的地址」——后者会
+   *   201，客户端以为传成功了。
+   * - `missing`：签名正常但对象不存在。`complete` 的存在性校验靠它触发
+   *   409，而那正是此前永远不会发生的一条路径。
    */
-  storage?: 'ok' | 'fail';
+  storage?: 'ok' | 'fail' | 'missing';
 }
 
 /**
@@ -199,6 +203,14 @@ function stubFetch(options: StubOptions = {}) {
     if (url.includes('/storage/v1/object/')) {
       if (options.storage === 'fail') {
         return json({ statusCode: '500', error: 'InternalError', message: 'boom' }, 500);
+      }
+      // HEAD 是存在性校验，与签名是两条不同的路径：签名拿 POST 换 URL，
+      // 校验拿 HEAD 问「在不在」。桩若不区分方法，`complete` 的校验会
+      // 拿到一份签名 JSON 并当成「对象存在」。
+      if (init?.method === 'HEAD') {
+        return options.storage === 'missing'
+          ? new Response(null, { status: 404 })
+          : new Response(null, { status: 200, headers: { 'Content-Length': '5' } });
       }
       return json(stubStorageSign(url));
     }
@@ -1360,6 +1372,13 @@ describe('POST /api/v1/ops/contract-attachments/{attachmentId}/complete', () => 
   it('returns 200 and the stored attachment', async () => {
     stubFetch({
       rpc: {
+        contract_attachment_location: {
+          status: 'ok',
+          storage_path: 'contracts/c1/a1/x.pdf',
+          file_name: 'x.pdf',
+          byte_size: 5,
+          attachment_status: 'pending',
+        },
         complete_contract_attachment: {
           status: 'ok',
           attachment: attachmentRow({ status: 'stored', checksum_sha256: 'b'.repeat(64) }),
@@ -1376,7 +1395,10 @@ describe('POST /api/v1/ops/contract-attachments/{attachmentId}/complete', () => 
     // 不是「新建」，所以是 200 而不是 201。
     expect(response.status).toBe(200);
     expect(response.body.attachment.status).toBe('stored');
-    expect(rpcBodies[0]?.body).toMatchObject({
+    // 按名字找而不是按下标：`complete` 前面多了一次 location 查询，用下标
+    // 的断言会因为「多了一个 RPC」而红，而那种红说不出是哪一步错了。
+    const completeCall = rpcBodies.find((entry) => entry.name === 'complete_contract_attachment');
+    expect(completeCall?.body).toMatchObject({
       p_attachment_id: ATTACHMENT_ID,
       p_checksum_sha256: 'b'.repeat(64),
     });
@@ -1405,20 +1427,43 @@ describe('POST /api/v1/ops/contract-attachments/{attachmentId}/complete', () => 
     expect(called).toEqual([]);
   });
 
-  it('maps not-uploaded and not-found separately', async () => {
-    stubFetch({ rpc: { complete_contract_attachment: { status: 'attachment_not_uploaded' } } });
-    const notUploaded = await call(url, { method: 'POST', headers: IDEMPOTENCY_KEY, body: {} });
+  it('answers 409 when the object was never uploaded, without touching the row', async () => {
+    // 409 的来源从这里往上挪了一层：以前是 SQL 拿「状态不是 pending」冒充，
+    // 现在是 API 问存储「对象在不在」。后者才是契约 §5.4 第 13 条说的
+    // 「未上传」，而前者在重复调用时也会命中——一个能下载的附件被告知
+    // 「从未上传」。
+    const called = stubFetch({
+      storage: 'missing',
+      rpc: {
+        contract_attachment_location: {
+          status: 'ok',
+          storage_path: 'contracts/c1/a1/x.pdf',
+          file_name: 'x.pdf',
+          byte_size: 5,
+          attachment_status: 'pending',
+        },
+      },
+    });
 
-    stubFetch({ rpc: { complete_contract_attachment: { status: 'attachment_not_found' } } });
-    const notFound = await call(url, { method: 'POST', headers: IDEMPOTENCY_KEY, body: {} });
+    const response = await call(url, { method: 'POST', headers: IDEMPOTENCY_KEY, body: {} });
 
-    expect(notUploaded.status).toBe(409);
-    expect(notUploaded.body).toMatchObject({
+    expect(response.status).toBe(409);
+    expect(response.body).toMatchObject({
       code: 'STATE_CONFLICT',
       details: { reason: 'ATTACHMENT_NOT_UPLOADED' },
     });
-    expect(notFound.status).toBe(404);
-    expect(notFound.body).toMatchObject({ details: { resource: 'attachment' } });
+    // 关键：`complete_contract_attachment` 一次都没被调用。先改再核会留下
+    // 一行 `stored` 而存储里没有文件——列表里显示正常，点下载才 404。
+    expect(called.map((name) => name)).not.toContain('complete_contract_attachment');
+  });
+
+  it('answers 404 when the attachment row itself is gone', async () => {
+    stubFetch({ rpc: { contract_attachment_location: { status: 'attachment_not_found' } } });
+
+    const response = await call(url, { method: 'POST', headers: IDEMPOTENCY_KEY, body: {} });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toMatchObject({ details: { resource: 'attachment' } });
   });
 });
 

@@ -8,9 +8,17 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { __test__, createStorageServer } from './local-storage.mjs';
+import { __test__, createStorageServer, signToken } from './local-storage.mjs';
 
 const SECRET = 'storage-test-secret';
+/**
+ * 替身认的是「签得过且 role 是 service_role 的 JWT」，不是一个固定字符串——
+ * 与 Supabase 一致。夹具因此可以自己签一个，不必与环境变量对齐。
+ */
+const SERVICE_KEY = signToken(SECRET, {
+  role: 'service_role',
+  exp: Math.floor(Date.now() / 1000) + 3600,
+});
 const BUCKET = 'ops-contracts';
 
 let service;
@@ -39,20 +47,21 @@ const encodedKey = objectKey.split('/').map(encodeURIComponent).join('/');
  * 两个签名端点的路径不对称：下载是 `/object/sign/`，上传是
  * `/object/upload/sign/`。这是 Supabase 的形状，不是笔误。
  */
+const serviceHeaders = {
+  Authorization: `Bearer ${SERVICE_KEY}`,
+  apikey: SERVICE_KEY,
+};
+
 const sign = (mode, key = encodedKey) => {
   const path = mode === 'upload' ? '/object/upload/sign' : '/object/sign';
   return fetch(`${base}${path}/${BUCKET}/${key}`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...serviceHeaders },
     body: JSON.stringify({ expiresIn: 300 }),
   });
 };
 
-const bearer = () => ({
-  Authorization: `Bearer ${__test__.signToken(SECRET, {
-    url: 'any',
-    exp: Math.floor(Date.now() / 1000) + 60,
-  })}`,
-});
+const bearer = () => ({ ...serviceHeaders });
 
 describe('signed upload and download', () => {
   it('round-trips bytes through a signed upload URL', async () => {
@@ -115,9 +124,30 @@ describe('signed upload and download', () => {
     for (const expiresIn of [0, -1, 604801]) {
       const response = await fetch(`${base}/object/sign/${BUCKET}/${encodedKey}`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...serviceHeaders },
         body: JSON.stringify({ expiresIn }),
       });
       expect(response.status).toBe(400);
+    }
+  });
+
+  it('refuses to sign without a service_role key', async () => {
+    // 这一条是替身存在的第二个理由：签发端点此前**完全不鉴权**，于是 API
+    // 漏带凭据在本地一路绿，到 Supabase 上每个附件端点都 401。本地替身若
+    // 比线上宽松，它保护的就不是「线上会怎样」而是「本地能过」。
+    for (const headers of [
+      {},
+      { Authorization: 'Bearer some-user-token' },
+      // 只带 Authorization 不带 apikey：Supabase 的网关先校验后者，真机上
+      // 这种请求会被拦在网关而不是 storage-api，本地照同一个顺序拦。
+      { Authorization: `Bearer ${SERVICE_KEY}` },
+    ]) {
+      const response = await fetch(`${base}/object/sign/${BUCKET}/${encodedKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...headers },
+        body: JSON.stringify({ expiresIn: 300 }),
+      });
+      expect(response.status).toBe(401);
     }
   });
 });

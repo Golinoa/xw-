@@ -3,9 +3,9 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 34
+- Migration sources scanned: 35
 - Tables discovered: 59
-- Functions discovered: 224
+- Functions discovered: 226
 - Indexes discovered: 86
 - RLS policies discovered: 61
 - Triggers discovered: 6
@@ -46,3 +46,4 @@
 | `20261031000009_ops_overview.sql` | — | `ops.get_ops_overview` | — | — | — |
 | `20261031000010_ops_reports.sql` | — | `ops.report_receivables`, `ops.report_expiring_entitlements`, `ops.report_tenant_sync_failures`, `ops.report_deployment_versions` | — | — | — |
 | `20261031000011_ops_settings_dictionaries.sql` | `ops.dictionaries`, `ops.dictionary_items` | `ops.ops_settings_json`, `ops.get_ops_settings`, `ops.update_ops_settings`, `ops.dictionary_item_json`, `ops.list_dictionaries`, `ops.create_dictionary_item`, `ops.update_dictionary_item` | `dictionary_items_dictionary_idx` | — | — |
+| `20261031000012_contract_attachment_object_check.sql` | — | `ops.contract_attachment_location`, `ops.complete_contract_attachment` | — | — | — |
