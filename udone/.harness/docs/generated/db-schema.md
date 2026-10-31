@@ -3,12 +3,12 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 28
-- Tables discovered: 47
-- Functions discovered: 154
-- Indexes discovered: 65
+- Migration sources scanned: 29
+- Tables discovered: 52
+- Functions discovered: 183
+- Indexes discovered: 75
 - RLS policies discovered: 61
-- Triggers discovered: 2
+- Triggers discovered: 4
 
 | Migration | Tables | Functions | Indexes | Policies | Triggers |
 |---|---|---|---|---|---|
@@ -40,3 +40,4 @@
 | `20261031000003_ops_support_tickets.sql` | `ops.tickets`, `ops.ticket_events`, `ops.ticket_references` | `ops.business_day_start`, `ops.allowed_ticket_actions`, `ops.ticket_due_at`, `ops.ticket_is_overdue`, `ops.ticket_json`, `ops.assignable_operators_json`, `ops.append_ticket_event`, `ops.list_tickets`, `ops.get_ticket`, `ops.ticket_event_json`, `ops.list_ticket_timeline`, `ops.list_assignable_operators`, `ops.create_ticket`, `ops.update_ticket`, `ops.assign_ticket`, `ops.transition_ticket`, `ops.add_ticket_event`, `ops.add_ticket_reference` | `tickets_status_priority_idx`, `tickets_assignee_status_idx`, `tickets_customer_idx`, `tickets_due_idx`, `ticket_events_ticket_created_idx`, `ticket_references_ref_idx` | — | — |
 | `20261031000004_ops_billing_receipts.sql` | `ops.receipts`, `ops.receipt_allocations`, `ops.receipt_allocation_reversals`, `ops.refunds` | `ops.receipt_allocated_net`, `ops.receipt_refundable`, `ops.allowed_receipt_actions`, `ops.operator_ref`, `ops.receipt_json`, `ops.refund_json`, `ops.list_receipts`, `ops.get_receipt`, `ops.record_receipt`, `ops.transition_receipt`, `ops.allocate_receipt`, `ops.reverse_receipt`, `ops.reverse_allocation`, `ops.list_refunds`, `ops.record_refund`, `ops.transition_refund` | `receipts_customer_status_idx`, `receipts_transaction_date_idx`, `receipts_status_idx`, `receipts_reference_no_idx`, `receipt_allocations_receipt_idx`, `receipt_allocations_receivable_idx`, `receipt_allocation_reversals_allocation_idx`, `refunds_receipt_idx`, `refunds_customer_idx`, `refunds_status_idx` | — | — |
 | `20261031000005_ops_billing_allocation_shape.sql` | — | `ops.allocation_json`, `ops.reversal_json`, `ops.get_receivable`, `ops.get_receipt` | — | — | — |
+| `20261031000006_ops_entitlement_domain.sql` | `ops.entitlement_snapshots`, `ops.entitlement_snapshot_lines`, `ops.subscriptions`, `ops.private_licenses`, `ops.entitlement_change_requests` | `ops.entitlement_snapshot_immutable`, `ops.allowed_subject_actions`, `ops.allowed_change_request_actions`, `ops.feature_lines_base`, `ops.feature_lines_apply`, `ops.feature_lines_sorted`, `ops.snapshot_content_hash`, `ops.snapshot_lines_json`, `ops.snapshot_summary_json`, `ops.snapshot_json`, `ops.subject_json`, `ops.change_request_json`, `ops.change_request_diff`, `ops.create_snapshot`, `ops.entitlement_contract_status_allows`, `ops.create_subscription`, `ops.create_license`, `ops.transition_entitlement_subject`, `ops.create_entitlement_change_request`, `ops.transition_entitlement_change_request`, `ops.apply_change_request_snapshot`, `ops.list_subscriptions`, `ops.get_subscription`, `ops.list_licenses`, `ops.get_license`, `ops.list_entitlement_snapshots`, `ops.get_entitlement_snapshot`, `ops.list_entitlement_change_requests`, `ops.get_entitlement_change_request` | `entitlement_snapshots_customer_idx`, `entitlement_snapshots_valid_from_idx`, `subscriptions_status_idx`, `subscriptions_customer_idx`, `subscriptions_open_item_key`, `private_licenses_status_idx`, `private_licenses_customer_idx`, `private_licenses_open_instance_key`, `entitlement_change_requests_status_idx`, `entitlement_change_requests_subject_idx` | — | `entitlement_snapshots_immutable`, `entitlement_snapshot_lines_immutable` |
