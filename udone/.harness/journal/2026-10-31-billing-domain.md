@@ -104,5 +104,25 @@
   单测 49 文件 528 例；build 主 chunk 1,638.75 kB（无增长）；
   deps:audit critical 0 / high 0 / moderate 1（`minimatch`）/ low 0；licenses 349 组。
 - 变异两枪：已结清守卫 `>=`→`>`（E1、L7 红）；状态过滤 `or true`（L5 红）；复原均绿。
-- 看板待回写：`o-t07` → done；新增 `o-audit-write`（todo）、协作项 `C-106`
-  （billing 两个审计词待回写 §6.4）、`C-107`（settings 三个默认值待确认）。
+- 看板回写已在下一节完成（`o-t07` → done、`o-audit-write`、`C-106` / `C-107`、
+  `SEED_VERSION` 37）。
+
+## 追加（13:05）· 看板已回写
+
+`o-t07` → done，卡上写了两个提交与八条决策、两个被断言逼出来的缺陷、四条未验证项；
+新增 `o-audit-write`（todo，跨域口径四条先定再动手）；协作项 `C-106` / `C-107`
+落 waiting。`SEED_VERSION` 36 → 37，`pnpm board:check` 通过：
+101 张卡（70 done / 0 doing / 28 todo / 3 blocked）、协作 26 项（10 未闭环）。
+
+两处与上面计划不同，记一笔：
+
+- `C-106` 实际写成「三个 `details.reason` + 两个审计词（延后）」。原先只记了
+  「billing 两个审计词待回写 §6.4」，重新对着迁移与路由核了一遍才发现：本域真正
+  缺的是 `CONTRACT_NOT_ACTIVE` / `PLAN_EXISTS` / `INVALID_DUE_DATE` 三个 reason，
+  而审计词一个都还没产生（billing 没有任何审计写入）——把没产生的词登记进词表，
+  等于造出「词表有、库里永远查不到」的空词。所以词表回写等 `o-audit-write`，
+  这一轮只回写 reason。
+- `board:check` 第一次就红在「第一人称」判据上：C-106 的 `need` 里写了「我们的
+  倾向是」。这条判据本就是为「两端都看这块看板」设的，改判自己也该走同一条门禁，
+  改成「业务端的倾向是」。第八条判据自 4023c34 加进来之后第一次真正拦下东西。
+
