@@ -5,7 +5,7 @@
 ## 项目级真源
 
 | 文档 | 真源范围 |
-|---|---|
+| --- | --- |
 | [`Docs/PRD.md`](../Docs/PRD.md) | 软件提供方运营后台产品范围、业务规则、排除项和验收。 |
 | [`Docs/TECH_SELECTION.md`](../Docs/TECH_SELECTION.md) | Vben 版本/应用、共享 API/数据库/认证和部署选型。 |
 | [`Docs/superpowers/`](../Docs/superpowers/) | 设计/执行计划类资料；当前有效执行计划以 Harness active 索引为准。 |
@@ -16,7 +16,7 @@
 ## Harness 导航
 
 | 路径 | 用途 |
-|---|---|
+| --- | --- |
 | [`PROJECT_STRUCTURE.md`](PROJECT_STRUCTURE.md) | 当前文档目录及 Vben 导入后的目录/文件归属规则。 |
 | [`ENGINEERING_DESIGN.md`](ENGINEERING_DESIGN.md)、[`CODE_STANDARDS.md`](CODE_STANDARDS.md) | 分层、依赖和代码书写约束。 |
 | [`API_STANDARDS.md`](API_STANDARDS.md)、[`DATABASE_STANDARDS.md`](DATABASE_STANDARDS.md) | 公开 API 消费边界与后端数据库规则；数据库实施由 `udone` 负责。 |

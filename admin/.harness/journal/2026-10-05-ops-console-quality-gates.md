@@ -22,7 +22,7 @@
 Toolchain: Node.js `24.20.0`, pnpm `10.33.4`.
 
 | Command | Result |
-|---|---|
+| --- | --- |
 | `corepack pnpm install --filter '@vben/web-antd...' --filter '@vben/vsh...' --filter '@vben/vite-config...' --filter '@vben/eslint-config...' --filter '@vben/oxfmt-config...' --filter '@vben/oxlint-config...' --filter '@vben/stylelint-config...' --filter . --frozen-lockfile` | Pass; lockfile current; 35/39 workspace projects selected; toolchain check ran in `preinstall`. |
 | `corepack pnpm run format:check` | Pass; 974 matched source/config files in standalone run; no Markdown formatting changes. |
 | `corepack pnpm run lint:check` | Pass; Oxlint, ESLint and Stylelint for the selected app. |

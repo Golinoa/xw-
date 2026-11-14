@@ -60,7 +60,7 @@ Task 1/2 可先建立前端骨架与静态门禁；从 Task 3 开始的业务端
 3. 把采用的做法变成本任务可执行的验收断言；无法映射的项目明确写“不适用”及理由。记录完成后再进入编码。
 
 | 任务 | ERPNext 只读参考 | 适合评估的工程做法 |
-|---|---|---|
+| --- | --- | --- |
 | Task 3 身份/权限/API | `erpnext/hooks.py`、`erpnext/selling/doctype/customer/{customer.py,customer.json,test_customer.py}` 中权限元数据和测试用法 | 权限声明集中管理、操作按动作授权、UI/服务端权限一致；ERPNext 的角色模型不直接等同运营权限模型。 |
 | Task 4 客户/产品/合同 | `erpnext/selling/doctype/customer/{customer.py,customer.json,test_customer.py}`、`erpnext/selling/doctype/sales_order/{sales_order.py,sales_order.json,test_sales_order.py}` | 字段与状态约束、关联关系、历史快照、列表筛选和针对拒绝路径的测试。 |
 | Task 5 账款/收款/核销/退款 | `erpnext/accounts/doctype/payment_entry/{payment_entry.py,payment_entry.json,test_payment_entry.py}`、`erpnext/accounts/doctype/gl_entry/{gl_entry.py,gl_entry.json,test_gl_entry.py}`、`erpnext/accounts/doctype/sales_invoice/{sales_invoice.py,sales_invoice.json,test_sales_invoice.py}` | 已确认交易保留、撤销走可追溯反向记录、重复/非法操作测试；本项目仍使用自己的精确金额与事务/RPC规则。 |
@@ -220,7 +220,7 @@ Task 1/2 可先建立前端骨架与静态门禁；从 Task 3 开始的业务端
 ## 验收映射
 
 | PRD 范围 | 计划任务 | 完成证据 |
-|---|---|---|
+| --- | --- | --- |
 | 工程和模板基线 | Task 1–2 | 上游 SHA/许可、锁文件、本地/CI 门禁成功与负向阻断证据 |
 | 账号、角色、运营身份 | Task 3、8 | API 集成、pgTAP、Playwright 与停用会话拒绝证据 |
 | 总览与下钻 | Task 8 | 指标/明细一致性、权限范围、性能结果 |

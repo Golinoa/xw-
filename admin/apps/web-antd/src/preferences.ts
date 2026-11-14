@@ -18,7 +18,15 @@ interface WebAntdPreferencesExtension {
 export const overridesPreferences = defineOverridesPreferences({
   // overrides
   app: {
+    // 权限模式：前端路由表 + 前端按动作码过滤（见 src/router/access.ts）
+    accessMode: 'frontend',
+    // 登录后的默认首页；Root redirect 与路由守卫共用此值
+    defaultHomePath: '/overview',
     name: import.meta.env.VITE_APP_TITLE,
+  },
+  widget: {
+    // 通知中心尚未接入真实数据源，先关闭入口，避免出现空壳按钮
+    notification: false,
   },
 });
 

@@ -60,9 +60,10 @@ stages:
 
             cd admin
             pnpm install --frozen-lockfile
-            # 复用已通过的门禁子集；刻意不跑 quality:check：
-            # 它内含 quality:dependencies，而依赖基线仍有无补丁的高危 advisory，
-            # 一跑必红，会把发布链路卡死。
+            # 复用门禁子集，刻意不跑完整 quality:check：第 11 步
+            # quality:dependencies 要访问 npm registry 才能判定，判不出来时脚本
+            # 按失败处理（宁可红，也不静默放行）。依赖基线由日常门禁守着，发布
+            # 链路不在这里再赌一次网络。
             pnpm format:check
             pnpm lint:check
             pnpm check:type

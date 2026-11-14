@@ -1,0 +1,126 @@
+# ============================================================
+# admin（运营后台）日常质量门禁（Gitee Go）
+#
+# 位置约束：Gitee Go 只读取【仓库根目录】的 .workflow/，放在子目录里等于
+# 没有流水线（同目录 ci.yml 顶部有同样说明）。本文件必须留在仓库根。
+#
+# 与其它流水线的分工（四条互不重叠）：
+#   ci.yml                 udone 日常门禁（cd udone）
+#   release-udone.yml      udone tag 发布
+#   release-admin.yml      admin tag 发布
+#   frontend-quality.yml   本文件：admin 日常门禁，只读仓库，不发布、不部署、
+#                          不连接任何外部数据库，不引用任何 secrets。
+#
+# 为什么不是 .github/workflows/frontend-quality.yml：
+# Gitee 不执行 GitHub Actions 目录，Actions 的 jobs/steps/uses 语法在 Gitee
+# 也不可用。本文件用 Gitee Go 的 stages/step/npmbuild@1 + goals 表达等价流程；
+# GitHub 那份保留为 GitHub 侧资产（若仓库将来镜像到 GitHub 仍可用）。
+#
+# 关于第 11 步 quality:dependencies（2026-10-31 改写）：
+# 上一版这段写的是「已知会红在 dependencies，等依赖升级完成」。现在不红了，但
+# 换的不是版本，是**口径**——D-11 裁决为「白名单 + 到期日」，实现见
+# admin/scripts/quality/check-deps-audit.mjs：只对进上线产物的依赖阻断（判据是
+# @vben/web-antd 的生产依赖可达集，不是 pnpm audit --prod），够得着的 critical/
+# high 必须命中带 owner 与到期日的白名单，到期即失效、依赖已不告警也失效。
+# 实跑：18 条 advisory（critical 0 / high 2 / moderate 12 / low 4），两条 high
+# 均在白名单内（到期 2027-01-28），门禁退出码 0。
+#
+# 仍缺一条证据：**Gitee 网页侧的执行记录**。本地把 11 步跑通不等于 Gitee Go 跑过，
+# 命令行看不到网页侧结果。这句从 a0.4 挂到现在，不因为本地变绿而消失。
+# ============================================================
+version: "1.0"
+name: frontend-quality
+displayName: admin 前端质量门禁
+
+triggers:
+  push:
+    branches:
+      # 同 ci.yml：只用 prefix 一个类别。Gitee Go 不同匹配类别之间是【交集】，
+      # 混用 precise:main + prefix:feat/ 会变成「既是 main 又以 feat/ 开头」= 永不触发。
+      # 原配置只监听 main，而开发全在 feat/*，这条流水线因此从未执行过一次。
+      prefix:
+        - main
+        - feat/
+  pr:
+    branches:
+      precise:
+        - main
+
+stages:
+  - stage: quality
+    displayName: 工具链 → 安装 → 门禁
+    # 任一步失败立即结束，避免后续步骤在残缺状态上继续跑
+    strategy: fast
+    trigger: auto
+    steps:
+      - step: npmbuild@1
+        name: frontend_quality
+        displayName: Node 24.20.0 / pnpm 10.33.4 全量质量门
+        inputs:
+          # 精确到 patch：admin 的 preinstall（scripts/quality/check-toolchain.mjs）
+          # 对版本做字符串相等比较，写 "24" 也会判为不匹配
+          nodeVersion: "24.20.0"
+          goals: |
+            set -euo pipefail
+            node -v
+            npm -v
+
+            # pnpm 由 corepack 提供，版本来自 admin/package.json 的 packageManager
+            if ! corepack enable; then
+              echo "corepack enable 失败（镜像可能无写权限），回退到 npm 全局安装" >&2
+              npm install -g pnpm@10.33.4
+            fi
+            corepack install --global pnpm@10.33.4 || true
+            pnpm -v
+
+            # 精确预检：先给中文诊断，而不是让 preinstall 抛一句英文
+            if [ "$(node -v)" != "v24.20.0" ]; then
+              echo "Node 版本不符：需要 24.20.0，实际 $(node -v)" >&2
+              echo "镜像若无该版本，请先同步 admin/.node-version 与 package.json engines" >&2
+              exit 1
+            fi
+            if [ "$(pnpm -v)" != "10.33.4" ]; then
+              echo "pnpm 版本不符：需要 10.33.4，实际 $(pnpm -v)" >&2
+              exit 1
+            fi
+
+            cd admin
+            # 与 .github/workflows/frontend-quality.yml 的安装范围保持一致
+            pnpm install --frozen-lockfile
+            node scripts/quality/check-toolchain.mjs
+            pnpm run quality:check
+
+  # ------------------------------------------------------------
+  # e2e（可选阶段）
+  #
+  # 首期为「契约桩 / 契约回放」e2e，不是真实后端集成。若该阶段成为 PR 阻塞项
+  # 而拖慢协作，可整段删除（删除后 quality 阶段仍覆盖类型/单测/构建/安全门），
+  # 也可把它改成只在 main 上跑：给本 stage 增加触发条件前请先在 Gitee 侧验证，
+  # Gitee Go 的 stage 级条件语法未在本仓库验证过，不做未经验证的假设。
+  # ------------------------------------------------------------
+  - stage: e2e
+    displayName: e2e（Playwright · 契约桩）
+    strategy: fast
+    trigger: auto
+    steps:
+      - step: npmbuild@1
+        name: frontend_e2e
+        displayName: 安装 chromium 并运行 web-antd e2e
+        inputs:
+          nodeVersion: "24.20.0"
+          goals: |
+            set -euo pipefail
+            corepack enable
+            corepack install --global pnpm@10.33.4 || true
+            pnpm -v
+
+            cd admin
+            pnpm install --frozen-lockfile
+            # 浏览器二进制不随 npm 包分发，必须显式安装；--with-deps 需要镜像内可用的包管理器
+            #
+            # 必须指定国内镜像：实测直连 playwright 官方 CDN 时 aborted —
+            # 连续 8 分 40 秒无任何输出（见 admin/.harness/journal/2026-10-29-test-infra-ci.md）。
+            # 改用 cdn.npmmirror.com 后约 1 分钟内完成下载。
+            export PLAYWRIGHT_DOWNLOAD_HOST=https://cdn.npmmirror.com/binaries/playwright
+            pnpm exec playwright install --with-deps chromium
+            pnpm -F @vben/web-antd test:e2e

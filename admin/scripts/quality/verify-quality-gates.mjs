@@ -130,6 +130,33 @@ try {
     'Toolchain policy rejected incompatible Node.js and pnpm versions.',
   );
 
+  // 依赖审计门禁的自检要在这里跑一次：它有 11 组合成数据，全部离线，不碰 registry。
+  // 「脚本写了但没接进链路」是这个仓真实发生过的失败（运营端把 audit 放进了第 11
+  // 步、业务端当时一步都没有），所以顺带钉住 package.json 里确实用的是它。
+  const depsAudit = runNode('scripts/quality/check-deps-audit.mjs', [
+    '--self-test',
+  ]);
+  assert.equal(
+    depsAudit.status,
+    0,
+    `dependency audit self-test failed:\n${depsAudit.stdout ?? ''}${depsAudit.stderr ?? ''}`,
+  );
+  assert.match(depsAudit.stdout ?? '', /空的生产依赖图直接报错/);
+  const manifest = await readFile(
+    new URL('../../package.json', import.meta.url),
+    'utf8',
+  );
+  const qualityDependencies =
+    JSON.parse(manifest).scripts?.['quality:dependencies'];
+  assert.match(
+    qualityDependencies ?? '',
+    /check-deps-audit\.mjs/,
+    'quality:dependencies 必须走 scripts/quality/check-deps-audit.mjs',
+  );
+  console.log(
+    'Dependency audit gate rejected all 11 synthetic canaries and is wired into quality:dependencies.',
+  );
+
   const workflow = await readFile(
     new URL('../../.github/workflows/frontend-quality.yml', import.meta.url),
     'utf8',

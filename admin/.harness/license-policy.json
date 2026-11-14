@@ -66,10 +66,10 @@
       "reviewedOn": "2026-10-05",
       "reason": "Vite CSS optimizer retained for the installed Windows platform package; build-time only and excluded from the web bundle. Re-review if used at runtime."
     },
-    "node-forge@1.4.0": {
+    "node-forge@1.4.2": {
       "licenses": "(BSD-3-Clause OR GPL-2.0)",
-      "reviewedOn": "2026-10-05",
-      "reason": "The upstream SPDX expression offers BSD-3-Clause as an allowed alternative; use and distribution are under that permissive option."
+      "reviewedOn": "2026-10-31",
+      "reason": "The upstream SPDX expression offers BSD-3-Clause as an allowed alternative; use and distribution are under that permissive option. Version moved 1.4.0 -> 1.4.2 on 2026-10-31: five high advisories are patched from 1.4.1 (dev-only path @vben/vite-config > nitropack > listhen), so the previous exact-version exception no longer matched."
     },
     "spawndamnit@3.0.1": {
       "licenses": "Custom: LICENSE",

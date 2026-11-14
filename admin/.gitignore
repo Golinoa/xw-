@@ -11,6 +11,11 @@ dist.war
 *-dist.tar
 *-dist.war
 coverage
+# Playwright 运行产物：每次跑 e2e 都会重写，且 .last-run.json 会被
+# `format:check`（oxfmt）当成待格式化文件导致门禁误报，故不入库、不参与格式化。
+test-results
+playwright-report
+blob-report
 *.local
 **/.vitepress/cache
 .cache
