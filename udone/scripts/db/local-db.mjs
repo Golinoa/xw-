@@ -23,7 +23,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { homedir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { delimiter, join, resolve } from 'node:path';
 import { Readable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 
@@ -443,9 +443,15 @@ async function startPostgrest() {
   await ensurePostgrest();
   writePostgrestConfig();
   const logFd = openSync(POSTGREST_LOG, 'a');
+  // Windows 版 postgrest.exe 动态链接 LIBPQ.dll，但它没有 Linux 那种 RPATH，
+  // 只按「exe 所在目录 + 系统目录 + PATH」查找 DLL。不把 PG 的 bin 放进 PATH，
+  // 进程会以 0xC0000135（STATUS_DLL_NOT_FOUND）立刻退出，且**日志里一个字都不写**，
+  // 现象只是「PostgREST 启动后退出」，很容易误判成配置写错或端口被占。
+  const pgBin = requirePgBin();
   postgrestProcess = spawn(POSTGREST_BIN, [POSTGREST_CONFIG], {
     stdio: ['ignore', logFd, logFd],
     windowsHide: true,
+    env: { ...process.env, PATH: `${pgBin}${delimiter}${process.env.PATH ?? ''}` },
   });
   await waitForPostgrest();
   // PostgREST 直接在根路径上提供 API，而客户端拼的是 `/rest/v1/...`
