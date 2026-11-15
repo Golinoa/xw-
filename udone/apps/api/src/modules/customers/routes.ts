@@ -4,6 +4,7 @@ import {
   ERROR_CODES,
   PERMISSIONS,
   ROUTES,
+  batchCustomerTagsRequestSchema,
   createCustomerRequestSchema,
   createCustomerSourceRequestSchema,
   createCustomerTagRequestSchema,
@@ -11,8 +12,10 @@ import {
   customerParamsSchema,
   customerRecycleBinQuerySchema,
   customerSourceParamsSchema,
+  customerTagParamsSchema,
   updateCustomerRequestSchema,
   updateCustomerSourceRequestSchema,
+  updateCustomerTagRequestSchema,
 } from '@erp/contracts';
 import type { CustomerDetail, CustomerListItem } from '@erp/contracts';
 import { parseJson, parseParams, parseQuery, respond } from '../../lib/contract';
@@ -21,6 +24,7 @@ import { requireAuth, requirePermission } from '../../middleware/auth';
 import { ApiHttpError } from '../../middleware/error-handler';
 import type { CustomerRecord, CustomerRepository } from './customer-service';
 import {
+  CustomerBatchScopeError,
   CustomerConflictError,
   CustomerSourceConflictError,
   CustomerTagConflictError,
@@ -102,6 +106,13 @@ function customerError(cause: unknown): unknown {
       ERROR_CODES.CONFLICT,
       'A source with this name already exists at this level',
     );
+  }
+  if (cause instanceof CustomerBatchScopeError) {
+    // 三种原因（不存在 / 已删除 / 超出数据范围）对外统一 404：
+    // 区分它们等于回答「这个 ID 存不存在」，而它本来就不该被读到。
+    return new ApiHttpError(404, ERROR_CODES.NOT_FOUND, 'One or more customers were not found', {
+      missingCustomerIds: cause.customerIds,
+    });
   }
   return cause;
 }
@@ -327,6 +338,37 @@ customerRoutes.post(
   },
 );
 
+customerRoutes.post(
+  ROUTES.batchTagCustomers.path,
+  requireAuth(),
+  requirePermission(PERMISSIONS.CUSTOMER_WRITE),
+  async (context) => {
+    const body = await parseJson(context, batchCustomerTagsRequestSchema);
+    const auth = context.get('auth');
+    const repo = repository(context);
+
+    // 标签与客户都要先校验再写：这条路由的语义是「整批成功或整批不变」。
+    const tagIds = [...(body.addTagIds ?? []), ...(body.removeTagIds ?? [])];
+    if (tagIds.length > 0) {
+      await repo.assertTagsBelongToOrganization(auth.organizationId, tagIds).catch((cause) => {
+        throw customerError(cause);
+      });
+    }
+
+    const updated = await repo
+      .batchTag({
+        organizationId: auth.organizationId,
+        customerIds: body.customerIds,
+        addTagIds: body.addTagIds,
+        removeTagIds: body.removeTagIds,
+      })
+      .catch((cause) => {
+        throw customerError(cause);
+      });
+    return respond(context, 'batchTagCustomers', { updatedCustomerIds: updated });
+  },
+);
+
 customerRoutes.get(
   ROUTES.listCustomerTags.path,
   requireAuth(),
@@ -349,6 +391,49 @@ customerRoutes.post(
         throw customerError(cause);
       });
     return respond(context, 'createCustomerTag', { tag }, 201);
+  },
+);
+
+customerRoutes.patch(
+  ROUTES.updateCustomerTag.path,
+  requireAuth(),
+  requirePermission(PERMISSIONS.CUSTOMER_WRITE),
+  async (context) => {
+    const { tagId } = parseParams(context, customerTagParamsSchema);
+    const input = await parseJson(context, updateCustomerTagRequestSchema);
+    const tag = await repository(context)
+      .updateTag(context.get('auth').organizationId, tagId, input)
+      .catch((cause) => {
+        throw customerError(cause);
+      });
+    // null 是「没改到任何行」：标签不存在、或属于别的组织（被策略挡掉）。
+    if (!tag) {
+      throw new ApiHttpError(404, ERROR_CODES.NOT_FOUND, 'Tag not found');
+    }
+    return respond(context, 'updateCustomerTag', { tag });
+  },
+);
+
+customerRoutes.delete(
+  ROUTES.deleteCustomerTag.path,
+  requireAuth(),
+  requirePermission(PERMISSIONS.CUSTOMER_WRITE),
+  async (context) => {
+    const { tagId } = parseParams(context, customerTagParamsSchema);
+    const result = await repository(context).deleteTag(context.get('auth').organizationId, tagId);
+    if (result === 'not_found') {
+      throw new ApiHttpError(404, ERROR_CODES.NOT_FOUND, 'Tag not found');
+    }
+    if (result === 'in_use') {
+      // `OBJECT_REFERENCED` 而不是通用 `CONFLICT`：前端据此提示「先解除引用」，
+      // 而不是让用户以为是重名之类的冲突。
+      throw new ApiHttpError(
+        409,
+        ERROR_CODES.OBJECT_REFERENCED,
+        'Tag is still applied to customers',
+      );
+    }
+    return respond(context, 'deleteCustomerTag', { deletedTagId: tagId });
   },
 );
 

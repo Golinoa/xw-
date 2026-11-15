@@ -142,7 +142,7 @@ export interface CustomerCreateInput {
 /**
  * 更新语义：`undefined` 表示不修改，`null` 表示清空该字段。
  * 没有这个区分，用户填错的手机号或备注就永远删不掉。
- */export interface CustomerUpdateInput {
+ */ export interface CustomerUpdateInput {
   name?: string;
   phone?: string | null;
   email?: string | null;
@@ -208,6 +208,33 @@ export interface CustomerRepository {
     sourceId: string,
   ): Promise<'deleted' | 'not_found' | 'in_use'>;
   createTag(organizationId: string, name: string, color?: string): Promise<CustomerTag>;
+  updateTag(
+    organizationId: string,
+    tagId: string,
+    patch: CustomerTagUpdateInput,
+  ): Promise<CustomerTag | null>;
+  /** `in_use` 表示仍有客户挂着这个标签，外键挡住了删除。 */
+  deleteTag(organizationId: string, tagId: string): Promise<'deleted' | 'not_found' | 'in_use'>;
+  /**
+   * 批量加/去标签，返回受影响（可见且未删除）的客户 ID。
+   *
+   * 有任何一个客户读不到就整批失败（`CustomerBatchScopeError`），**不写任何一行**：
+   * 部分成功会让用户看到「有的打了有的没打」却不知道差在哪，重试又会重复打标。
+   */
+  batchTag(input: CustomerBatchTagInput): Promise<string[]>;
+}
+
+export interface CustomerTagUpdateInput {
+  name?: string;
+  /** `null` 表示清空颜色；`undefined` 表示不改。 */
+  color?: string | null;
+}
+
+export interface CustomerBatchTagInput {
+  organizationId: string;
+  customerIds: string[];
+  addTagIds?: string[];
+  removeTagIds?: string[];
 }
 
 /** 标签不存在或不属于当前组织，按校验错误处理而不是静默丢弃。 */
@@ -222,6 +249,19 @@ export class CustomerTagConflictError extends Error {
   constructor() {
     super('A tag with this name already exists');
     this.name = 'CustomerTagConflictError';
+  }
+}
+
+/**
+ * 批量打标时给定的客户里有读不到的（不存在、已删除、或超出本人数据范围）。
+ *
+ * 单独定义一个错误而不是返回「部分成功」：这三种原因对外都只能是 404，
+ * 区分它们等于告诉调用方某个 ID 是否存在，而那个 ID 本来就读不到。
+ */
+export class CustomerBatchScopeError extends Error {
+  constructor(readonly customerIds: string[]) {
+    super('One or more customers are not available');
+    this.name = 'CustomerBatchScopeError';
   }
 }
 
@@ -756,6 +796,106 @@ export function createSupabaseCustomerRepository(
     }
   }
 
+  /* ----------------------------------------------------- 标签管理 */
+
+  async function updateTag(
+    organizationId: string,
+    tagId: string,
+    patch: CustomerTagUpdateInput,
+  ): Promise<CustomerTag | null> {
+    const body: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (patch.name !== undefined) body.name = patch.name;
+    if (patch.color !== undefined) body.color = patch.color;
+
+    try {
+      const rows = await client.rest<TagRow[]>(
+        `customer_tags?organization_id=eq.${encodeURIComponent(organizationId)}&id=eq.${encodeURIComponent(tagId)}`,
+        {
+          method: 'PATCH',
+          organizationId,
+          headers: { Prefer: 'return=representation' },
+          body,
+        },
+      );
+      const row = rows[0];
+      return row ? toTag(row) : null;
+    } catch (cause) {
+      // 唯一索引是 (organization_id, name)：改名撞名与新建撞名是同一种冲突。
+      if (cause instanceof RestConflictError) throw new CustomerTagConflictError();
+      throw cause;
+    }
+  }
+
+  async function deleteTag(
+    organizationId: string,
+    tagId: string,
+  ): Promise<'deleted' | 'not_found' | 'in_use'> {
+    try {
+      const rows = await client.rest<Array<{ id: string }>>(
+        `customer_tags?organization_id=eq.${encodeURIComponent(organizationId)}&id=eq.${encodeURIComponent(tagId)}`,
+        {
+          method: 'DELETE',
+          organizationId,
+          headers: { Prefer: 'return=representation' },
+        },
+      );
+      return rows.length > 0 ? 'deleted' : 'not_found';
+    } catch (cause) {
+      // customer_tag_links.tag_id 是 RESTRICT：还有客户挂这个标签就以 23503 回来。
+      if (cause instanceof RestConflictError) return 'in_use';
+      throw cause;
+    }
+  }
+
+  async function batchTag(input: CustomerBatchTagInput): Promise<string[]> {
+    const unique = [...new Set(input.customerIds)];
+    // 先按可见性回读一遍 ID：RLS 对 data scope = own 的角色只放行本人的客户，
+    // 而 customer_tag_links 的写策略不检查客户可见性。不回读就能给别人的客户打标。
+    const visible = await client.rest<Array<{ id: string }>>(
+      `customers?organization_id=eq.${encodeURIComponent(input.organizationId)}&id=${inList(unique)}&deleted_at=is.null&select=id`,
+      { organizationId: input.organizationId },
+    );
+    const visibleIds = visible.map((row) => row.id);
+    const found = new Set(visibleIds);
+    const missing = unique.filter((id) => !found.has(id));
+    // 校验必须在写入之前：任何一个客户读不到就整批不动，避免留下部分打标的中间态。
+    if (missing.length > 0) throw new CustomerBatchScopeError(missing);
+    if (visibleIds.length === 0) return [];
+
+    const addTagIds = [...new Set(input.addTagIds ?? [])];
+    const removeTagIds = [...new Set(input.removeTagIds ?? [])];
+
+    if (removeTagIds.length > 0) {
+      await client.rest<void>(
+        `customer_tag_links?organization_id=eq.${encodeURIComponent(input.organizationId)}&customer_id=${inList(visibleIds)}&tag_id=${inList(removeTagIds)}`,
+        {
+          method: 'DELETE',
+          organizationId: input.organizationId,
+          headers: { Prefer: 'return=minimal' },
+        },
+      );
+    }
+    if (addTagIds.length > 0) {
+      // `on_conflict` 要写全主键列：PostgREST 靠它决定 `ON CONFLICT (...)` 的目标，
+      // 只给 `resolution=ignore-duplicates` 时目标由服务端推断，换版本可能变成 400。
+      await client.rest<void>('customer_tag_links?on_conflict=customer_id,tag_id', {
+        method: 'POST',
+        organizationId: input.organizationId,
+        // 客户本来就带这个标签时不该报冲突：批量打标是「让结果一致」，不是「新增关联」。
+        headers: { Prefer: 'return=minimal,resolution=ignore-duplicates' },
+        body: visibleIds.flatMap((customerId) =>
+          addTagIds.map((tagId) => ({
+            customer_id: customerId,
+            tag_id: tagId,
+            organization_id: input.organizationId,
+          })),
+        ),
+      });
+    }
+
+    return visibleIds;
+  }
+
   return {
     list,
     listDeleted,
@@ -776,6 +916,9 @@ export function createSupabaseCustomerRepository(
     assertTagsBelongToOrganization,
     listTags,
     createTag,
+    updateTag,
+    deleteTag,
+    batchTag,
     listSources,
     createSource,
     updateSource,

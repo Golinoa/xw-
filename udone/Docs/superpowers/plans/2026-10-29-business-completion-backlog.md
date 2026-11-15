@@ -267,9 +267,32 @@
 
 ### C3 R-MASTER-01 标签管理补全
 
-- [ ] 补改名、删除（被引用时 RESTRICT）、客户批量打标
+- [x] 补改名、删除（被引用时 RESTRICT）、客户批量打标
 
 **现状证据:** 只有 `listCustomerTags` 与 `createCustomerTag` 两个端点，没有改名与删除。
+
+**完成情况（2026-11-15）:**
+- `20261115000005_customer_tag_manage.sql`：三处一起补——`GRANT DELETE`（原本只有 select/insert/update，
+  缺表权限会让删除报 `permission denied` 而不是 0 行）、**UPDATE 策略**（原本根本没有，
+  改名会被策略静默挡成 0 行、接口层只能报 404）、**DELETE 策略**。
+- 外键 `customer_tag_links_tag_fk` 从 `ON DELETE CASCADE` 收紧成 `RESTRICT`：
+  删标签原本会**静默清掉所有客户的打标记录**且不报错，现在 23503 → `409 OBJECT_REFERENCED`。
+- 三条路由：`PATCH/DELETE /api/customer-tags/:tagId`、`POST /api/customers/batch-tags`。
+- 批量打标**整批成功或整批不变**：先按可见性回读客户，有任何一个读不到就 404 且一行不写
+  （`customer_tag_links` 的写策略只看组织与 `customer.write`，不看客户可见性，不回读就能给别人的客户打标）。
+- 前端：`CustomerTagManagerModal.vue`（新建/改名/删除）、`CustomerBatchTagModal.vue`（加或减）、
+  客户列表加勾选与两个入口。**顺带补上了「建标签」的入口** —— 此前 `createCustomerTag` 没有任何界面调用方，
+  标签下拉永远是空的。
+
+**验证:** pgTAP **34 文件全绿**（新增 `customer_tag_manage.sql` 7 条断言）；单测 **60 文件 / 809 用例**；
+类型检查 api+web；eslint + CSS token；HTTP 集成 **22 文件 / 385 用例**（新增 `customer-tags.test.ts` 5 条真实链路）。
+**变异验证**：把 `RESTRICT` 改回 `CASCADE` 后新断言有 3 条立刻变红。
+详见 `.harness/journal/2026-11-15-c3-customer-tag-manage.md`。
+
+**未做:** 逐行改色界面（端点支持 `color: null`）；标签相关的 E2E 归 A1。
+
+**顺手发现（不在本卡范围）:** `format:sql:check` 在本机对 66 个既有 SQL 文件报不合格，
+根因是 CRLF 与 sql-formatter 只输出 LF，不是格式走形；详见 journal 末段。
 
 **规模:** S
 

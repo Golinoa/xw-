@@ -19,6 +19,8 @@ import { ApiClientError } from '../../lib/api-client';
 import { useAuthStore } from '../../stores/auth';
 import CustomerDetailDrawer from './CustomerDetailDrawer.vue';
 import CustomerFormModal from './CustomerFormModal.vue';
+import CustomerBatchTagModal from './CustomerBatchTagModal.vue';
+import CustomerTagManagerModal from './CustomerTagManagerModal.vue';
 import { formatDateTime } from './customer-display';
 
 type CustomerSortField = (typeof CUSTOMER_SORT_FIELDS)[number];
@@ -211,6 +213,8 @@ const tagOptions = computed(() => tags.value.map((tag) => ({ value: tag.id, labe
 async function applyState(patch: Partial<ListState>) {
   Object.assign(state, patch);
   if (state.page < 1) state.page = 1;
+  // 换页或换筛选后旧选择已不在视野里，留着会让「批量打标」作用到看不见的客户上。
+  selectedRowKeys.value = [];
   // replace 而非 push：翻页与筛选不应该把每一步都塞进浏览器返回栈。
   await router.replace({ query: stateQuery(state) });
   await load();
@@ -308,7 +312,11 @@ const columns = computed(() => [
 function rowProps(record: CustomerListItem) {
   return {
     style: { cursor: 'pointer' },
-    onClick: () => openDetail(record),
+    onClick: (event: MouseEvent) => {
+      // 勾选框与行点击共用一个单元格树：不排除的话点勾选会同时打开详情抽屉。
+      if ((event.target as HTMLElement | null)?.closest('.ant-table-selection-column')) return;
+      openDetail(record);
+    },
   };
 }
 
@@ -316,6 +324,20 @@ const detailOpen = ref(false);
 const detailCustomerId = ref<string | null>(null);
 const formOpen = ref(false);
 const editingCustomer = ref<CustomerDetail | null>(null);
+const tagManagerOpen = ref(false);
+const batchOpen = ref(false);
+const selectedRowKeys = ref<string[]>([]);
+
+const rowSelection = computed(() =>
+  canWrite.value
+    ? {
+        selectedRowKeys: selectedRowKeys.value,
+        onChange: (keys: (string | number)[]) => {
+          selectedRowKeys.value = keys.map(String);
+        },
+      }
+    : undefined,
+);
 
 function openDetail(record: CustomerListItem) {
   detailCustomerId.value = record.id;
@@ -350,6 +372,17 @@ async function onDeleted() {
   // 删掉当前页最后一条时回到上一页，避免停在空页上。
   if (items.value.length === 0 && state.page > 1) await applyState({ page: state.page - 1 });
 }
+
+/** 标签改名/删除后必须重拉列表：列表里展示的是标签名，缓存住就会显示旧名字。 */
+async function onTagsChanged() {
+  await loadTags();
+  await load();
+}
+
+async function onBatchApplied() {
+  selectedRowKeys.value = [];
+  await load();
+}
 </script>
 
 <template>
@@ -366,6 +399,7 @@ async function onDeleted() {
       <a-space>
         <a-button :loading="listStatus === 'loading'" @click="load">刷新</a-button>
         <a-button v-if="canRestore" @click="router.push('/customers/recycle-bin')">回收站</a-button>
+        <a-button v-if="canWrite" @click="tagManagerOpen = true">标签管理</a-button>
         <a-button v-if="canWrite" type="primary" @click="openCreate">新建客户</a-button>
       </a-space>
     </header>
@@ -443,12 +477,18 @@ async function onDeleted() {
         <span>正在加载客户…</span>
       </div>
       <template v-else>
+        <div v-if="canWrite && selectedRowKeys.length > 0" class="batch-bar">
+          <span>已选 {{ selectedRowKeys.length }} 位客户</span>
+          <a-button size="small" @click="batchOpen = true">批量打标</a-button>
+          <a-button size="small" type="text" @click="selectedRowKeys = []">取消选择</a-button>
+        </div>
         <a-table
           row-key="id"
           :columns="columns"
           :data-source="items"
           :loading="listStatus === 'loading' && items.length > 0"
           :pagination="false"
+          :row-selection="rowSelection"
           :custom-row="rowProps"
           :locale="{
             emptyText: canWrite ? '暂无客户，点击右上角「新建客户」开始录入' : '暂无客户',
@@ -515,6 +555,13 @@ async function onDeleted() {
       :customer="editingCustomer"
       :tags="tags"
       @saved="onSaved"
+    />
+    <CustomerTagManagerModal v-model:open="tagManagerOpen" :tags="tags" @changed="onTagsChanged" />
+    <CustomerBatchTagModal
+      v-model:open="batchOpen"
+      :customer-ids="selectedRowKeys"
+      :tags="tags"
+      @applied="onBatchApplied"
     />
   </section>
 </template>
@@ -585,6 +632,17 @@ async function onDeleted() {
 
 .table-card :deep(.ant-card-body) {
   padding: var(--space-8) var(--space-16) var(--space-16);
+}
+
+.batch-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  margin-bottom: var(--space-8);
+  padding: var(--space-8) var(--space-12);
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-default);
+  font-size: var(--font-size-sm);
 }
 
 .list-status {

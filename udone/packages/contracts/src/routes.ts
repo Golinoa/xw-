@@ -4,6 +4,8 @@ import {
   createCustomerRequestSchema,
   createCustomerResponseSchema,
   createCustomerTagRequestSchema,
+  batchCustomerTagsRequestSchema,
+  batchCustomerTagsResponseSchema,
   customerDeletedResponseSchema,
   customerListQuerySchema,
   customerListResponseSchema,
@@ -18,9 +20,12 @@ import {
   customerSourceResponseSchema,
   createCustomerSourceRequestSchema,
   updateCustomerSourceRequestSchema,
+  customerTagDeletedResponseSchema,
   customerTagListResponseSchema,
+  customerTagParamsSchema,
   customerTagResponseSchema,
   updateCustomerRequestSchema,
+  updateCustomerTagRequestSchema,
 } from './customers';
 import type { HttpMethod } from './http';
 import {
@@ -416,6 +421,28 @@ export const ROUTES = {
     path: '/api/customer-tags',
     request: createCustomerTagRequestSchema,
     response: customerTagResponseSchema,
+  }),
+  updateCustomerTag: defineRoute({
+    method: 'PATCH',
+    path: '/api/customer-tags/:tagId',
+    request: updateCustomerTagRequestSchema,
+    response: customerTagResponseSchema,
+  }),
+  deleteCustomerTag: defineRoute({
+    method: 'DELETE',
+    path: '/api/customer-tags/:tagId',
+    request: customerTagParamsSchema,
+    response: customerTagDeletedResponseSchema,
+  }),
+  /**
+   * 批量打标。用子路径而不是 `PATCH /api/customers/:customerId` 循环调用：
+   * 循环会在第 N 个失败时留下「前 N-1 个已改」的中间态，用户重试又会重复打标。
+   */
+  batchTagCustomers: defineRoute({
+    method: 'POST',
+    path: '/api/customers/batch-tags',
+    request: batchCustomerTagsRequestSchema,
+    response: batchCustomerTagsResponseSchema,
   }),
   listCustomerSources: defineRoute({
     method: 'GET',

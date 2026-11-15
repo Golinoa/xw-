@@ -202,6 +202,62 @@ export const customerTagResponseSchema = z.object({
   tag: customerTagSchema,
 });
 
+export const customerTagParamsSchema = z.object({
+  tagId: z.string().min(1).max(64),
+});
+
+/**
+ * 改名 / 改色。两个字段都可选，但至少给一个 —— 空 PATCH 没有语义，
+ * 放过去只会变成一次改 `updated_at` 的空操作。
+ *
+ * `color: null` 表示清空颜色，与「不传 = 不修改」区分开。
+ */
+export const updateCustomerTagRequestSchema = z
+  .object({
+    name: z.string().trim().min(1).max(30).optional(),
+    color: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/, 'color must be a hex value like #1b2a4a')
+      .nullable()
+      .optional(),
+  })
+  .refine((value) => value.name !== undefined || value.color !== undefined, {
+    message: 'at least one of name or color is required',
+  });
+export type UpdateCustomerTagRequest = z.infer<typeof updateCustomerTagRequestSchema>;
+
+export const customerTagDeletedResponseSchema = z.object({
+  deletedTagId: z.string().min(1),
+});
+
+/**
+ * 批量打标。`addTagIds` 与 `removeTagIds` 分别表达「加上」与「去掉」，
+ * 同一个标签同时出现在两边属于歧义输入，直接拒绝而不是猜一个优先级。
+ *
+ * 上限 200 位客户：这个端点是给列表勾选用的，超过这个量级应当走导入而不是点选。
+ */
+export const batchCustomerTagsRequestSchema = z
+  .object({
+    customerIds: z.array(z.string().min(1).max(64)).min(1).max(200),
+    addTagIds: z.array(z.string().min(1).max(64)).max(50).optional(),
+    removeTagIds: z.array(z.string().min(1).max(64)).max(50).optional(),
+  })
+  .refine((value) => (value.addTagIds?.length ?? 0) + (value.removeTagIds?.length ?? 0) > 0, {
+    message: 'at least one tag to add or remove is required',
+  })
+  .refine(
+    (value) => {
+      const add = new Set(value.addTagIds ?? []);
+      return !(value.removeTagIds ?? []).some((tagId) => add.has(tagId));
+    },
+    { message: 'a tag cannot be added and removed in the same request' },
+  );
+export type BatchCustomerTagsRequest = z.infer<typeof batchCustomerTagsRequestSchema>;
+
+export const batchCustomerTagsResponseSchema = z.object({
+  updatedCustomerIds: z.array(z.string().min(1)),
+});
+
 export const customerListResponseSchema = pagedResponseSchema(customerListItemSchema);
 
 export const customerResponseSchema = z.object({

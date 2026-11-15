@@ -4,7 +4,12 @@ import type { AuthContext } from '@erp/contracts';
 import { app } from '../../index';
 import type { ApiEnvironment } from '../../middleware/auth';
 import type { CustomerRecord, CustomerRepository } from './customer-service';
-import { CustomerSourceConflictError, CustomerTagInvalidError } from './customer-service';
+import {
+  CustomerBatchScopeError,
+  CustomerSourceConflictError,
+  CustomerTagConflictError,
+  CustomerTagInvalidError,
+} from './customer-service';
 
 const adminIdentity: AuthContext = {
   userId: 'user-owner',
@@ -60,6 +65,9 @@ function repositoryStub(overrides: Partial<CustomerRepository> = {}): CustomerRe
     assertTagsBelongToOrganization: vi.fn().mockResolvedValue(undefined),
     listTags: vi.fn().mockResolvedValue([]),
     createTag: vi.fn(),
+    updateTag: vi.fn().mockResolvedValue(null),
+    deleteTag: vi.fn().mockResolvedValue('not_found'),
+    batchTag: vi.fn().mockResolvedValue([]),
     listSources: vi.fn().mockResolvedValue([]),
     createSource: vi.fn(),
     updateSource: vi.fn().mockResolvedValue(null),
@@ -406,10 +414,10 @@ describe('customer routes', () => {
 
   it('rejects restore for someone without customer.restore', async () => {
     // 有 customer.write 也不行：恢复是与「读已删除」绑定的能力，不是写权限的延伸。
-    const { testApp, env } = setup(
-      repositoryStub({ restore: vi.fn().mockResolvedValue(true) }),
-      { ...adminIdentity, permissions: ['customer.read', 'customer.write'] },
-    );
+    const { testApp, env } = setup(repositoryStub({ restore: vi.fn().mockResolvedValue(true) }), {
+      ...adminIdentity,
+      permissions: ['customer.read', 'customer.write'],
+    });
 
     const response = await testApp.request(
       '/api/customers/cust-1/restore',
@@ -509,6 +517,197 @@ describe('customer routes', () => {
     });
   });
 
+  describe('customer tags', () => {
+    const tag = { id: 'tag-1', name: 'VIP', color: '#1b2a4a' };
+
+    it('renames a tag through the dedicated path', async () => {
+      const updateTag = vi.fn().mockResolvedValue({ ...tag, name: 'VIP 客户' });
+      const { testApp, env } = setup(repositoryStub({ updateTag }));
+
+      const response = await testApp.request(
+        '/api/customer-tags/tag-1',
+        {
+          method: 'PATCH',
+          headers: { ...authHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: 'VIP 客户' }),
+        },
+        env,
+      );
+
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toEqual({ tag: { ...tag, name: 'VIP 客户' } });
+      expect(updateTag).toHaveBeenCalledWith('org-alpha', 'tag-1', { name: 'VIP 客户' });
+    });
+
+    it('rejects an empty tag patch instead of writing an empty update', async () => {
+      const updateTag = vi.fn();
+      const { testApp, env } = setup(repositoryStub({ updateTag }));
+
+      const response = await testApp.request(
+        '/api/customer-tags/tag-1',
+        {
+          method: 'PATCH',
+          headers: { ...authHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        },
+        env,
+      );
+
+      expect(response.status).toBe(400);
+      expect(updateTag).not.toHaveBeenCalled();
+    });
+
+    it('answers 409 when the new name belongs to another tag', async () => {
+      const updateTag = vi.fn().mockRejectedValue(new CustomerTagConflictError());
+      const { testApp, env } = setup(repositoryStub({ updateTag }));
+
+      const response = await testApp.request(
+        '/api/customer-tags/tag-1',
+        {
+          method: 'PATCH',
+          headers: { ...authHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: '重复标签' }),
+        },
+        env,
+      );
+
+      expect(response.status).toBe(409);
+    });
+
+    it('answers 404 when the tag is not visible to this organization', async () => {
+      const updateTag = vi.fn().mockResolvedValue(null);
+      const { testApp, env } = setup(repositoryStub({ updateTag }));
+
+      const response = await testApp.request(
+        '/api/customer-tags/tag-x',
+        {
+          method: 'PATCH',
+          headers: { ...authHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: '改名' }),
+        },
+        env,
+      );
+
+      expect(response.status).toBe(404);
+    });
+
+    it('refuses to delete a tag that is still applied, with OBJECT_REFERENCED', async () => {
+      const deleteTag = vi.fn().mockResolvedValue('in_use');
+      const { testApp, env } = setup(repositoryStub({ deleteTag }));
+
+      const response = await testApp.request(
+        '/api/customer-tags/tag-1',
+        { method: 'DELETE', headers: authHeaders },
+        env,
+      );
+
+      expect(response.status).toBe(409);
+      const body = (await response.json()) as Record<string, unknown>;
+      expect(body.code).toBe('OBJECT_REFERENCED');
+    });
+
+    it('deletes a free tag and reports the identifier', async () => {
+      const deleteTag = vi.fn().mockResolvedValue('deleted');
+      const { testApp, env } = setup(repositoryStub({ deleteTag }));
+
+      const response = await testApp.request(
+        '/api/customer-tags/tag-1',
+        { method: 'DELETE', headers: authHeaders },
+        env,
+      );
+
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toEqual({ deletedTagId: 'tag-1' });
+    });
+
+    it('batch-tags the selected customers and reports which ones changed', async () => {
+      const batchTag = vi.fn().mockResolvedValue(['cust-1', 'cust-2']);
+      const assertTagsBelongToOrganization = vi.fn().mockResolvedValue(undefined);
+      const { testApp, env } = setup(repositoryStub({ batchTag, assertTagsBelongToOrganization }));
+
+      const response = await testApp.request(
+        '/api/customers/batch-tags',
+        {
+          method: 'POST',
+          headers: { ...authHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customerIds: ['cust-1', 'cust-2'], addTagIds: ['tag-1'] }),
+        },
+        env,
+      );
+
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toEqual({
+        updatedCustomerIds: ['cust-1', 'cust-2'],
+      });
+      expect(assertTagsBelongToOrganization).toHaveBeenCalledWith('org-alpha', ['tag-1']);
+      expect(batchTag).toHaveBeenCalledWith({
+        organizationId: 'org-alpha',
+        customerIds: ['cust-1', 'cust-2'],
+        addTagIds: ['tag-1'],
+        removeTagIds: undefined,
+      });
+    });
+
+    it('rejects a batch that both adds and removes the same tag', async () => {
+      const batchTag = vi.fn();
+      const { testApp, env } = setup(repositoryStub({ batchTag }));
+
+      const response = await testApp.request(
+        '/api/customers/batch-tags',
+        {
+          method: 'POST',
+          headers: { ...authHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customerIds: ['cust-1'],
+            addTagIds: ['tag-1'],
+            removeTagIds: ['tag-1'],
+          }),
+        },
+        env,
+      );
+
+      expect(response.status).toBe(400);
+      expect(batchTag).not.toHaveBeenCalled();
+    });
+
+    it('fails the whole batch when one customer is not visible', async () => {
+      const batchTag = vi.fn().mockRejectedValue(new CustomerBatchScopeError(['cust-9']));
+      const { testApp, env } = setup(repositoryStub({ batchTag }));
+
+      const response = await testApp.request(
+        '/api/customers/batch-tags',
+        {
+          method: 'POST',
+          headers: { ...authHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customerIds: ['cust-1', 'cust-9'], addTagIds: ['tag-1'] }),
+        },
+        env,
+      );
+
+      expect(response.status).toBe(404);
+      const body = (await response.json()) as { details?: { missingCustomerIds?: string[] } };
+      expect(body.details?.missingCustomerIds).toEqual(['cust-9']);
+    });
+
+    it('denies tag management to a reader without customer.write', async () => {
+      const updateTag = vi.fn();
+      const { testApp, env } = setup(repositoryStub({ updateTag }), financeIdentity);
+
+      const response = await testApp.request(
+        '/api/customer-tags/tag-1',
+        {
+          method: 'PATCH',
+          headers: { ...authHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: '改名' }),
+        },
+        env,
+      );
+
+      expect(response.status).toBe(403);
+      expect(updateTag).not.toHaveBeenCalled();
+    });
+  });
+
   describe('customer sources', () => {
     const source = {
       id: 'src-1',
@@ -522,7 +721,11 @@ describe('customer routes', () => {
       const listSources = vi.fn().mockResolvedValue([source]);
       const { testApp, env } = setup(repositoryStub({ listSources }));
 
-      const response = await testApp.request('/api/customer-sources', { headers: authHeaders }, env);
+      const response = await testApp.request(
+        '/api/customer-sources',
+        { headers: authHeaders },
+        env,
+      );
 
       expect(response.status).toBe(200);
       await expect(response.json()).resolves.toEqual({ sources: [source] });
@@ -533,7 +736,11 @@ describe('customer routes', () => {
       const listSources = vi.fn().mockResolvedValue([source]);
       const { testApp, env } = setup(repositoryStub({ listSources }));
 
-      await testApp.request('/api/customer-sources?includeInactive=1', { headers: authHeaders }, env);
+      await testApp.request(
+        '/api/customer-sources?includeInactive=1',
+        { headers: authHeaders },
+        env,
+      );
 
       expect(listSources).toHaveBeenCalledWith('org-alpha', true);
     });
