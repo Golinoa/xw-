@@ -298,9 +298,33 @@
 
 ### C4 R-ROUTE-01 线路主数据
 
-- [ ] 线路表 + 下拉 + 订单保存名称与金额快照
+- [x] 线路表 + 下拉 + 订单保存名称与金额快照
 
 **现状证据:** `orders.route_name` 是纯文本，**没有线路主数据表**。改线路名后历史订单无法追溯原名称（R-FIN-01 要求「历史名称和金额不得随主数据修改而漂移」）。
+
+**完成情况（2026-11-15）:**
+
+- 新表 `routes`（`20261115000006_route_master.sql`）：名称、线路类型、地区、出发城市、天数、
+  自组团、启停、备注；`(organization_id, name)` 唯一，`created_by` 由 `DEFAULT auth.uid()` 填入
+  （插入策略要求它等于调用者，客户端填不了假值）。新权限 `route.read` / `route.write`
+  （admin/operator 读写、finance 只读），权限快照断言 `permissions_and_disabled_sessions.sql` 随之更新。
+- 四个端点：`GET/POST /api/routes`、`PATCH/DELETE /api/routes/:routeId`。
+  改名为空 PATCH 直接 400；重名 409 `CONFLICT`；`null` 与「不传」区分（清空 vs 不修改）。
+- 前端：订单表单的「线路名称」自由文本换成可搜索下拉 + 「新建线路」快捷新增
+  （`views/routes/RouteFormModal.vue`、`views/routes/route-options.ts`）。
+  下拉的 value **就是线路名**，不是 id —— 订单存的是名称快照，用 id 反而要造一个假 id 撑住历史值。
+  编辑历史订单时 `ensure(name)` 会钉住那个名字（含当年手打、没建档的），否则下拉空白、一保存就被清成 null。
+- **刻意不给 `orders` 加 `route_id` 外键**：快照按值保存就够了，加外键会诱导后来者 join 实时主数据，
+  那正是需求禁止的漂移。金额快照同理 —— `order_receivables/payables` 的 name/amount 本来就是拷贝。
+
+**验证:** pgTAP **35 文件全绿**（新增 `route_master.sql` 10 条断言，含「改名后历史订单 `route_name` 不变」
+与「删线路后订单仍在」）；单测 **61 文件 / 819 用例**（新增 `modules/routes/routes.test.ts` 10 条）；
+类型检查 api+web；eslint + CSS token；HTTP 集成 **23 文件 / 391 用例**
+（新增 `tests/integration/routes.test.ts` 6 条，验证 `created_by` 真取到人、23505→409、DELETE 后 404）。
+详见 `.harness/journal/2026-11-15-c4-route-master.md`。
+
+**未做:** 线路管理页（列表/改名/启停/删除的界面）。端点齐了但界面只有订单表单里的「新建」，
+与 C2 的来源管理页同一取舍；线路类型/地区/出发城市在公司字典（R-SETTING-01）落地前保持自由文本。
 
 **规模:** M
 

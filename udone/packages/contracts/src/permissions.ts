@@ -16,6 +16,12 @@ export const PERMISSIONS = {
   ORDER_WRITE: 'order.write',
   SUPPLIER_READ: 'supplier.read',
   SUPPLIER_WRITE: 'supplier.write',
+  /**
+   * 线路主数据。单独成权限而不是复用 `order.*`：线路是「公司口径」的主数据，
+   * 与「能开一张订单」是两件事——只允许按既有线路开单、不允许新增线路的岗位是存在的。
+   */
+  ROUTE_READ: 'route.read',
+  ROUTE_WRITE: 'route.write',
   /** 创建收付款申请（占用额度），不包含审批。 */
   FINANCE_WRITE: 'finance.write',
   /** 审批收付款申请；终审通过才计入已收/已付。 */
@@ -51,6 +57,8 @@ export const ROLE_AUTHORIZATION = {
       PERMISSIONS.ORDER_WRITE,
       PERMISSIONS.SUPPLIER_READ,
       PERMISSIONS.SUPPLIER_WRITE,
+      PERMISSIONS.ROUTE_READ,
+      PERMISSIONS.ROUTE_WRITE,
       PERMISSIONS.FINANCE_WRITE,
       PERMISSIONS.FINANCE_APPROVE,
       PERMISSIONS.CUSTOMER_RESTORE,
@@ -68,6 +76,8 @@ export const ROLE_AUTHORIZATION = {
       PERMISSIONS.ORDER_WRITE,
       PERMISSIONS.SUPPLIER_READ,
       PERMISSIONS.SUPPLIER_WRITE,
+      PERMISSIONS.ROUTE_READ,
+      PERMISSIONS.ROUTE_WRITE,
       PERMISSIONS.FINANCE_WRITE,
     ],
     dataScope: 'own',
@@ -79,6 +89,7 @@ export const ROLE_AUTHORIZATION = {
       PERMISSIONS.CUSTOMER_READ,
       PERMISSIONS.ORDER_READ,
       PERMISSIONS.SUPPLIER_READ,
+      PERMISSIONS.ROUTE_READ,
       PERMISSIONS.FINANCE_WRITE,
       PERMISSIONS.FINANCE_APPROVE,
     ],

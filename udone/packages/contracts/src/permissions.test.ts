@@ -15,6 +15,8 @@ describe('shared permissions', () => {
       ORDER_WRITE: 'order.write',
       SUPPLIER_READ: 'supplier.read',
       SUPPLIER_WRITE: 'supplier.write',
+      ROUTE_READ: 'route.read',
+      ROUTE_WRITE: 'route.write',
       FINANCE_WRITE: 'finance.write',
       FINANCE_APPROVE: 'finance.approve',
       CUSTOMER_RESTORE: 'customer.restore',
@@ -32,6 +34,8 @@ describe('shared permissions', () => {
       | 'order.write'
       | 'supplier.read'
       | 'supplier.write'
+      | 'route.read'
+      | 'route.write'
       | 'finance.write'
       | 'finance.approve'
       | 'customer.restore'
@@ -53,6 +57,8 @@ describe('shared permissions', () => {
         'order.write',
         'supplier.read',
         'supplier.write',
+        'route.read',
+        'route.write',
         'finance.write',
         'finance.approve',
         'customer.restore',
@@ -71,6 +77,8 @@ describe('shared permissions', () => {
         'order.write',
         'supplier.read',
         'supplier.write',
+        'route.read',
+        'route.write',
         'finance.write',
       ],
       dataScope: 'own',
@@ -83,6 +91,7 @@ describe('shared permissions', () => {
         'customer.read',
         'order.read',
         'supplier.read',
+        'route.read',
         'finance.write',
         'finance.approve',
       ],

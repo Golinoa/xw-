@@ -11,6 +11,7 @@ import { memberRoutes } from './modules/members/routes';
 import { customerRoutes } from './modules/customers/routes';
 import { orderRoutes } from './modules/orders/routes';
 import { supplierRoutes } from './modules/suppliers/routes';
+import { routeRoutes } from './modules/routes/routes';
 import { financeRoutes } from './modules/finance/routes';
 import { financeApplicationRoutes } from './modules/finance-applications/routes';
 import { opsAccountRoutes } from './modules/ops/accounts/routes';
@@ -49,6 +50,8 @@ app.route('/', memberRoutes);
 app.route('/', customerRoutes);
 app.route('/', orderRoutes);
 app.route('/', supplierRoutes);
+// 线路接在供应商之后：两者都是订单引用的主数据，读顺序与依赖顺序一致。
+app.route('/', routeRoutes);
 app.route('/', financeRoutes);
 app.route('/', financeApplicationRoutes);
 // 运营后台：路径自带 /api/v1/ops 前缀，鉴权是 requireOpsAuth 而不是 requireAuth。

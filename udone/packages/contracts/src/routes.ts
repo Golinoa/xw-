@@ -276,6 +276,15 @@ import {
   supplierListResponseSchema,
   supplierResponseSchema,
 } from './suppliers';
+import {
+  createTourRouteRequestSchema,
+  tourRouteDeletedResponseSchema,
+  tourRouteListQuerySchema,
+  tourRouteListResponseSchema,
+  tourRouteParamsSchema,
+  tourRouteResponseSchema,
+  updateTourRouteRequestSchema,
+} from './tour-routes';
 import { healthResponseSchema } from './health';
 import {
   acceptInvitationResponseSchema,
@@ -508,6 +517,30 @@ export const ROUTES = {
     path: '/api/suppliers',
     request: createSupplierRequestSchema,
     response: supplierResponseSchema,
+  }),
+  listRoutes: defineRoute({
+    method: 'GET',
+    path: '/api/routes',
+    request: tourRouteListQuerySchema,
+    response: tourRouteListResponseSchema,
+  }),
+  createRoute: defineRoute({
+    method: 'POST',
+    path: '/api/routes',
+    request: createTourRouteRequestSchema,
+    response: tourRouteResponseSchema,
+  }),
+  updateRoute: defineRoute({
+    method: 'PATCH',
+    path: '/api/routes/:routeId',
+    request: updateTourRouteRequestSchema,
+    response: tourRouteResponseSchema,
+  }),
+  deleteRoute: defineRoute({
+    method: 'DELETE',
+    path: '/api/routes/:routeId',
+    request: tourRouteParamsSchema,
+    response: tourRouteDeletedResponseSchema,
   }),
   getOrderFinance: defineRoute({
     method: 'GET',

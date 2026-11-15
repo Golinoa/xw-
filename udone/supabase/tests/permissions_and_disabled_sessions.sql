@@ -169,7 +169,7 @@ SELECT
 
 -- 这是权限集的快照断言：新增权限时它必然失败，这正是它的用途——
 -- 逼人显式确认「这条新权限真的该给这个角色」。
--- 客户/订单/供应商域上线后 operator 获得对应读写权限，此处随之更新。
+-- 客户/订单/供应商/线路域上线后 operator 获得对应读写权限，此处随之更新。
 SELECT
   IS (
     (
@@ -186,6 +186,8 @@ SELECT
       'order.read',
       'order.write',
       'organization.read',
+      'route.read',
+      'route.write',
       'supplier.read',
       'supplier.write'
     ]::TEXT[],

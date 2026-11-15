@@ -5,6 +5,7 @@ import type { OrganizationRepository } from '../services/organization-service';
 import type { CustomerRepository } from '../modules/customers/customer-service';
 import type { OrderRepository } from '../modules/orders/order-service';
 import type { SupplierRepository } from '../modules/suppliers/supplier-service';
+import type { TourRouteRepository } from '../modules/routes/route-service';
 import type { FinanceRepository } from '../modules/finance/finance-service';
 import type { FinanceApplicationRepository } from '../modules/finance-applications/finance-application-service';
 import { ApiHttpError } from './error-handler';
@@ -24,6 +25,7 @@ export interface ApiEnvironment {
     CUSTOMER_REPOSITORY?: CustomerRepository;
     ORDER_REPOSITORY?: OrderRepository;
     SUPPLIER_REPOSITORY?: SupplierRepository;
+    ROUTE_REPOSITORY?: TourRouteRepository;
     FINANCE_REPOSITORY?: FinanceRepository;
     FINANCE_APPLICATION_REPOSITORY?: FinanceApplicationRepository;
     /**

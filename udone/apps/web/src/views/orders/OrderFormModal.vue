@@ -2,9 +2,12 @@
 import { computed, reactive, ref, watch } from 'vue';
 import { message } from 'ant-design-vue';
 import {
+  PERMISSIONS,
+  authorizationForRole,
   type CreateOrderRequest,
   type OrderDetail,
   type OrderType,
+  type Permission,
   type UpdateOrderRequest,
   type UpdatePayableLineInput,
   type UpdateReceivableLineInput,
@@ -12,8 +15,11 @@ import {
 import { ApiClientError } from '../../lib/api-client';
 import { formatMoney } from '../../lib/format';
 import { useAuthStore } from '../../stores/auth';
+import { type TourRoute } from '@erp/contracts';
 import SupplierFormModal from '../suppliers/SupplierFormModal.vue';
 import { filterSupplierOption, useSupplierOptions } from '../suppliers/supplier-options';
+import RouteFormModal from '../routes/RouteFormModal.vue';
+import { useRouteOptions } from '../routes/route-options';
 import { useCustomerOptions } from './customer-options';
 import { ORDER_TYPE_OPTIONS } from './order-display';
 
@@ -46,6 +52,14 @@ interface PayableRow extends ReceivableRow {
 }
 
 const auth = useAuthStore();
+
+const permissions = computed<readonly Permission[]>(() => {
+  const role = auth.currentOrganization.value?.role;
+  return role ? authorizationForRole(role).permissions : [];
+});
+/** 隐藏入口只影响体验：服务端仍按 route.write 独立校验。 */
+const canCreateRoute = computed(() => permissions.value.includes(PERMISSIONS.ROUTE_WRITE));
+
 /** 展开成具名 ref，模板里就不必写 `.value`。 */
 const {
   options: customerOptions,
@@ -63,10 +77,20 @@ const {
   load: loadSuppliers,
   add: addSupplier,
 } = useSupplierOptions();
+const {
+  options: routeOptions,
+  loading: routesLoading,
+  error: routesError,
+  load: loadRoutes,
+  search: searchRoutes,
+  ensure: ensureRoute,
+  add: addRoute,
+} = useRouteOptions();
 
 const saving = ref(false);
 const formError = ref('');
 const supplierModalOpen = ref(false);
+const routeModalOpen = ref(false);
 /** 快捷新建供应商后要回填到哪一行的下标；同一时刻只可能有一行在操作。 */
 const pendingSupplierRow = ref<PayableRow | null>(null);
 
@@ -75,7 +99,7 @@ const form = reactive({
   orderType: 'booking' as OrderType,
   adultCount: 1 as number | null,
   childCount: 0 as number | null,
-  routeName: '',
+  routeName: undefined as string | undefined,
   departureDate: undefined as string | undefined,
   returnDate: undefined as string | undefined,
   remark: '',
@@ -123,7 +147,7 @@ watch(
     form.orderType = order?.orderType ?? 'booking';
     form.adultCount = order?.adultCount ?? 1;
     form.childCount = order?.childCount ?? 0;
-    form.routeName = order?.routeName ?? '';
+    form.routeName = order?.routeName;
     form.departureDate = order?.departureDate;
     form.returnDate = order?.returnDate;
     form.remark = order?.remark ?? '';
@@ -152,6 +176,9 @@ watch(
     void loadCustomers();
     if (order) void ensureCustomer(order.customerId, order.customerName);
     void loadSuppliers();
+    // 历史订单可能存着一个没建档的线路名：钉住它，否则下拉空白、一保存就被清掉。
+    ensureRoute(order?.routeName ?? '');
+    void loadRoutes();
   },
   { immediate: true },
 );
@@ -251,7 +278,7 @@ async function submit() {
     receivables,
     payables,
     // 合同用「null = 清空」，编辑时清掉线路/日期/备注必须显式传 null。
-    routeName: form.routeName.trim() || null,
+    routeName: (form.routeName ?? '').trim() || null,
     departureDate: form.departureDate ?? null,
     returnDate: form.returnDate ?? null,
     remark: form.remark.trim() || null,
@@ -296,6 +323,12 @@ function onCustomerSelected(value: unknown) {
 /** 展开下拉时若还没有选项（初次加载失败等）再补一次。 */
 function ensureSupplierOptions() {
   if (supplierOptions.value.length === 0) void loadSuppliers();
+}
+
+function onRouteSaved(route: TourRoute) {
+  addRoute(route);
+  form.routeName = route.name;
+  message.success(`已新建线路「${route.name}」并选中`);
 }
 
 function onSupplierSaved(supplier: { id: string; name: string }) {
@@ -381,8 +414,32 @@ function onSupplierSaved(supplier: { id: string; name: string }) {
 
       <h4 class="section-title">线路与团期</h4>
       <div class="form-grid">
-        <a-form-item label="线路名称" name="routeName" class="span-2">
-          <a-input v-model:value="form.routeName" :maxlength="100" placeholder="如：云南六日游" />
+        <a-form-item label="线路" name="routeName" class="span-2">
+          <div class="route-picker">
+            <a-select
+              v-model:value="form.routeName"
+              class="route-select"
+              show-search
+              allow-clear
+              :filter-option="false"
+              :loading="routesLoading"
+              :options="routeOptions"
+              placeholder="搜索或选择线路"
+              @search="searchRoutes"
+            />
+            <a-button
+              v-if="canCreateRoute"
+              type="link"
+              size="small"
+              @click="routeModalOpen = true"
+              >新建线路</a-button
+            >
+          </div>
+          <span class="field-hint">订单保存的是名称快照：线路以后改名，历史订单不变。</span>
+          <p v-if="routesError" class="field-error">
+            线路下拉加载失败：{{ routesError }}
+            <a-button type="link" size="small" @click="loadRoutes()">重试</a-button>
+          </p>
         </a-form-item>
         <a-form-item label="出团日期" name="departureDate">
           <a-date-picker
@@ -607,6 +664,7 @@ function onSupplierSaved(supplier: { id: string; name: string }) {
   </a-modal>
 
   <SupplierFormModal v-model:open="supplierModalOpen" @saved="onSupplierSaved" />
+  <RouteFormModal v-model:open="routeModalOpen" @saved="onRouteSaved" />
 </template>
 
 <style scoped>
@@ -697,6 +755,16 @@ function onSupplierSaved(supplier: { id: string; name: string }) {
 .line-supplier {
   flex: 0 0 180px;
   width: 180px;
+}
+
+.route-picker {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.route-select {
+  flex: 1 1 auto;
 }
 
 .summary {

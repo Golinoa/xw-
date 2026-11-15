@@ -3,11 +3,11 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 42
-- Tables discovered: 61
+- Migration sources scanned: 43
+- Tables discovered: 62
 - Functions discovered: 248
-- Indexes discovered: 90
-- RLS policies discovered: 67
+- Indexes discovered: 91
+- RLS policies discovered: 71
 - Triggers discovered: 9
 
 | Migration | Tables | Functions | Indexes | Policies | Triggers |
@@ -54,3 +54,4 @@
 | `20261115000003_approval_flow_config.sql` | `public.organization_approval_flows` | `public.default_approval_flow`, `public.effective_approval_flow`, `public.snapshot_finance_application_flow`, `public.set_approval_flow`, `public.decide_finance_application`, `public.withdraw_finance_application` | — | `organization_approval_flows_select_member` | `finance_applications_snapshot_flow` |
 | `20261115000004_customer_source_delete.sql` | — | — | — | `customer_sources_delete_writer` | — |
 | `20261115000005_customer_tag_manage.sql` | — | — | — | `customer_tags_update_writer`, `customer_tags_delete_writer` | — |
+| `20261115000006_route_master.sql` | `public.routes` | — | `routes_organization_idx` | `routes_select_reader`, `routes_insert_writer`, `routes_update_writer`, `routes_delete_writer` | — |

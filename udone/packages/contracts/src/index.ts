@@ -19,3 +19,4 @@ export * from './pagination';
 export * from './permissions';
 export * from './routes';
 export * from './suppliers';
+export * from './tour-routes';
