@@ -3,12 +3,12 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 37
+- Migration sources scanned: 38
 - Tables discovered: 60
-- Functions discovered: 239
-- Indexes discovered: 88
+- Functions discovered: 240
+- Indexes discovered: 90
 - RLS policies discovered: 61
-- Triggers discovered: 6
+- Triggers discovered: 8
 
 | Migration | Tables | Functions | Indexes | Policies | Triggers |
 |---|---|---|---|---|---|
@@ -49,3 +49,4 @@
 | `20261031000012_contract_attachment_object_check.sql` | — | `ops.contract_attachment_location`, `ops.complete_contract_attachment` | — | — | — |
 | `20261031000013_ops_exports.sql` | `ops.exports` | `ops.export_type_permission`, `ops.operator_has_permission`, `ops.export_json`, `ops.export_filter_texts`, `ops.create_export`, `ops.list_exports`, `ops.get_export`, `ops.claim_export`, `ops.export_rows_for`, `ops.export_fetch_rows`, `ops.finish_export`, `ops.abort_export`, `ops.expire_exports` | `exports_requested_idx`, `exports_status_created_idx` | — | — |
 | `20261031000014_ops_trigger_function_revoke.sql` | — | — | — | — | — |
+| `20261115000001_finance_application_line_history.sql` | — | `public.detach_finance_applications_from_line` | `finance_applications_receivable_idx`, `finance_applications_payable_idx` | — | `order_receivables_detach_applications`, `order_payables_detach_applications` |
