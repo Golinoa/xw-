@@ -381,13 +381,41 @@ HTTP 集成 **24 文件 / 402 用例**（新增 `tests/integration/tourists.test
 
 ### D1 前端产物体积
 
-- [ ] 主 chunk < 500 kB，或给出「为什么不能拆」的结论
+- [x] 主 chunk < 500 kB，或给出「为什么不能拆」的结论
 
 **现状证据:** `dist/assets/index-BSn1wpC7.js` 1,638.00 kB / gzip 506.52 kB，构建报 `Some chunks are larger than 500 kB after minification`。
 
 **做法:** `build.rollupOptions.output.manualChunks` 拆分 antd / vue 生态；顺手核对是否有全量引入（`ant-design-vue` 按需加载是否生效）。
 
+**完成情况（2026-11-16）:**
+
+- **根因不是没做 code splitting**（路由一直是动态 import），是 `app.use(Antd)` 全量注册：
+  它 `Object.keys(components).forEach(app.use)`，静态分析看不到边界，70 个组件连同各自的
+  `vc-*` 依赖全部进包。**「按需加载是否生效」的答案是从未生效。**
+- 改成显式注册清单（`apps/web/src/design-system/antd-registration.ts`，27 个组件），
+  `main.ts` 只做 `forEach(app.use)`；子组件由父组件 install 带出。
+- 同时删掉 `StyleProvider` 的注册：`app.use` 只注册组件名，本仓从没用 `<a-style-provider>`
+  包裹过，它原本就没生效；`useStyleInject()` 有默认上下文兜底，删除行为中立。
+- `manualChunks` 按生态切 `vendor-vue` / `vendor-antd` / `vendor-supabase` / `vendor`，
+  目的是业务代码改动不再让 895 kB 的 antd 缓存失效。
+- **新增守卫测试** `antd-registration.test.ts`：漏注册组件不会构建失败、不会类型报错，
+  只会在浏览器里渲染成空白，所以扫全部 `.vue` 的 `<a-*>` 标签与 install 探测出的注册名对账。
+
+**验证:** 入口 chunk **1,871.64 kB → 38.04 kB**（gzip 567.34 → 12.52）；首屏 JS 合计
+**1,463.44 kB / gzip 445.80（−21.8% / −21.4%）**——总量真降了 408 kB，不是把数字搬到别的 chunk。
+pgTAP **36 文件全绿**（本卡未动数据库）；单测 **64 文件 / 851 用例**（改前 63 / 849）；
+类型检查 api+web；eslint + CSS token；构建通过；`vite preview` + Chromium 实测 `/login`
+渲染正常、零 `Failed to resolve component`。变异验证：删掉 `Table` 注册后守卫报出 11 处
+受影响模板。详见 `.harness/journal/2026-11-16-d1-web-bundle-size.md`。
+
+**未做:** `vendor-antd` 仍 895 kB（gzip 270）——构成里每一项都在用（`vc-tree` 来自 Table 的
+勾选、`RangePicker` 来自订单日期筛选…）。要再降只有「分页面局部注册把 Table/DatePicker
+移出首屏」这条路，收益约 66 kB gzip，但会把标签解析从全局清单变成局部绑定，
+在 A1 的浏览器回归铺好之前风险大于收益。zod 约占首屏 150~180 kB，属 `@erp/contracts`
+的有意设计（响应体运行时校验），不在本卡。
+
 **规模:** S
+
 
 ### D2 E2E 接入 CI
 
