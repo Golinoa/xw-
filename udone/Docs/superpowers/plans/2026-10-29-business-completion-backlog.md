@@ -201,13 +201,24 @@
 
 ### C1 R-APPROVAL-01 审批流配置化
 
-- [ ] 配置表 + 实例快照 + 级次驱动流程，≥3 级可跑
+- [x] 配置表 + 实例快照 + 级次驱动流程，≥3 级可跑
 
 **现状证据:** `current_step integer NOT NULL DEFAULT 1 CHECK (current_step BETWEEN 1 AND 2)` 与 `step ... BETWEEN 1 AND 2` 写死在迁移里；流程固定为「财务 → 管理员」两级；「允许撤回」「允许同人审批」是固定值，不是配置。
 
 **关键约束（来自需求，不可省）:** 在途实例必须保存流程快照，**修改配置不得静默改变既有实例**。
 
 **验收标准:** pgTAP「改配置不改变在途实例」；3 级流程可跑通；两个开关各有效。
+
+**完成情况（2026-11-15，数据库层）:** `20261115000003_approval_flow_config.sql`。
+按机构配置（`organization_approval_flows`，1~3 级，每级用「需要的权限」表达而非角色名）；
+申请创建时把生效配置快照进 `flow_snapshot`，引擎只读快照、永不回读配置表；旧行无快照按默认 2 级处理，
+行为与改造前一致。`allowWithdraw = false` 用错误码 `WITHDRAW_NOT_ALLOWED`，不抛异常（流程拒绝 ≠ 故障）。
+
+验证：`db:local:verify` **32 个测试文件全绿**，新增 `approval_flow_config.sql` 14 条断言 ——
+核心一对是「先按 2 级提交 → 配置改为 3 级 → 该申请快照仍 2 级且真的只用 2 级终审通过」＋「改后新提交才是 3 级」，
+另覆盖两个开关各自生效。详见 `.harness/journal/2026-11-15-c1-approval-flow-config.md`。
+
+**未做:** 配置读写端点（`GET/PUT /api/v1/approvals/flow`）与设置页；契约层 `ApprovalFlow` schema 待端点定稿后一起加（避免两处定义漂移）。
 
 **规模:** L
 
