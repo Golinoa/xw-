@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { listQuerySchema, pagedResponseSchema } from './pagination';
+import {
+  DEFAULT_PAGE_SIZE,
+  pageNumberSchema,
+  pageSizeSchema,
+  pagedResponseSchema,
+  listQuerySchema,
+} from './pagination';
 
 /**
  * 客户主数据契约（R-CUSTOMER-01、R-MASTER-01）。
@@ -227,6 +233,41 @@ export const customerDeletedResponseSchema = z.object({
 export const customerRestoredResponseSchema = z.object({
   restoredCustomerId: z.string().min(1),
 });
+
+/**
+ * 回收站条目。
+ *
+ * 不复用 `customerListItemSchema`：列表项带的是 `updatedAt`（最近编辑），
+ * 回收站关心的是 `deletedAt`（什么时候删的）；混用字段会让前端以为能按编辑时间排序。
+ * 敏感字段同样只给掩码——回收站不需要原值，能少暴露一次就少一次。
+ */
+export const customerRecycleBinItemSchema = z.object({
+  id: z.string().min(1),
+  name: z.string(),
+  phoneMasked: z.string().optional(),
+  emailMasked: z.string().optional(),
+  sourceName: z.string().optional(),
+  tags: z.array(customerTagSchema),
+  createdAt: z.string(),
+  deletedAt: z.string(),
+});
+export type CustomerRecycleBinItem = z.infer<typeof customerRecycleBinItemSchema>;
+
+/**
+ * 回收站查询：只有分页与关键字。
+ *
+ * 不给排序白名单——回收站唯一的合理顺序是「最近删的在前」（`deleted_at desc`），
+ * 让调用方选排序只会多一个需要校验的入口。
+ */
+export const customerRecycleBinQuerySchema = z.object({
+  page: pageNumberSchema.default(1),
+  pageSize: pageSizeSchema.default(DEFAULT_PAGE_SIZE),
+  keyword: z.string().trim().max(100).optional(),
+});
+export type CustomerRecycleBinQuery = z.infer<typeof customerRecycleBinQuerySchema>;
+
+export const customerRecycleBinResponseSchema = pagedResponseSchema(customerRecycleBinItemSchema);
+export type CustomerRecycleBinResponse = z.infer<typeof customerRecycleBinResponseSchema>;
 
 export type CreateCustomerRequest = z.infer<typeof createCustomerRequestSchema>;
 export type UpdateCustomerRequest = z.infer<typeof updateCustomerRequestSchema>;

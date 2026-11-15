@@ -172,22 +172,36 @@
 
 ### B2 客户回收站与 `restore` 权限
 
-- [ ] 新增 `customer.restore` / `order.restore` 权限 + 专用 SELECT 策略 + 恢复端点 + 回收站页
+- [x] 新增 `customer.restore` / `order.restore` 权限 + 专用 SELECT 策略 + 恢复端点 + 回收站页
 
-> **进度（2026-11-15）：数据库 + 契约 + 客户恢复端点已完成；剩回收站页与订单恢复。**
-> `20261115000002_restore_permissions.sql`：两个权限码（仅 admin）+
+> **进度（2026-11-15）：全部完成（订单恢复端点除外，见末段）。**
+>
+> **第一步（数据库）**：`20261115000002_restore_permissions.sql`：两个权限码（仅 admin）+
 > `customers_select_restorable` / `orders_select_restorable` 两条「读已删除」策略 +
 > `restore_customer` / `restore_order` 两个函数。`permissions.ts` 与快照同步更新。
-> 端点：`POST /api/customers/:customerId/restore`（`CUSTOMER_RESTORE` 权限，返回 `restoredCustomerId`）；
-> 服务层走 RPC 而不是直接 PATCH —— 已删除行被 SELECT 策略隐藏，直接 PATCH 连自己刚删的那行都看不见。
-> 不在回收站里一律 404，不区分「没删过 / 不存在 / 别家组织」，否则等于泄露 ID 是否存在。
 >
-> **验证（全门禁已可跑）**：pgTAP 31 文件全绿（`restore_permissions.sql` 12 条断言）；
-> 单测 **60 文件 / 789 用例**；类型检查（api + web）；eslint + CSS token；HTTP 集成 **21 文件 / 380 用例**。
+> **第二步（客户恢复端点）**：`POST /api/customers/:customerId/restore`（`CUSTOMER_RESTORE`，返回
+> `restoredCustomerId`）；服务层走 RPC 而不是直接 PATCH —— 已删除行被 SELECT 策略隐藏，
+> 直接 PATCH 连自己刚删的那行都看不见。不在回收站里一律 404，不区分「没删过 / 不存在 / 别家组织」。
 >
-> **未做**：①回收站页面；②**订单恢复端点**——业务端根本没有删除订单的入口（`routes.ts` 里没有
+> **第三步（回收站列表 + 页面）**：`GET /api/customers/recycle-bin`（`customer.restore`，
+> 分页 + 关键字，`deleted_at desc`，只返回掩码字段）；`CustomerRecycleBinView.vue` +
+> 路由 `customers/recycle-bin` + 客户列表页右上角「回收站」入口（仅 admin 可见）。
+> 回收站与正常列表拆成 `list` / `listDeleted` 两个仓储方法 —— 两者可见性由**不同 RLS 策略**授权，
+> 合并会在仓储层做权限分流，漏判就会让删掉的客户混进正常列表（有专门一条测试断言两者不混用）。
+>
+> **验证**：pgTAP **33 文件全绿**（`restore_permissions.sql` 12 条断言）；单测 **60 文件 / 799 用例**；
+> 类型检查（api + web）；eslint + CSS token；HTTP 集成 **21 文件 / 380 用例**。
+> 见 `.harness/journal/2026-11-15-b2-restore-permissions.md` 与 `2026-11-15-b2-recycle-bin-page.md`。
+>
+> **未做（已定）：订单恢复端点 / 订单回收站页**——业务端没有删除订单的入口（`routes.ts` 里没有
 > `deleteOrder`），给一个「恢复不存在状态」的端点只会成为死接口，留到订单删除接入时一起做。
-> 见 `.harness/journal/2026-11-15-b2-restore-permissions.md`。
+>
+> **未做（口径已改判）：订单 `restore` 动作不改用 `order.restore`。**
+> 状态机的 `restore` 是「已取消 → 原状态」，处理的是**业务状态**，不是 `deleted_at` 意义上的删除；
+> 若改用 `order.restore`（当前只有 admin 有），计调员就再也无法自助恢复被取消的订单，
+> 这是权限口径的业务变更，不是本卡能顺带决定的。`20261029000004` 的注释约束的是「读已删除行」，
+> 两者不冲突。真要收紧，单开一张卡讨论。
 
 **现状证据:**
 - `customers` 有 `deleted_at`，RLS 已隐藏，但**没有恢复入口**——软删等于单向。

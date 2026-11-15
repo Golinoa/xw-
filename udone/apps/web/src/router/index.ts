@@ -27,6 +27,11 @@ export function createAppRouter(
             component: () => import('../views/customers/CustomerListView.vue'),
           },
           {
+            path: 'customers/recycle-bin',
+            name: 'customer-recycle-bin',
+            component: () => import('../views/customers/CustomerRecycleBinView.vue'),
+          },
+          {
             path: 'orders',
             name: 'orders',
             component: () => import('../views/orders/OrderListView.vue'),

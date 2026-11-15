@@ -8,6 +8,8 @@ import {
   customerListQuerySchema,
   customerListResponseSchema,
   customerParamsSchema,
+  customerRecycleBinQuerySchema,
+  customerRecycleBinResponseSchema,
   customerResponseSchema,
   customerRestoredResponseSchema,
   customerSourceDeletedResponseSchema,
@@ -361,6 +363,20 @@ export const ROUTES = {
     path: '/api/customers',
     request: createCustomerRequestSchema,
     response: createCustomerResponseSchema,
+  }),
+  /**
+   * 回收站列表。独立路径而不是给 `listCustomers` 加 `includeDeleted`：
+   * 「能读已删除」绑定的是 `customer.restore`，与列表的 `customer.read` 是两种权限，
+   * 塞进同一个端点就得在服务端按权限分流同一个查询。
+   *
+   * 注册顺序也有讲究：必须排在 `/api/customers/:customerId` 之前，
+   * 否则 `recycle-bin` 会被当成客户 ID。
+   */
+  listDeletedCustomers: defineRoute({
+    method: 'GET',
+    path: '/api/customers/recycle-bin',
+    request: customerRecycleBinQuerySchema,
+    response: customerRecycleBinResponseSchema,
   }),
   getCustomer: defineRoute({
     method: 'GET',

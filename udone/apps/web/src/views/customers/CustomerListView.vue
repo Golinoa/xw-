@@ -48,6 +48,8 @@ const permissions = computed<readonly Permission[]>(() => {
 const canRead = computed(() => permissions.value.includes(PERMISSIONS.CUSTOMER_READ));
 /** 隐藏入口只影响体验：服务端与 RLS 仍按 customer.write 独立校验。 */
 const canWrite = computed(() => permissions.value.includes(PERMISSIONS.CUSTOMER_WRITE));
+/** 回收站入口同上：能读已删除数据绑定的是 customer.restore，不是 customer.read。 */
+const canRestore = computed(() => permissions.value.includes(PERMISSIONS.CUSTOMER_RESTORE));
 
 function firstQueryValue(value: unknown): string | undefined {
   if (typeof value === 'string') return value;
@@ -363,6 +365,7 @@ async function onDeleted() {
       </div>
       <a-space>
         <a-button :loading="listStatus === 'loading'" @click="load">刷新</a-button>
+        <a-button v-if="canRestore" @click="router.push('/customers/recycle-bin')">回收站</a-button>
         <a-button v-if="canWrite" type="primary" @click="openCreate">新建客户</a-button>
       </a-space>
     </header>

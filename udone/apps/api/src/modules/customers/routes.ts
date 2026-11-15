@@ -9,6 +9,7 @@ import {
   createCustomerTagRequestSchema,
   customerListQuerySchema,
   customerParamsSchema,
+  customerRecycleBinQuerySchema,
   customerSourceParamsSchema,
   updateCustomerRequestSchema,
   updateCustomerSourceRequestSchema,
@@ -175,6 +176,45 @@ customerRoutes.post(
       },
       201,
     );
+  },
+);
+
+/**
+ * 回收站列表。
+ *
+ * 权限用 `customer.restore` 而不是 `customer.read`：能读已删除数据与能恢复是同一种能力，
+ * 拆开只会多一条没有界面管控的读通道（正是 `20261029000004` 注释里说的口径）。
+ *
+ * 这条路由必须在 `/api/customers/:customerId` 之前注册，否则 `recycle-bin` 会被当成 ID。
+ */
+customerRoutes.get(
+  ROUTES.listDeletedCustomers.path,
+  requireAuth(),
+  requirePermission(PERMISSIONS.CUSTOMER_RESTORE),
+  async (context) => {
+    const query = parseQuery(context, customerRecycleBinQuerySchema);
+    const auth = context.get('auth');
+    const page = await repository(context).listDeleted({
+      organizationId: auth.organizationId,
+      keyword: query.keyword,
+      page: query.page,
+      pageSize: query.pageSize,
+    });
+    return respond(context, 'listDeletedCustomers', {
+      items: page.items.map((record) => ({
+        id: record.id,
+        name: record.name,
+        ...(record.phone ? { phoneMasked: maskPhone(record.phone) } : {}),
+        ...(record.email ? { emailMasked: maskEmail(record.email) } : {}),
+        ...(record.sourceName ? { sourceName: record.sourceName } : {}),
+        tags: record.tags,
+        createdAt: record.createdAt,
+        deletedAt: record.deletedAt,
+      })),
+      total: page.total,
+      page: query.page,
+      pageSize: query.pageSize,
+    });
   },
 );
 

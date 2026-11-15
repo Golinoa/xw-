@@ -50,6 +50,7 @@ function record(overrides: Partial<CustomerRecord> = {}): CustomerRecord {
 function repositoryStub(overrides: Partial<CustomerRepository> = {}): CustomerRepository {
   return {
     list: vi.fn().mockResolvedValue({ items: [], total: 0 }),
+    listDeleted: vi.fn().mockResolvedValue({ items: [], total: 0 }),
     findById: vi.fn().mockResolvedValue(null),
     findDuplicatesByPhone: vi.fn().mockResolvedValue([]),
     create: vi.fn(),
@@ -429,6 +430,83 @@ describe('customer routes', () => {
     );
 
     expect(response.status).toBe(404);
+  });
+
+  describe('customer recycle bin', () => {
+    const deletedRecord = {
+      id: 'cust-9',
+      name: '李四',
+      phone: '13900139000',
+      email: 'lisi@example.com',
+      sourceId: 'src-1',
+      sourceName: '线上渠道',
+      tags: [{ id: 'tag-1', name: 'VIP' }],
+      createdAt: '2026-10-01T00:00:00Z',
+      deletedAt: '2026-10-20T08:00:00Z',
+    };
+
+    it('lists deleted customers with masked contact data and the deletion time', async () => {
+      const listDeleted = vi.fn().mockResolvedValue({ items: [deletedRecord], total: 1 });
+      const { testApp, env } = setup(repositoryStub({ listDeleted }));
+
+      const response = await testApp.request(
+        '/api/customers/recycle-bin?page=2&pageSize=20&keyword=李',
+        { headers: authHeaders },
+        env,
+      );
+
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toEqual({
+        items: [
+          {
+            id: 'cust-9',
+            name: '李四',
+            phoneMasked: '139****9000',
+            emailMasked: 'li***@example.com',
+            sourceName: '线上渠道',
+            tags: [{ id: 'tag-1', name: 'VIP' }],
+            createdAt: '2026-10-01T00:00:00Z',
+            deletedAt: '2026-10-20T08:00:00Z',
+          },
+        ],
+        total: 1,
+        page: 2,
+        pageSize: 20,
+      });
+      expect(listDeleted).toHaveBeenCalledWith({
+        organizationId: 'org-alpha',
+        keyword: '李',
+        page: 2,
+        pageSize: 20,
+      });
+    });
+
+    it('keeps the recycle bin and the active list on separate queries', async () => {
+      // 两个查询的可见性由不同 RLS 策略授权，合并会让「删掉的客户」混进正常列表。
+      const list = vi.fn().mockResolvedValue({ items: [], total: 0 });
+      const listDeleted = vi.fn().mockResolvedValue({ items: [], total: 0 });
+      const { testApp, env } = setup(repositoryStub({ list, listDeleted }));
+
+      await testApp.request('/api/customers/recycle-bin', { headers: authHeaders }, env);
+
+      expect(listDeleted).toHaveBeenCalledTimes(1);
+      expect(list).not.toHaveBeenCalled();
+    });
+
+    it('rejects the recycle bin for someone without customer.restore', async () => {
+      // 仍然是那条口径：能读已删除 = 能恢复。有 customer.read 不代表能看回收站。
+      const listDeleted = vi.fn().mockResolvedValue({ items: [], total: 0 });
+      const { testApp, env } = setup(repositoryStub({ listDeleted }), financeIdentity);
+
+      const response = await testApp.request(
+        '/api/customers/recycle-bin',
+        { headers: authHeaders },
+        env,
+      );
+
+      expect(response.status).toBe(403);
+      expect(listDeleted).not.toHaveBeenCalled();
+    });
   });
 
   describe('customer sources', () => {

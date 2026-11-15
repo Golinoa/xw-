@@ -17,6 +17,7 @@ import { sanitizeKeyword } from '../../lib/postgrest';
  */
 
 const LIST_COLUMNS = 'id,name,phone,email,source_id,created_at,updated_at';
+const RECYCLE_BIN_COLUMNS = 'id,name,phone,email,source_id,created_at,deleted_at';
 const DETAIL_COLUMNS =
   'id,name,phone,email,id_type,id_number,birthday,source_id,remark,version,created_by,created_at,updated_at';
 
@@ -44,6 +45,17 @@ type CustomerRow = {
 
 type TagRow = { id: string; name: string; color: string | null };
 type SourceRow = { id: string; name: string };
+
+/** 回收站只取这几列：详情字段（证件号、生日）已删的数据没必要再读。 */
+type DeletedCustomerRow = {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  source_id: string | null;
+  created_at: string;
+  deleted_at: string;
+};
 
 /** 来源主数据的完整行，与只取名字的 SourceRow 分开，避免列表接口漏字段。 */
 type CustomerSourceRow = {
@@ -85,6 +97,32 @@ export interface CustomerListFilter {
   order: SortOrder;
   /** 数据范围为 own 的角色（计调员）只能看到自己创建的客户。 */
   ownerUserId?: string;
+}
+
+/**
+ * 回收站查询条件。
+ *
+ * 没有 `sort` / `order`：回收站唯一的合理顺序是「最近删的在前」，
+ * 排序写在仓储里，不在契约里开一个只能选一项的白名单。
+ */
+export interface CustomerRecycleBinFilter {
+  organizationId: string;
+  keyword?: string;
+  page: number;
+  pageSize: number;
+}
+
+/** 回收站条目：在列表项基础上把 `updatedAt` 换成 `deletedAt`。 */
+export interface DeletedCustomerRecord {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  sourceId?: string;
+  sourceName?: string;
+  tags: CustomerTag[];
+  createdAt: string;
+  deletedAt: string;
 }
 
 /** 创建时空值统一落库为 NULL，`null` 与缺失等价（契约层两种情况都允许）。 */
@@ -132,6 +170,16 @@ export interface CustomerSourceUpdateInput {
 
 export interface CustomerRepository {
   list(filter: CustomerListFilter): Promise<{ items: CustomerRecord[]; total: number }>;
+  /**
+   * 回收站列表（只看已软删除的）。
+   *
+   * 与 `list` 分开而不是加一个 `includeDeleted` 开关：两个查询的可见性由**不同 RLS 策略**
+   * 授权（`customers_select_scoped` 要求 `deleted_at IS NULL`，`customers_select_restorable`
+   * 只认 `customer.restore`），合并成一个方法就等于在仓储层做权限分流。
+   */
+  listDeleted(
+    filter: CustomerRecycleBinFilter,
+  ): Promise<{ items: DeletedCustomerRecord[]; total: number }>;
   findById(organizationId: string, customerId: string): Promise<CustomerRecord | null>;
   findDuplicatesByPhone(organizationId: string, phone: string): Promise<CustomerRecord[]>;
   create(input: CustomerCreateInput): Promise<CustomerRecord>;
@@ -313,7 +361,7 @@ export function createSupabaseCustomerRepository(
 
   async function loadSourceNames(
     organizationId: string,
-    rows: CustomerRow[],
+    rows: Array<{ source_id: string | null }>,
   ): Promise<Map<string, string>> {
     const sourceIds = [
       ...new Set(rows.map((row) => row.source_id).filter((id): id is string => !!id)),
@@ -411,6 +459,56 @@ export function createSupabaseCustomerRepository(
       organizationId: filter.organizationId,
     });
     return { items: await decorate(filter.organizationId, page.rows), total: page.total };
+  }
+
+  /**
+   * 回收站列表。
+   *
+   * `deleted_at=not.is.null` 是这条查询的全部语义：能看见这些行靠的是
+   * `customers_select_restorable` 策略（要求 `customer.restore`），
+   * 仓储层不再做权限判断——权限只在路由与服务端函数里判一次。
+   */
+  async function listDeleted(
+    filter: CustomerRecycleBinFilter,
+  ): Promise<{ items: DeletedCustomerRecord[]; total: number }> {
+    const query = new URLSearchParams();
+    query.set('organization_id', `eq.${filter.organizationId}`);
+    query.set('deleted_at', 'not.is.null');
+    query.set('select', RECYCLE_BIN_COLUMNS);
+    query.set('order', 'deleted_at.desc');
+    query.set('limit', String(filter.pageSize));
+    query.set('offset', String((filter.page - 1) * filter.pageSize));
+
+    const keyword = filter.keyword ? sanitizeKeyword(filter.keyword) : '';
+    if (keyword) {
+      const pattern = `*${keyword}*`;
+      query.set('or', `(name.ilike.${pattern},phone.ilike.${pattern})`);
+    }
+
+    const page = await client.restPage<DeletedCustomerRow>(`customers?${query.toString()}`, {
+      organizationId: filter.organizationId,
+    });
+    if (page.rows.length === 0) return { items: [], total: page.total };
+
+    const [tags, sources] = await Promise.all([
+      loadTags(
+        filter.organizationId,
+        page.rows.map((row) => row.id),
+      ),
+      loadSourceNames(filter.organizationId, page.rows),
+    ]);
+    const items = page.rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      phone: optional(row.phone),
+      email: optional(row.email),
+      sourceId: row.source_id ?? undefined,
+      sourceName: row.source_id ? sources.get(row.source_id) : undefined,
+      tags: tags.get(row.id) ?? [],
+      createdAt: row.created_at,
+      deletedAt: row.deleted_at,
+    }));
+    return { items, total: page.total };
   }
 
   async function create(input: CustomerCreateInput): Promise<CustomerRecord> {
@@ -660,6 +758,7 @@ export function createSupabaseCustomerRepository(
 
   return {
     list,
+    listDeleted,
     findById,
     findDuplicatesByPhone: async (organizationId, phone) => {
       const digits = phone.replace(/\D/g, '');
