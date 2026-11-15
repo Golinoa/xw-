@@ -168,6 +168,14 @@ export const customerDeletedResponseSchema = z.object({
   deletedCustomerId: z.string().min(1),
 });
 
+/**
+ * 回收站恢复回执。与删除对称：返回被恢复的 ID，
+ * 调用方据此刷新列表，不必再猜「恢复的是哪一条」。
+ */
+export const customerRestoredResponseSchema = z.object({
+  restoredCustomerId: z.string().min(1),
+});
+
 export type CreateCustomerRequest = z.infer<typeof createCustomerRequestSchema>;
 export type UpdateCustomerRequest = z.infer<typeof updateCustomerRequestSchema>;
 export type CustomerResponse = z.infer<typeof customerResponseSchema>;

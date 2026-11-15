@@ -41,11 +41,34 @@ admin 有这个权限，两条断言必然变红。按新意图调整为：
 - `permissions.test.ts` 快照已按意图更新（PERMISSIONS 15 条、admin 15 条），
   用文本比对确认与常量一致；**该文件本身没跑**（本机缺 vitest）。
 
-## 未做（第二步，卡环境）
+## 第二步：客户恢复端点（2026-11-15 下午，依赖装好后）
 
-- **恢复端点**（`POST /api/v1/customers/{id}/restore`、订单同名）与 `routes.ts` 条目；
+`POST /api/customers/:customerId/restore` —— `CUSTOMER_RESTORE` 权限，返回 `{ restoredCustomerId }`。
+
+三个实现决定：
+
+1. **走 RPC 而不是像 softDelete 那样直接 PATCH**。已删除的行被 SELECT 策略隐藏，
+   直接 PATCH `deleted_at=not.is.null` 连自己刚删的那一行都看不见；
+   `restore_customer` 是 `SECURITY DEFINER`，权限判定在函数内部，绕开这个死结。
+2. **不在回收站里一律 404**，不区分「没删过 / 不存在 / 别家组织」——
+   区分等于告诉调用方某个 ID 是否存在，而这个 ID 他本来就读不到。
+3. **订单恢复端点没做**。业务端根本没有删除订单的入口（`routes.ts` 里没有 `deleteOrder`），
+   给一个「恢复一种到不了的状态」的端点只会成为死接口。等订单删除接入时一起做。
+
+## 验证（全部门禁此时已可跑）
+
+| 门禁 | 结果 |
+| --- | --- |
+| `db:local:verify`（pgTAP） | 31 文件全绿 |
+| 单元测试 | **60 文件 / 789 用例** |
+| 类型检查（api + web） | 0 错误 |
+| eslint + CSS token | 通过 |
+| HTTP 集成（PostgREST） | **21 文件 / 380 用例** |
+
+客户模块新增 3 条单测：恢复成功、**有 customer.write 但没有 customer.restore 时 403**、
+不在回收站时 404。中间那条是这张卡的要害——恢复不是写权限的延伸。
+
+## 仍未做
+
 - **回收站页面**（R-ORDER-03 的一部分）；
-- 这两项都要改 `routes.ts` 与路由一致性守卫，而本机跑不了 vitest，
-  改了就无法验证「契约与实现一一对应」。等依赖装好后一起做。
-
-现状是：数据库已经具备「读已删除 + 恢复」的完整能力并有断言，缺的只是把它暴露成 HTTP。
+- **订单恢复端点**（理由见上）。

@@ -11,7 +11,7 @@ const adminIdentity: AuthContext = {
   organizationId: 'org-alpha',
   role: 'admin',
   sessionId: 'session-1',
-  permissions: ['customer.read', 'customer.write', 'customer.sensitive.read'],
+  permissions: ['customer.read', 'customer.write', 'customer.sensitive.read', 'customer.restore'],
   dataScope: 'all',
 };
 
@@ -55,6 +55,7 @@ function repositoryStub(overrides: Partial<CustomerRepository> = {}): CustomerRe
     create: vi.fn(),
     update: vi.fn(),
     softDelete: vi.fn().mockResolvedValue(false),
+    restore: vi.fn().mockResolvedValue(false),
     assertTagsBelongToOrganization: vi.fn().mockResolvedValue(undefined),
     listTags: vi.fn().mockResolvedValue([]),
     createTag: vi.fn(),
@@ -379,6 +380,47 @@ describe('customer routes', () => {
     const response = await testApp.request(
       '/api/customers/cust-1',
       { method: 'DELETE', headers: authHeaders },
+      env,
+    );
+
+    expect(response.status).toBe(404);
+  });
+
+  it('restores a customer from the recycle bin and reports the identifier', async () => {
+    const { testApp, env } = setup(repositoryStub({ restore: vi.fn().mockResolvedValue(true) }));
+
+    const response = await testApp.request(
+      '/api/customers/cust-1/restore',
+      { method: 'POST', headers: authHeaders },
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ restoredCustomerId: 'cust-1' });
+  });
+
+  it('rejects restore for someone without customer.restore', async () => {
+    // 有 customer.write 也不行：恢复是与「读已删除」绑定的能力，不是写权限的延伸。
+    const { testApp, env } = setup(
+      repositoryStub({ restore: vi.fn().mockResolvedValue(true) }),
+      { ...adminIdentity, permissions: ['customer.read', 'customer.write'] },
+    );
+
+    const response = await testApp.request(
+      '/api/customers/cust-1/restore',
+      { method: 'POST', headers: authHeaders },
+      env,
+    );
+
+    expect(response.status).toBe(403);
+  });
+
+  it('reports 404 when the customer is not in the recycle bin', async () => {
+    const { testApp, env } = setup(repositoryStub());
+
+    const response = await testApp.request(
+      '/api/customers/cust-1/restore',
+      { method: 'POST', headers: authHeaders },
       env,
     );
 

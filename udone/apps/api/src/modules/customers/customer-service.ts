@@ -118,6 +118,8 @@ export interface CustomerRepository {
     patch: CustomerUpdateInput,
   ): Promise<CustomerRecord | null>;
   softDelete(organizationId: string, customerId: string, actorId: string): Promise<boolean>;
+  /** 从回收站恢复；返回 false 表示该 ID 不在回收站里（没删过或不存在）。 */
+  restore(organizationId: string, customerId: string): Promise<boolean>;
   assertTagsBelongToOrganization(organizationId: string, tagIds: string[]): Promise<void>;
   listTags(organizationId: string): Promise<CustomerTag[]>;
   createTag(organizationId: string, name: string, color?: string): Promise<CustomerTag>;
@@ -452,6 +454,22 @@ export function createSupabaseCustomerRepository(
     return true;
   }
 
+  /**
+   * 从回收站恢复。
+   *
+   * 走 RPC 而不是像 softDelete 那样直接 PATCH：已删除的行被 SELECT 策略隐藏，
+   * 直接 PATCH 连自己刚删的那一行都看不见；而 restore_customer 是 SECURITY DEFINER，
+   * 权限判定在函数内部（customer.restore），绕开「看不见就读不到」的死结。
+   */
+  async function restore(organizationId: string, customerId: string): Promise<boolean> {
+    const restoredId = await client.rest<string | null>('rpc/restore_customer', {
+      method: 'POST',
+      organizationId,
+      body: { requested_customer_id: customerId },
+    });
+    return Boolean(restoredId);
+  }
+
   async function assertTagsBelongToOrganization(
     organizationId: string,
     tagIds: string[],
@@ -511,6 +529,7 @@ export function createSupabaseCustomerRepository(
     create,
     update,
     softDelete,
+    restore,
     assertTagsBelongToOrganization,
     listTags,
     createTag,

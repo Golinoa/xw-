@@ -9,6 +9,7 @@ import {
   customerListResponseSchema,
   customerParamsSchema,
   customerResponseSchema,
+  customerRestoredResponseSchema,
   customerTagListResponseSchema,
   customerTagResponseSchema,
   updateCustomerRequestSchema,
@@ -372,6 +373,16 @@ export const ROUTES = {
     path: '/api/customers/:customerId',
     request: customerParamsSchema,
     response: customerDeletedResponseSchema,
+  }),
+  /**
+   * 回收站恢复。与删除对称，用 POST + 子路径表达「对既有资源施加一个动作」，
+   * 而不是把已删除资源当成可 PATCH 的对象 —— 后者会让「改已删数据」也走同一条路。
+   */
+  restoreCustomer: defineRoute({
+    method: 'POST',
+    path: '/api/customers/:customerId/restore',
+    request: customerParamsSchema,
+    response: customerRestoredResponseSchema,
   }),
   listCustomerTags: defineRoute({
     method: 'GET',

@@ -174,14 +174,20 @@
 
 - [ ] 新增 `customer.restore` / `order.restore` 权限 + 专用 SELECT 策略 + 恢复端点 + 回收站页
 
-> **进度（2026-11-15）：数据库与契约已完成，端点与页面待做。**
+> **进度（2026-11-15）：数据库 + 契约 + 客户恢复端点已完成；剩回收站页与订单恢复。**
 > `20261115000002_restore_permissions.sql`：两个权限码（仅 admin）+
 > `customers_select_restorable` / `orders_select_restorable` 两条「读已删除」策略 +
 > `restore_customer` / `restore_order` 两个函数。`permissions.ts` 与快照同步更新。
-> 验证：`db:local:verify` 31 个文件全绿，新增 `restore_permissions.sql` **12 条断言**；
-> `tsc --noEmit` 0 错误。**未做**：恢复端点（要改 `routes.ts` 与路由一致性守卫）与回收站页
-> —— 本机缺 vitest，改了无法验证契约与实现一一对应。见 `.harness/journal/2026-11-15-b2-restore-permissions.md`。
-> 另：`customer_rls.sql` 两条按旧口径写死的断言已按新意图调整（admin 现在有此权限）。
+> 端点：`POST /api/customers/:customerId/restore`（`CUSTOMER_RESTORE` 权限，返回 `restoredCustomerId`）；
+> 服务层走 RPC 而不是直接 PATCH —— 已删除行被 SELECT 策略隐藏，直接 PATCH 连自己刚删的那行都看不见。
+> 不在回收站里一律 404，不区分「没删过 / 不存在 / 别家组织」，否则等于泄露 ID 是否存在。
+>
+> **验证（全门禁已可跑）**：pgTAP 31 文件全绿（`restore_permissions.sql` 12 条断言）；
+> 单测 **60 文件 / 789 用例**；类型检查（api + web）；eslint + CSS token；HTTP 集成 **21 文件 / 380 用例**。
+>
+> **未做**：①回收站页面；②**订单恢复端点**——业务端根本没有删除订单的入口（`routes.ts` 里没有
+> `deleteOrder`），给一个「恢复不存在状态」的端点只会成为死接口，留到订单删除接入时一起做。
+> 见 `.harness/journal/2026-11-15-b2-restore-permissions.md`。
 
 **现状证据:**
 - `customers` 有 `deleted_at`，RLS 已隐藏，但**没有恢复入口**——软删等于单向。

@@ -259,6 +259,23 @@ customerRoutes.delete(
   },
 );
 
+customerRoutes.post(
+  ROUTES.restoreCustomer.path,
+  requireAuth(),
+  requirePermission(PERMISSIONS.CUSTOMER_RESTORE),
+  async (context) => {
+    const { customerId } = parseParams(context, customerParamsSchema);
+    const auth = context.get('auth');
+    const restored = await repository(context).restore(auth.organizationId, customerId);
+    if (!restored) {
+      // 不在回收站里（没删过 / 不存在 / 属于别的组织）一律 404：
+      // 区分这三种情况等于告诉调用方「这个 ID 是否存在」，而它本来就读不到。
+      throw new ApiHttpError(404, ERROR_CODES.NOT_FOUND, 'Customer is not in the recycle bin');
+    }
+    return respond(context, 'restoreCustomer', { restoredCustomerId: customerId });
+  },
+);
+
 customerRoutes.get(
   ROUTES.listCustomerTags.path,
   requireAuth(),
