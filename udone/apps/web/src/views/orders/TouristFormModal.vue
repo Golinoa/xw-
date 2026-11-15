@@ -115,6 +115,7 @@ async function submit() {
         params: { orderId: props.orderId, touristId: props.tourist.id },
         body: {
           name,
+          personType: form.personType,
           age: form.age ?? null,
           gender: form.gender,
           remark: form.remark.trim() || null,
