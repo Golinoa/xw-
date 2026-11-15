@@ -230,9 +230,24 @@
 
 ### C2 R-MASTER-01 客户来源维护
 
-- [ ] CRUD 端点 + 客户表单下拉（含二级来源）
+- [x] CRUD 端点 + 客户表单下拉（含二级来源）
 
 **现状证据:** `customer_sources` 只有建表、RLS、复合外键与两级唯一索引，**无任何 API、无下拉**。客户表单里 `source_id` 无法选择。
+
+**完成情况（2026-11-15）:**
+- `20261115000004_customer_source_delete.sql`：**表级 `GRANT DELETE` + 删除策略**。
+  ⚠️ 只加策略不够 —— `authenticated` 原本没有表级 DELETE 权限，删除会直接
+  `permission denied`（不是 0 行），接口层会当 500。
+- 四条路由：`GET/POST /api/customer-sources`、`PATCH/DELETE /api/customer-sources/:sourceId`。
+- 两级用「扁平 + parentId」返回，前端按父子平铺成「父 / 子」选项（不用 opt-group：搜索会丢分组）。
+- 不允许改 `parentId`（改层级要防环，低频结构删了重建更安全）。
+- 删除交给外键：被客户引用、或有子来源 → 23503 → **409** 并说明原因。
+
+**验证:** pgTAP **33 文件全绿**（新增 `customer_source_delete.sql` 6 条断言，含「无写权限删除返回 0 行而非报错」）；
+单测 **60 文件 / 796 用例**（客户模块新增 7 条）；类型检查 api+web；eslint+CSS token；HTTP 集成 **21 文件 / 380 用例**。
+详见 `.harness/journal/2026-11-15-c2-customer-sources.md`。
+
+**未做:** 来源管理页（改名/排序/启停界面）；停用来源在编辑历史客户时不会出现在下拉里（仅显示名称）。
 
 **规模:** S/M
 

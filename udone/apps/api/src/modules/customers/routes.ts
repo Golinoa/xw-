@@ -5,10 +5,13 @@ import {
   PERMISSIONS,
   ROUTES,
   createCustomerRequestSchema,
+  createCustomerSourceRequestSchema,
   createCustomerTagRequestSchema,
   customerListQuerySchema,
   customerParamsSchema,
+  customerSourceParamsSchema,
   updateCustomerRequestSchema,
+  updateCustomerSourceRequestSchema,
 } from '@erp/contracts';
 import type { CustomerDetail, CustomerListItem } from '@erp/contracts';
 import { parseJson, parseParams, parseQuery, respond } from '../../lib/contract';
@@ -18,6 +21,7 @@ import { ApiHttpError } from '../../middleware/error-handler';
 import type { CustomerRecord, CustomerRepository } from './customer-service';
 import {
   CustomerConflictError,
+  CustomerSourceConflictError,
   CustomerTagConflictError,
   CustomerTagInvalidError,
   customerRepository,
@@ -90,6 +94,13 @@ function customerError(cause: unknown): unknown {
   }
   if (cause instanceof CustomerTagConflictError) {
     return new ApiHttpError(409, ERROR_CODES.CONFLICT, 'A tag with this name already exists');
+  }
+  if (cause instanceof CustomerSourceConflictError) {
+    return new ApiHttpError(
+      409,
+      ERROR_CODES.CONFLICT,
+      'A source with this name already exists at this level',
+    );
   }
   return cause;
 }
@@ -298,5 +309,87 @@ customerRoutes.post(
         throw customerError(cause);
       });
     return respond(context, 'createCustomerTag', { tag }, 201);
+  },
+);
+
+/* --------------------------------------------------------- 来源主数据 */
+
+customerRoutes.get(
+  ROUTES.listCustomerSources.path,
+  requireAuth(),
+  requirePermission(PERMISSIONS.CUSTOMER_READ),
+  async (context) => {
+    // `includeInactive=1` 给管理页用；客户表单只要启用的，所以默认不含停用项。
+    const includeInactive = context.req.query('includeInactive') === '1';
+    const sources = await repository(context).listSources(
+      context.get('auth').organizationId,
+      includeInactive,
+    );
+    return respond(context, 'listCustomerSources', { sources });
+  },
+);
+
+customerRoutes.post(
+  ROUTES.createCustomerSource.path,
+  requireAuth(),
+  requirePermission(PERMISSIONS.CUSTOMER_WRITE),
+  async (context) => {
+    const input = await parseJson(context, createCustomerSourceRequestSchema);
+    const source = await repository(context)
+      .createSource({
+        organizationId: context.get('auth').organizationId,
+        name: input.name,
+        parentId: input.parentId ?? null,
+        sortOrder: input.sortOrder,
+      })
+      .catch((cause) => {
+        throw customerError(cause);
+      });
+    return respond(context, 'createCustomerSource', { source }, 201);
+  },
+);
+
+customerRoutes.patch(
+  ROUTES.updateCustomerSource.path,
+  requireAuth(),
+  requirePermission(PERMISSIONS.CUSTOMER_WRITE),
+  async (context) => {
+    const { sourceId } = parseParams(context, customerSourceParamsSchema);
+    const input = await parseJson(context, updateCustomerSourceRequestSchema);
+    const source = await repository(context)
+      .updateSource(context.get('auth').organizationId, sourceId, input)
+      .catch((cause) => {
+        throw customerError(cause);
+      });
+    if (!source) {
+      throw new ApiHttpError(404, ERROR_CODES.NOT_FOUND, 'Source not found');
+    }
+    return respond(context, 'updateCustomerSource', { source });
+  },
+);
+
+customerRoutes.delete(
+  ROUTES.deleteCustomerSource.path,
+  requireAuth(),
+  requirePermission(PERMISSIONS.CUSTOMER_WRITE),
+  async (context) => {
+    const { sourceId } = parseParams(context, customerSourceParamsSchema);
+    const result = await repository(context).deleteSource(
+      context.get('auth').organizationId,
+      sourceId,
+    );
+    if (result === 'not_found') {
+      throw new ApiHttpError(404, ERROR_CODES.NOT_FOUND, 'Source not found');
+    }
+    if (result === 'in_use') {
+      // 409 而不是 400：请求本身合法，是当前数据状态不允许。
+      // 文案要让人知道「该先做什么」，否则用户只会反复点删除。
+      throw new ApiHttpError(
+        409,
+        ERROR_CODES.CONFLICT,
+        'Source is used by customers or has child sources',
+      );
+    }
+    return respond(context, 'deleteCustomerSource', { deletedSourceId: sourceId });
   },
 );

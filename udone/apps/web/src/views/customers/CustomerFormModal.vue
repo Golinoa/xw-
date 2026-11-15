@@ -5,6 +5,7 @@ import {
   type CustomerDetail,
   type CustomerDuplicate,
   type CustomerIdType,
+  type CustomerSource,
   type CustomerTag,
   type UpdateCustomerRequest,
 } from '@erp/contracts';
@@ -42,6 +43,33 @@ const form = reactive({
 const isEditing = computed(() => props.customer !== null);
 
 /**
+ * 来源下拉。两级结构用「父 / 子」平铺，而不是 a-select-opt-group：
+ * 选项组在搜索时会丢掉分组语义；用「父 / 子」既看得出层级，
+ * 搜"小红书"也能命中，还不必靠缩进（全角空格会被 lint 拦）。
+ */
+const sources = ref<CustomerSource[]>([]);
+const sourceOptions = computed(() => {
+  const roots = sources.value.filter((source) => !source.parentId);
+  return roots.flatMap((root) => {
+    const children = sources.value.filter((source) => source.parentId === root.id);
+    return [
+      { label: root.name, value: root.id },
+      ...children.map((child) => ({ label: `${root.name} / ${child.name}`, value: child.id })),
+    ];
+  });
+});
+
+async function loadSources() {
+  try {
+    const result = await auth.api.call('listCustomerSources');
+    sources.value = result.sources;
+  } catch {
+    // 来源选不了不该挡住建档：保持空列表，用户可以不填来源。
+    sources.value = [];
+  }
+}
+
+/**
  * 服务端按 `customer.sensitive.read` 决定是否返回证件号原值。只有「有掩码、没原值」
  * 才说明当前账号读不到，此时把证件字段整体当作不可编辑：只回传证件类型而省略号码
  * 会破坏「成对填写」的约束。
@@ -70,6 +98,7 @@ watch(
   () => props.open,
   (open) => {
     if (!open) return;
+    void loadSources();
     const customer = props.customer;
     formError.value = '';
     form.name = customer?.name ?? '';
@@ -269,9 +298,11 @@ function close() {
         <a-form-item label="来源" name="sourceId" class="span-2">
           <a-select
             v-model:value="form.sourceId"
-            disabled
+            :options="sourceOptions"
             allow-clear
-            placeholder="来源维护功能尚未开放"
+            show-search
+            option-filter-prop="label"
+            placeholder="选择客户来源"
           />
         </a-form-item>
         <a-form-item label="标签" name="tagIds" class="span-2">

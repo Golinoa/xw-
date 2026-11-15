@@ -1,4 +1,4 @@
-import type { CustomerIdType, CustomerTag, SortOrder } from '@erp/contracts';
+import type { CustomerIdType, CustomerSource, CustomerTag, SortOrder } from '@erp/contracts';
 import type { ApiEnvironment } from '../../middleware/auth';
 import { RestConflictError, createRestClient } from '../../lib/rest-client';
 import { sanitizeKeyword } from '../../lib/postgrest';
@@ -44,6 +44,17 @@ type CustomerRow = {
 
 type TagRow = { id: string; name: string; color: string | null };
 type SourceRow = { id: string; name: string };
+
+/** 来源主数据的完整行，与只取名字的 SourceRow 分开，避免列表接口漏字段。 */
+type CustomerSourceRow = {
+  id: string;
+  parent_id: string | null;
+  name: string;
+  sort_order: number;
+  is_active: boolean;
+};
+
+const SOURCE_COLUMNS = 'id,parent_id,name,sort_order,is_active';
 
 export interface CustomerRecord {
   id: string;
@@ -93,8 +104,7 @@ export interface CustomerCreateInput {
 /**
  * 更新语义：`undefined` 表示不修改，`null` 表示清空该字段。
  * 没有这个区分，用户填错的手机号或备注就永远删不掉。
- */
-export interface CustomerUpdateInput {
+ */export interface CustomerUpdateInput {
   name?: string;
   phone?: string | null;
   email?: string | null;
@@ -104,6 +114,20 @@ export interface CustomerUpdateInput {
   sourceId?: string | null;
   tagIds?: string[];
   remark?: string | null;
+}
+
+export interface CustomerSourceCreateInput {
+  organizationId: string;
+  name: string;
+  parentId?: string | null;
+  sortOrder?: number;
+}
+
+/** 与客户更新同一套语义：`undefined` 不改。`parentId` 不在其中——改层级会造环。 */
+export interface CustomerSourceUpdateInput {
+  name?: string;
+  sortOrder?: number;
+  isActive?: boolean;
 }
 
 export interface CustomerRepository {
@@ -122,6 +146,19 @@ export interface CustomerRepository {
   restore(organizationId: string, customerId: string): Promise<boolean>;
   assertTagsBelongToOrganization(organizationId: string, tagIds: string[]): Promise<void>;
   listTags(organizationId: string): Promise<CustomerTag[]>;
+  /** 来源主数据：扁平列表（前端按 parentId 分组）。默认只返回启用的，管理场景要全量。 */
+  listSources(organizationId: string, includeInactive?: boolean): Promise<CustomerSource[]>;
+  createSource(input: CustomerSourceCreateInput): Promise<CustomerSource>;
+  updateSource(
+    organizationId: string,
+    sourceId: string,
+    patch: CustomerSourceUpdateInput,
+  ): Promise<CustomerSource | null>;
+  /** `in_use` 表示被客户或子来源引用，外键挡住了删除。 */
+  deleteSource(
+    organizationId: string,
+    sourceId: string,
+  ): Promise<'deleted' | 'not_found' | 'in_use'>;
   createTag(organizationId: string, name: string, color?: string): Promise<CustomerTag>;
 }
 
@@ -137,6 +174,14 @@ export class CustomerTagConflictError extends Error {
   constructor() {
     super('A tag with this name already exists');
     this.name = 'CustomerTagConflictError';
+  }
+}
+
+/** 同一层级里已有同名来源。根来源与子来源各有独立唯一索引，互不干扰。 */
+export class CustomerSourceConflictError extends Error {
+  constructor() {
+    super('A source with this name already exists at this level');
+    this.name = 'CustomerSourceConflictError';
   }
 }
 
@@ -212,6 +257,16 @@ function toRecord(row: CustomerRow, tags: CustomerTag[], sourceName?: string): C
 
 function toTag(row: TagRow): CustomerTag {
   return { id: row.id, name: row.name, color: row.color ?? undefined };
+}
+
+function toSource(row: CustomerSourceRow): CustomerSource {
+  return {
+    id: row.id,
+    parentId: row.parent_id,
+    name: row.name,
+    sortOrder: row.sort_order,
+    isActive: row.is_active,
+  };
 }
 
 function inList(values: string[]): string {
@@ -514,6 +569,95 @@ export function createSupabaseCustomerRepository(
     }
   }
 
+  /* ----------------------------------------------------- 来源主数据 */
+
+  async function listSources(
+    organizationId: string,
+    includeInactive = false,
+  ): Promise<CustomerSource[]> {
+    // 排序放在库里：根按 sort_order，子也按 sort_order；前端只负责按 parentId 分组。
+    const filters = `organization_id=eq.${encodeURIComponent(organizationId)}${
+      includeInactive ? '' : '&is_active=is.true'
+    }`;
+    const rows = await client.rest<CustomerSourceRow[]>(
+      `customer_sources?${filters}&select=${SOURCE_COLUMNS}&order=sort_order.asc,name.asc`,
+      { organizationId },
+    );
+    return rows.map(toSource);
+  }
+
+  async function createSource(input: CustomerSourceCreateInput): Promise<CustomerSource> {
+    try {
+      const rows = await client.rest<CustomerSourceRow[]>('customer_sources', {
+        method: 'POST',
+        organizationId: input.organizationId,
+        headers: { Prefer: 'return=representation' },
+        body: {
+          organization_id: input.organizationId,
+          parent_id: input.parentId ?? null,
+          name: input.name,
+          sort_order: input.sortOrder ?? 0,
+        },
+      });
+      const row = rows[0];
+      if (!row) throw new Error('Customer source creation returned no row');
+      return toSource(row);
+    } catch (cause) {
+      // 唯一索引是「根按组织、子按父」两级，撞名只可能是同一层级内重名。
+      if (cause instanceof RestConflictError) throw new CustomerSourceConflictError();
+      throw cause;
+    }
+  }
+
+  async function updateSource(
+    organizationId: string,
+    sourceId: string,
+    patch: CustomerSourceUpdateInput,
+  ): Promise<CustomerSource | null> {
+    const body: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (patch.name !== undefined) body.name = patch.name;
+    if (patch.sortOrder !== undefined) body.sort_order = patch.sortOrder;
+    if (patch.isActive !== undefined) body.is_active = patch.isActive;
+
+    try {
+      const rows = await client.rest<CustomerSourceRow[]>(
+        `customer_sources?organization_id=eq.${encodeURIComponent(organizationId)}&id=eq.${encodeURIComponent(sourceId)}`,
+        {
+          method: 'PATCH',
+          organizationId,
+          headers: { Prefer: 'return=representation' },
+          body,
+        },
+      );
+      const row = rows[0];
+      return row ? toSource(row) : null;
+    } catch (cause) {
+      if (cause instanceof RestConflictError) throw new CustomerSourceConflictError();
+      throw cause;
+    }
+  }
+
+  async function deleteSource(
+    organizationId: string,
+    sourceId: string,
+  ): Promise<'deleted' | 'not_found' | 'in_use'> {
+    try {
+      const rows = await client.rest<Array<{ id: string }>>(
+        `customer_sources?organization_id=eq.${encodeURIComponent(organizationId)}&id=eq.${encodeURIComponent(sourceId)}`,
+        {
+          method: 'DELETE',
+          organizationId,
+          headers: { Prefer: 'return=representation' },
+        },
+      );
+      return rows.length > 0 ? 'deleted' : 'not_found';
+    } catch (cause) {
+      // 外键是 RESTRICT：被客户引用、或下面还有子来源，都会以 23503 冲突回来。
+      if (cause instanceof RestConflictError) return 'in_use';
+      throw cause;
+    }
+  }
+
   return {
     list,
     findById,
@@ -533,6 +677,10 @@ export function createSupabaseCustomerRepository(
     assertTagsBelongToOrganization,
     listTags,
     createTag,
+    listSources,
+    createSource,
+    updateSource,
+    deleteSource,
   };
 }
 

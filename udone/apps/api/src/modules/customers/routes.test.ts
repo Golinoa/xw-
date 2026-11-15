@@ -4,7 +4,7 @@ import type { AuthContext } from '@erp/contracts';
 import { app } from '../../index';
 import type { ApiEnvironment } from '../../middleware/auth';
 import type { CustomerRecord, CustomerRepository } from './customer-service';
-import { CustomerTagInvalidError } from './customer-service';
+import { CustomerSourceConflictError, CustomerTagInvalidError } from './customer-service';
 
 const adminIdentity: AuthContext = {
   userId: 'user-owner',
@@ -59,6 +59,10 @@ function repositoryStub(overrides: Partial<CustomerRepository> = {}): CustomerRe
     assertTagsBelongToOrganization: vi.fn().mockResolvedValue(undefined),
     listTags: vi.fn().mockResolvedValue([]),
     createTag: vi.fn(),
+    listSources: vi.fn().mockResolvedValue([]),
+    createSource: vi.fn(),
+    updateSource: vi.fn().mockResolvedValue(null),
+    deleteSource: vi.fn().mockResolvedValue('not_found'),
     ...overrides,
   };
 }
@@ -425,5 +429,118 @@ describe('customer routes', () => {
     );
 
     expect(response.status).toBe(404);
+  });
+
+  describe('customer sources', () => {
+    const source = {
+      id: 'src-1',
+      parentId: null,
+      name: '线上渠道',
+      sortOrder: 10,
+      isActive: true,
+    };
+
+    it('lists sources and defaults to active ones only', async () => {
+      const listSources = vi.fn().mockResolvedValue([source]);
+      const { testApp, env } = setup(repositoryStub({ listSources }));
+
+      const response = await testApp.request('/api/customer-sources', { headers: authHeaders }, env);
+
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toEqual({ sources: [source] });
+      expect(listSources).toHaveBeenCalledWith('org-alpha', false);
+    });
+
+    it('passes includeInactive through for the management page', async () => {
+      const listSources = vi.fn().mockResolvedValue([source]);
+      const { testApp, env } = setup(repositoryStub({ listSources }));
+
+      await testApp.request('/api/customer-sources?includeInactive=1', { headers: authHeaders }, env);
+
+      expect(listSources).toHaveBeenCalledWith('org-alpha', true);
+    });
+
+    it('creates a source under a parent and emits 201', async () => {
+      const createSource = vi.fn().mockResolvedValue({ ...source, id: 'src-2', parentId: 'src-1' });
+      const { testApp, env } = setup(repositoryStub({ createSource }));
+
+      const response = await testApp.request(
+        '/api/customer-sources',
+        {
+          method: 'POST',
+          headers: { ...authHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: '小红书', parentId: 'src-1' }),
+        },
+        env,
+      );
+
+      expect(response.status).toBe(201);
+      expect(createSource).toHaveBeenCalledWith({
+        organizationId: 'org-alpha',
+        name: '小红书',
+        parentId: 'src-1',
+        sortOrder: undefined,
+      });
+    });
+
+    it('rejects a duplicate name at the same level with 409', async () => {
+      const createSource = vi.fn().mockRejectedValue(new CustomerSourceConflictError());
+      const { testApp, env } = setup(repositoryStub({ createSource }));
+
+      const response = await testApp.request(
+        '/api/customer-sources',
+        {
+          method: 'POST',
+          headers: { ...authHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: '线上渠道' }),
+        },
+        env,
+      );
+
+      expect(response.status).toBe(409);
+    });
+
+    it('answers 404 when updating a source that is not there', async () => {
+      const { testApp, env } = setup(repositoryStub());
+
+      const response = await testApp.request(
+        '/api/customer-sources/src-x',
+        {
+          method: 'PATCH',
+          headers: { ...authHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isActive: false }),
+        },
+        env,
+      );
+
+      expect(response.status).toBe(404);
+    });
+
+    it('refuses to delete a source that is still referenced, with 409', async () => {
+      const deleteSource = vi.fn().mockResolvedValue('in_use');
+      const { testApp, env } = setup(repositoryStub({ deleteSource }));
+
+      const response = await testApp.request(
+        '/api/customer-sources/src-1',
+        { method: 'DELETE', headers: authHeaders },
+        env,
+      );
+
+      expect(response.status).toBe(409);
+    });
+
+    it('deletes a free source and reports the identifier', async () => {
+      const deleteSource = vi.fn().mockResolvedValue('deleted');
+      const { testApp, env } = setup(repositoryStub({ deleteSource }));
+
+      const response = await testApp.request(
+        '/api/customer-sources/src-1',
+        { method: 'DELETE', headers: authHeaders },
+        env,
+      );
+
+      expect(response.status).toBe(200);
+      await expect(response.json()).resolves.toEqual({ deletedSourceId: 'src-1' });
+    });
   });
 });

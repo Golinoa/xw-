@@ -131,6 +131,58 @@ export const customerTagListResponseSchema = z.object({
   tags: z.array(customerTagSchema),
 });
 
+/**
+ * 客户来源。两级结构：`parentId` 为空是根来源，否则是它下面的子来源。
+ *
+ * 用「扁平 + parentId」而不是嵌套树：前端按 parentId 分组即可，
+ * 而契约一旦嵌套，任何一层的增删都要改递归 schema。
+ */
+export const customerSourceSchema = z.object({
+  id: z.string().min(1),
+  parentId: z.string().min(1).nullable(),
+  name: z.string(),
+  sortOrder: z.number().int(),
+  isActive: z.boolean(),
+});
+export type CustomerSource = z.infer<typeof customerSourceSchema>;
+
+export const customerSourceListResponseSchema = z.object({
+  sources: z.array(customerSourceSchema),
+});
+
+export const customerSourceParamsSchema = z.object({
+  sourceId: z.string().min(1).max(64),
+});
+
+export const createCustomerSourceRequestSchema = z.object({
+  name: z.string().trim().min(1).max(30),
+  /** 不传或 null 表示建根来源。 */
+  parentId: z.string().min(1).max(64).nullable().optional(),
+  sortOrder: z.number().int().min(0).max(9999).optional(),
+});
+export type CreateCustomerSourceRequest = z.infer<typeof createCustomerSourceRequestSchema>;
+
+/**
+ * 改名 / 调序 / 停用。**刻意不允许改 parentId**：
+ * 改父级要额外校验「目标不是自己的后代」，否则会造出环；
+ * 而来源层级是低频结构，删掉重建比在线改层级更安全。
+ */
+export const updateCustomerSourceRequestSchema = z.object({
+  name: z.string().trim().min(1).max(30).optional(),
+  sortOrder: z.number().int().min(0).max(9999).optional(),
+  isActive: z.boolean().optional(),
+});
+export type UpdateCustomerSourceRequest = z.infer<typeof updateCustomerSourceRequestSchema>;
+
+export const customerSourceResponseSchema = z.object({
+  source: customerSourceSchema,
+});
+
+/** 删除回执。与客户删除保持同一形状：返回被删 ID，不做空正文。 */
+export const customerSourceDeletedResponseSchema = z.object({
+  deletedSourceId: z.string().min(1),
+});
+
 export const createCustomerTagRequestSchema = z.object({
   name: z.string().trim().min(1).max(30),
   color: z
