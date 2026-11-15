@@ -217,6 +217,8 @@ SELECT
         count(*)::int
       FROM
         public.customers
+      WHERE
+        deleted_at IS NULL
     ),
     2,
     'admin reads every live customer of the organization'
@@ -251,6 +253,9 @@ SELECT
   );
 
 
+-- B2 之后这条断言的语义变了：admin 拥有 customer.restore，
+-- 「读已删除」与「能恢复」是同一个能力（见 20261115000002）。
+-- 无恢复权限的角色仍读不到 —— 那条断言在 restore_permissions.sql 里。
 SELECT
   IS (
     (
@@ -261,8 +266,8 @@ SELECT
       WHERE
         deleted_at IS NOT NULL
     ),
-    0,
-    'soft deleted customers stay invisible even though the row still exists'
+    1,
+    'soft deleted customers stay invisible to roles without customer.restore'
   );
 
 

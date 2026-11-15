@@ -17,6 +17,8 @@ describe('shared permissions', () => {
       SUPPLIER_WRITE: 'supplier.write',
       FINANCE_WRITE: 'finance.write',
       FINANCE_APPROVE: 'finance.approve',
+      CUSTOMER_RESTORE: 'customer.restore',
+      ORDER_RESTORE: 'order.restore',
     });
     expectTypeOf<Permission>().toEqualTypeOf<
       | 'organization.read'
@@ -32,6 +34,8 @@ describe('shared permissions', () => {
       | 'supplier.write'
       | 'finance.write'
       | 'finance.approve'
+      | 'customer.restore'
+      | 'order.restore'
     >();
   });
 
@@ -51,6 +55,8 @@ describe('shared permissions', () => {
         'supplier.write',
         'finance.write',
         'finance.approve',
+        'customer.restore',
+        'order.restore',
       ],
       dataScope: 'all',
     });

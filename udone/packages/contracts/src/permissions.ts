@@ -20,6 +20,13 @@ export const PERMISSIONS = {
   FINANCE_WRITE: 'finance.write',
   /** 审批收付款申请；终审通过才计入已收/已付。 */
   FINANCE_APPROVE: 'finance.approve',
+  /**
+   * 恢复已删除的客户。这个权限同时决定「能否读到已删除行」——
+   * 读已删除与能恢复是同一个能力，拆开只会多出一条没人用的读通道（B2）。
+   */
+  CUSTOMER_RESTORE: 'customer.restore',
+  /** 恢复已删除的订单，语义同 CUSTOMER_RESTORE。 */
+  ORDER_RESTORE: 'order.restore',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -46,6 +53,8 @@ export const ROLE_AUTHORIZATION = {
       PERMISSIONS.SUPPLIER_WRITE,
       PERMISSIONS.FINANCE_WRITE,
       PERMISSIONS.FINANCE_APPROVE,
+      PERMISSIONS.CUSTOMER_RESTORE,
+      PERMISSIONS.ORDER_RESTORE,
     ],
     dataScope: 'all',
   },

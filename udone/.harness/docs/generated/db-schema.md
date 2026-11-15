@@ -3,11 +3,11 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 38
+- Migration sources scanned: 39
 - Tables discovered: 60
-- Functions discovered: 240
+- Functions discovered: 242
 - Indexes discovered: 90
-- RLS policies discovered: 61
+- RLS policies discovered: 63
 - Triggers discovered: 8
 
 | Migration | Tables | Functions | Indexes | Policies | Triggers |
@@ -50,3 +50,4 @@
 | `20261031000013_ops_exports.sql` | `ops.exports` | `ops.export_type_permission`, `ops.operator_has_permission`, `ops.export_json`, `ops.export_filter_texts`, `ops.create_export`, `ops.list_exports`, `ops.get_export`, `ops.claim_export`, `ops.export_rows_for`, `ops.export_fetch_rows`, `ops.finish_export`, `ops.abort_export`, `ops.expire_exports` | `exports_requested_idx`, `exports_status_created_idx` | — | — |
 | `20261031000014_ops_trigger_function_revoke.sql` | — | — | — | — | — |
 | `20261115000001_finance_application_line_history.sql` | — | `public.detach_finance_applications_from_line` | `finance_applications_receivable_idx`, `finance_applications_payable_idx` | — | `order_receivables_detach_applications`, `order_payables_detach_applications` |
+| `20261115000002_restore_permissions.sql` | — | `public.restore_customer`, `public.restore_order` | — | `customers_select_restorable`, `orders_select_restorable` | — |

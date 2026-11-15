@@ -174,6 +174,15 @@
 
 - [ ] 新增 `customer.restore` / `order.restore` 权限 + 专用 SELECT 策略 + 恢复端点 + 回收站页
 
+> **进度（2026-11-15）：数据库与契约已完成，端点与页面待做。**
+> `20261115000002_restore_permissions.sql`：两个权限码（仅 admin）+
+> `customers_select_restorable` / `orders_select_restorable` 两条「读已删除」策略 +
+> `restore_customer` / `restore_order` 两个函数。`permissions.ts` 与快照同步更新。
+> 验证：`db:local:verify` 31 个文件全绿，新增 `restore_permissions.sql` **12 条断言**；
+> `tsc --noEmit` 0 错误。**未做**：恢复端点（要改 `routes.ts` 与路由一致性守卫）与回收站页
+> —— 本机缺 vitest，改了无法验证契约与实现一一对应。见 `.harness/journal/2026-11-15-b2-restore-permissions.md`。
+> 另：`customer_rls.sql` 两条按旧口径写死的断言已按新意图调整（admin 现在有此权限）。
+
 **现状证据:**
 - `customers` 有 `deleted_at`，RLS 已隐藏，但**没有恢复入口**——软删等于单向。
 - `20261029000004_soft_delete_visibility.sql:16–17` 的注释已经写明意图：「后续做回收站时不要放宽这两条策略，应另加一条带 `customer.restore` / `order.restore` 权限的 SELECT 策略，让恢复能力与读取已删除数据的能力绑定。」
