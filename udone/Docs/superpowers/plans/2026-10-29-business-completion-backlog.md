@@ -330,11 +330,48 @@
 
 ### C5 R-TOURIST-01 游客名单
 
-- [ ] 名单 CRUD + 证件号去重 + CSV 预览/整批原子
+- [x] 名单 CRUD + 证件号去重 + CSV 预览/整批原子
 
 **现状证据:** 全仓 `tourist` 零引用——表、API、页面都没有。
 
 **覆盖要点:** 按证件类型 + 规范化证件号去重；证件号为空不自动合并；重复证件/非法日期/缺列/编码错误使**整批拒绝**，不产生部分写入。
+
+**完成情况（2026-11-16）:**
+
+- 新表 `tourists`（`20261116000007_tourist_roster.sql`）：姓名、手机、证件类型、证件号、
+  成人/儿童、年龄、性别、备注，挂在订单上（复合外键带 `organization_id`，订单物理删除时级联）。
+  去重键 `(order_id, document_type, normalized_document_number)` 建在**生成列**上
+  （去空白、去连字符、统一大写），且是**部分唯一索引**（`WHERE normalized_document_number
+  IS NOT NULL`）——证件号为空的人彼此不冲突，这正是「空号码不自动合并」。
+  CHECK 要求「有号码必须有类型」，避免护照与身份证同号时少一维去重键。
+- **不新增 `tourist.*` 权限**：名单是订单聚合的一部分，复用 `order.read` / `order.write`。
+  可见性也不自己算，策略用 `EXISTS (SELECT 1 FROM orders ...)`，组织/权限/数据范围/软删除
+  全由 orders 自己的 RLS 决定——同一份规则只写一处。
+- 六个业务端点：`GET/POST /api/orders/:orderId/tourists`、
+  `PATCH/DELETE /api/orders/:orderId/tourists/:touristId`、
+  `POST /api/orders/:orderId/tourists/import-preview`、`.../import`；
+  外加 `GET /api/tourists/import-template`（返回 JSON 里的文件名 + 内容，前端拼 Blob 下载，
+  保住 `respond()` 的全量出站校验）。
+- **导入走库函数 `import_tourists(order_id, mode, rows)`**，不是「先 DELETE 再 POST」：
+  覆盖模式的两次调用之间进程被回收就是数据丢失；函数体是一个事务，一行失败整批回滚
+  （含刚做的 DELETE）。返回 `inserted_count` / `deleted_count`。
+- CSV：列头固定八列、`\uFFFD`/NUL 视为编码错误整批拒绝、逐行错误带物理行号
+  （引号内换行不会把行号带偏）、行数上限 2000。证件类型/成人儿童/性别只认中文词表
+  （也接受英文码），认不出就报错，不猜。预览与提交共用同一段解析代码，提交时服务端重新解析。
+- 前端：订单详情新增「游客名单」区（列表 + 申报/名单差额提示 + 增改删 + CSV 导入弹窗 +
+  模板下载）。无 `customer.sensitive.read` 时证件号与手机只显示掩码，且表单把这两个输入框
+  锁住并从 PATCH 里剔除——否则一次「只改备注」的保存会把掩码当原值写回去。
+
+**验证:** pgTAP **36 文件全绿**（新增 `tourist_roster.sql` 17 条断言，含「换了写法的同一证件被拒」
+「空号码两行都能进」「批内重复整批回滚」）；变异验证：去掉部分唯一索引后该文件变「通过 10 / 失败 7」；
+单测 **63 文件 / 849 用例**（新增 CSV 解析 16 条 + 路由 14 条）；类型检查 api+web；eslint + CSS token；
+HTTP 集成 **24 文件 / 402 用例**（新增 `tests/integration/tourists.test.ts` 11 条，验证
+`rpc/import_tourists` 的真实参数/返回、23505→409、覆盖模式回滚后名单不变）。
+详见 `.harness/journal/2026-11-16-c5-tourist-roster.md`。
+
+**未做:** 名单导出（归 C8 报表/导出）；游客与客户档案的关联（需求未要求，同一客户再报名是另一张单）；
+名单不进「编辑订单」表单——整单提交是替换语义，混进名单会让「只改金额」也重写名单；
+前端交互（表格、导入弹窗、模板下载）只有类型保证，没有真人点过。
 
 **规模:** L
 

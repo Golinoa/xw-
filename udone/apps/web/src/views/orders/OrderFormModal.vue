@@ -427,11 +427,7 @@ function onSupplierSaved(supplier: { id: string; name: string }) {
               placeholder="搜索或选择线路"
               @search="searchRoutes"
             />
-            <a-button
-              v-if="canCreateRoute"
-              type="link"
-              size="small"
-              @click="routeModalOpen = true"
+            <a-button v-if="canCreateRoute" type="link" size="small" @click="routeModalOpen = true"
               >新建线路</a-button
             >
           </div>

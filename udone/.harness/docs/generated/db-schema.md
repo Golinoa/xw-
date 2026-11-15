@@ -3,11 +3,11 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 43
-- Tables discovered: 62
-- Functions discovered: 248
-- Indexes discovered: 91
-- RLS policies discovered: 71
+- Migration sources scanned: 44
+- Tables discovered: 63
+- Functions discovered: 249
+- Indexes discovered: 93
+- RLS policies discovered: 75
 - Triggers discovered: 9
 
 | Migration | Tables | Functions | Indexes | Policies | Triggers |
@@ -55,3 +55,4 @@
 | `20261115000004_customer_source_delete.sql` | — | — | — | `customer_sources_delete_writer` | — |
 | `20261115000005_customer_tag_manage.sql` | — | — | — | `customer_tags_update_writer`, `customer_tags_delete_writer` | — |
 | `20261115000006_route_master.sql` | `public.routes` | — | `routes_organization_idx` | `routes_select_reader`, `routes_insert_writer`, `routes_update_writer`, `routes_delete_writer` | — |
+| `20261116000007_tourist_roster.sql` | `public.tourists` | `public.import_tourists` | `tourists_order_idx`, `tourists_order_document_key` | `tourists_select_reader`, `tourists_insert_writer`, `tourists_update_writer`, `tourists_delete_writer` | — |

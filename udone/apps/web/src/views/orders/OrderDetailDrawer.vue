@@ -7,6 +7,7 @@ import { formatDateTime, formatMoney, formatRatio } from '../../lib/format';
 import { useAuthStore } from '../../stores/auth';
 import FinanceApplicationFormModal from '../finance/FinanceApplicationFormModal.vue';
 import type { ApplicationTarget } from '../finance/FinanceApplicationFormModal.vue';
+import TouristRosterSection from './TouristRosterSection.vue';
 import {
   ORDER_ACTION_EFFECTS,
   ORDER_ACTION_LABELS,
@@ -447,6 +448,8 @@ async function confirmAction() {
       <p class="detail-note">
         「可申请余额」直接取服务端计算值（金额 − 已确认 − 待确认），前端不做减法。
       </p>
+
+      <TouristRosterSection :order-id="detail.id" :can-write="canWrite" />
     </template>
 
     <template #extra>

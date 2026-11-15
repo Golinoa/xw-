@@ -287,6 +287,19 @@ import {
 } from './tour-routes';
 import { healthResponseSchema } from './health';
 import {
+  createTouristRequestSchema,
+  orderTouristParamsSchema,
+  touristDeletedResponseSchema,
+  touristImportPreviewResponseSchema,
+  touristImportRequestSchema,
+  touristImportResultSchema,
+  touristParamsSchema,
+  touristResponseSchema,
+  touristRosterResponseSchema,
+  touristTemplateResponseSchema,
+  updateTouristRequestSchema,
+} from './tourists';
+import {
   acceptInvitationResponseSchema,
   createOrganizationInvitationRequestSchema,
   invitationResponseSchema,
@@ -505,6 +518,62 @@ export const ROUTES = {
     path: '/api/orders/:orderId/transition',
     request: transitionOrderRequestSchema,
     response: orderResponseSchema,
+  }),
+  /**
+   * 游客名单（R-TOURIST-01），挂在订单下的子资源。
+   *
+   * 名单不分页：一个团的游客是有限集合（几十人），而分页会让「在订单详情里
+   * 直接看到全团」这件事变成翻页操作。订单的应收/应付明细也是同样处理。
+   */
+  listTourists: defineRoute({
+    method: 'GET',
+    path: '/api/orders/:orderId/tourists',
+    request: orderTouristParamsSchema,
+    response: touristRosterResponseSchema,
+  }),
+  createTourist: defineRoute({
+    method: 'POST',
+    path: '/api/orders/:orderId/tourists',
+    request: createTouristRequestSchema,
+    response: touristResponseSchema,
+  }),
+  /**
+   * 导入的两步都挂在游客集合下，且都用 POST：预览与提交的请求体完全相同
+   * （还是那份 CSV），差别只在服务端「写不写」。把预览做成 GET 会让人以为
+   * 它没有副作用是理所当然的，而它其实要读一遍现有名单去做重复检查。
+   */
+  previewTouristImport: defineRoute({
+    method: 'POST',
+    path: '/api/orders/:orderId/tourists/import-preview',
+    request: touristImportRequestSchema,
+    response: touristImportPreviewResponseSchema,
+  }),
+  importTourists: defineRoute({
+    method: 'POST',
+    path: '/api/orders/:orderId/tourists/import',
+    request: touristImportRequestSchema,
+    response: touristImportResultSchema,
+  }),
+  updateTourist: defineRoute({
+    method: 'PATCH',
+    path: '/api/orders/:orderId/tourists/:touristId',
+    request: updateTouristRequestSchema,
+    response: touristResponseSchema,
+  }),
+  deleteTourist: defineRoute({
+    method: 'DELETE',
+    path: '/api/orders/:orderId/tourists/:touristId',
+    request: touristParamsSchema,
+    response: touristDeletedResponseSchema,
+  }),
+  /**
+   * 模板下载。路径不在订单下：模板与具体订单无关，挂在订单下会让人以为
+   * 「这份模板属于这一团」。
+   */
+  getTouristImportTemplate: defineRoute({
+    method: 'GET',
+    path: '/api/tourists/import-template',
+    response: touristTemplateResponseSchema,
   }),
   listSuppliers: defineRoute({
     method: 'GET',

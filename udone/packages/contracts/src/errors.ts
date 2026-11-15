@@ -32,6 +32,13 @@ export const ERROR_CODES = {
   FINANCE_AMOUNT_EXCEEDS_AVAILABLE: 'FINANCE_AMOUNT_EXCEEDS_AVAILABLE',
   /** 申请已经不在待审状态，或者审批级次与当前进度不符。 */
   FINANCE_APPLICATION_STATE_CONFLICT: 'FINANCE_APPLICATION_STATE_CONFLICT',
+  /**
+   * 同一订单内已有相同「证件类型 + 证件号」的游客。
+   *
+   * 不复用通用 `CONFLICT`：这个名字要出现在导入结果的逐行错误里，而
+   * 「数据已被他人修改」对着一份要改的 CSV 完全没有指导意义。
+   */
+  TOURIST_DOCUMENT_CONFLICT: 'TOURIST_DOCUMENT_CONFLICT',
   /** 创建人不能审批自己提交的申请（当前固定禁止，不做开关）。 */
   FINANCE_SELF_APPROVAL_FORBIDDEN: 'FINANCE_SELF_APPROVAL_FORBIDDEN',
   /**
