@@ -67,3 +67,32 @@ stages:
             pnpm build
             pnpm schema:check
             pnpm check:deploy
+
+      # 前端主线 E2E（A1 的 spec）。单独成一个 step 的原因：
+      # 它要额外下载 Chromium（约 150 MB）与系统依赖，耗时远超静态门禁，
+      # 混在上一 step 里会让「红的是哪一类」变得难判断。
+      #
+      # 边界：用例只证明前端渲染与交互 —— 接口由 page.route 拦成桩，
+      # 桩的响应体先过 @erp/contracts 的 schema 再返回。
+      # 服务端行为（RLS、事务、并发）不在这里，由 pgTAP 与 HTTP 集成负责。
+      - step: npmbuild@1
+        name: e2e_gate
+        displayName: 前端 E2E（Playwright）
+        inputs:
+          nodeVersion: "24"
+          goals: |
+            set -euo pipefail
+            npm install -g pnpm@11.24.0
+            pnpm -v
+
+            cd udone
+            pnpm install --frozen-lockfile
+
+            # 只装 chromium：本套用例没有跨浏览器断言，多装 firefox/webkit 纯浪费。
+            # --with-deps 装系统库；若运行镜像不允许 apt，这行会明确失败，
+            # 那时改为在镜像里预装依赖，不要靠「跳过安装」让用例假装通过。
+            pnpm exec playwright install --with-deps chromium
+
+            # 必须走本地 bin（pnpm e2e），不要 npx：
+            # npx 会联网找包，表现为「长时间零输出」而不是报错，排查成本极高。
+            pnpm e2e
