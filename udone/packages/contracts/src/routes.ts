@@ -272,8 +272,10 @@ import {
 } from './orders';
 import {
   createSupplierRequestSchema,
+  supplierDeletedResponseSchema,
   supplierListQuerySchema,
   supplierListResponseSchema,
+  supplierParamsSchema,
   supplierResponseSchema,
 } from './suppliers';
 import {
@@ -586,6 +588,12 @@ export const ROUTES = {
     path: '/api/suppliers',
     request: createSupplierRequestSchema,
     response: supplierResponseSchema,
+  }),
+  deleteSupplier: defineRoute({
+    method: 'DELETE',
+    path: '/api/suppliers/:supplierId',
+    request: supplierParamsSchema,
+    response: supplierDeletedResponseSchema,
   }),
   listRoutes: defineRoute({
     method: 'GET',

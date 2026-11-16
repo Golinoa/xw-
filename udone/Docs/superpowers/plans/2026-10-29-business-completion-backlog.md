@@ -113,9 +113,12 @@
 
 ### A3 原始评估（保留以便追溯）
 
-- [ ] 让至少 6 个写端点在真实 HTTP 下跑通，含乐观锁与三个 409
+- [x] 让至少 6 个写端点在真实 HTTP 下跑通，含乐观锁与三个 409
 
-**现状证据:** 仓库层单测全部打桩；31 个端点的真实 HTTP 行为无自动覆盖。上一轮用一次性 SQL 探针（真实 PG，跑完 `ROLLBACK`）手工验了 9 个参数名与 `result_application_id` / `new_status` / `new_step` / `error_code` 四组返回列名——**这恰恰证明这层假设会错**，而错了只会在生产 500，探针不入库等于没有回归保护。
+> **已由方案 a 取代（2026-10-29）**，此条保留只为追溯当时的判断依据：
+> 最终交付的是上面 A3 的 21→24 个集成文件，覆盖远超「6 个写端点」。
+
+**现状证据（当时的判断依据，保留）:** 仓库层单测全部打桩；31 个端点的真实 HTTP 行为无自动覆盖。上一轮用一次性 SQL 探针（真实 PG，跑完 `ROLLBACK`）手工验了 9 个参数名与 `result_application_id` / `new_status` / `new_step` / `error_code` 四组返回列名——**这恰恰证明这层假设会错**，而错了只会在生产 500，探针不入库等于没有回归保护。
 
 **决策结果:** 采用方案 a。方案 b 只能覆盖一半：PostgREST 的 416、206、`Content-Range` 与 SQLSTATE→状态码映射都不在 pg 直连里，而这些正是这次抓到的 bug 所在。
 
@@ -135,11 +138,26 @@
 
 ### A5 供应商模块行为测试
 
-- [ ] 新增 `apps/api/src/modules/suppliers/routes.test.ts` 与服务层关键分支
+- [x] 新增 `apps/api/src/modules/suppliers/routes.test.ts` 与服务层关键分支
 
 **现状证据:** `packages/contracts/src/suppliers.ts`、`apps/api/src/modules/suppliers/{routes,service}.ts`、4 个前端文件都在，但**没有任何测试文件**（grep `supplier` 只在别的模块测试里被顺带引用）。这是唯一一个「完整交付但零行为断言」的业务模块。
 
 **覆盖:** 租户隔离、重名冲突、被应付引用时不可删（`OBJECT_REFERENCED`）、列表筛选与分页。
+
+**完成情况（2026-11-16）:** 卡片要求的「被引用不可删」原本没有代码路径（模块只有 list + create），
+所以先补了**薄的**删除能力再测：不自己数引用，直接交给外键 `order_payables.supplier_id` 的 RESTRICT，
+23503 → **409 `OBJECT_REFERENCED`**（不是 CONFLICT：重名改名字，被引用得先去处置应付行）。
+顺带把关键词清洗抽成 `sanitizeSupplierKeyword` 导出，让「服务层关键分支」可测。
+
+⚠️ 与 `customer_sources` 同一个坑：`authenticated` 没有表级 `DELETE` 授权，只加策略会得到
+`permission denied`（硬报错，不是 0 行）。迁移里 `GRANT DELETE` + 策略一起做。
+
+**验证:** 新增 `routes.test.ts` **12 条**（列表/分页/筛选透传、重名 409、财务 403、删除 200/409/404、
+关键词清洗含「裸 `%` 清空」）；新增 `supplier_delete.sql` **6 条** pgTAP。
+pgTAP **37 文件**、单测 **65 文件 / 863 用例**、类型检查 api+web、eslint+CSS token、HTTP 集成 **24 文件 / 402 用例**。
+详见 `.harness/journal/2026-11-16-a5-supplier-behavior-tests.md`。
+
+**未做:** 供应商编辑/停用（属主数据任务）；前端删除入口（本轮只做后端与契约）。
 
 **规模:** S
 

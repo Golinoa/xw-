@@ -5,8 +5,9 @@ import {
   ROUTES,
   createSupplierRequestSchema,
   supplierListQuerySchema,
+  supplierParamsSchema,
 } from '@erp/contracts';
-import { parseJson, parseQuery, respond } from '../../lib/contract';
+import { parseJson, parseParams, parseQuery, respond } from '../../lib/contract';
 import type { ApiEnvironment } from '../../middleware/auth';
 import { requireAuth, requirePermission } from '../../middleware/auth';
 import { ApiHttpError } from '../../middleware/error-handler';
@@ -54,5 +55,31 @@ supplierRoutes.post(
         throw cause;
       });
     return respond(context, 'createSupplier', { supplier }, 201);
+  },
+);
+
+supplierRoutes.delete(
+  ROUTES.deleteSupplier.path,
+  requireAuth(),
+  requirePermission(PERMISSIONS.SUPPLIER_WRITE),
+  async (context) => {
+    const { supplierId } = parseParams(context, supplierParamsSchema);
+    const result = await supplierRepository(context.env, context.get('authToken')).delete(
+      context.get('auth').organizationId,
+      supplierId,
+    );
+    if (result === 'not_found') {
+      throw new ApiHttpError(404, ERROR_CODES.NOT_FOUND, 'Supplier not found');
+    }
+    if (result === 'in_use') {
+      // 409 OBJECT_REFERENCED 而不是 CONFLICT：调用方要靠这个码区分
+      // 「名字撞了」和「被引用了」，两者给人的下一步完全不同。
+      throw new ApiHttpError(
+        409,
+        ERROR_CODES.OBJECT_REFERENCED,
+        'Supplier is referenced by payable lines',
+      );
+    }
+    return respond(context, 'deleteSupplier', { deletedSupplierId: supplierId });
   },
 );

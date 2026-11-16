@@ -5,9 +5,9 @@ import { RestConflictError, createRestClient } from '../../lib/rest-client';
 /**
  * 供应商仓储（R-SUPPLIER-01）。
  *
- * 本切片只做列表与新建：订单应付行需要一个可引用的真实供应商实体，
- * 编辑、停用、删除时引用校验（`OBJECT_REFERENCED`）留到主数据任务，
- * 不在没有引用统计的情况下假装支持。
+ * 列表 / 新建 / 删除。**不做编辑与停用**：停用属于主数据任务的开关，
+ * 而删除的引用校验直接交给外键（`order_payables.supplier_id` 是 RESTRICT），
+ * 不在这里自己数引用 —— 自己数会和真实约束产生两套口径。
  */
 
 const COLUMNS = 'id,name,type,contact_name,phone,settlement,is_active,remark,created_at,updated_at';
@@ -66,6 +66,20 @@ export interface SupplierCreateInput {
 export interface SupplierRepository {
   list(filter: SupplierListFilter): Promise<{ items: SupplierRecord[]; total: number }>;
   create(organizationId: string, input: SupplierCreateInput): Promise<SupplierRecord>;
+  /** `in_use` 表示被应付行引用，外键挡住了删除。 */
+  delete(organizationId: string, supplierId: string): Promise<'deleted' | 'not_found' | 'in_use'>;
+}
+
+/**
+ * 关键词清洗：PostgREST 的 `ilike` 模式里，逗号会切断 in-list、括号与 `*` 是操作符、
+ * `%` 是通配符、反斜杠是转义符。把它们换成空格，既不会让语法坏掉，
+ * 也不会把用户输入的 `%` 当成「匹配一切」——那样搜「%」会返回整张表。
+ */
+export function sanitizeSupplierKeyword(value: string): string {
+  return value
+    .replace(/[,()*%\\]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 export class SupplierNameConflictError extends Error {
@@ -111,10 +125,7 @@ export function createSupabaseSupplierRepository(
       if (filter.activeOnly) query.set('is_active', 'eq.true');
       if (filter.settlement) query.set('settlement', `eq.${filter.settlement}`);
       if (filter.keyword) {
-        const cleaned = filter.keyword
-          .replace(/[,()*%\\]/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim();
+        const cleaned = sanitizeSupplierKeyword(filter.keyword);
         if (cleaned) query.set('name', `ilike.*${cleaned}*`);
       }
 
@@ -145,6 +156,24 @@ export function createSupabaseSupplierRepository(
         return toRecord(row);
       } catch (cause) {
         if (cause instanceof RestConflictError) throw new SupplierNameConflictError();
+        throw cause;
+      }
+    },
+
+    async delete(organizationId, supplierId) {
+      try {
+        const rows = await client.rest<Array<{ id: string }>>(
+          `suppliers?organization_id=eq.${encodeURIComponent(organizationId)}&id=eq.${encodeURIComponent(supplierId)}`,
+          {
+            method: 'DELETE',
+            organizationId,
+            headers: { Prefer: 'return=representation' },
+          },
+        );
+        return rows.length > 0 ? 'deleted' : 'not_found';
+      } catch (cause) {
+        // 外键是 RESTRICT：被应付行引用会以 23503 冲突回来。
+        if (cause instanceof RestConflictError) return 'in_use';
         throw cause;
       }
     },

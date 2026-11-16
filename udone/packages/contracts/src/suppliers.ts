@@ -60,3 +60,11 @@ export const supplierResponseSchema = z.object({ supplier: supplierSchema });
 export const supplierParamsSchema = z.object({
   supplierId: z.string().min(1).max(64),
 });
+
+/**
+ * 删除回执。与客户、来源保持同一形状：返回被删 ID，不做空正文。
+ * 被应付行引用时不会走到这里 —— 那是 409 OBJECT_REFERENCED。
+ */
+export const supplierDeletedResponseSchema = z.object({
+  deletedSupplierId: z.string().min(1),
+});
