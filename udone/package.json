@@ -12,6 +12,7 @@
     "css:tokens:check": "node scripts/check-css-tokens.mjs",
     "typecheck": "pnpm --filter @erp/web --filter @erp/api typecheck",
     "test": "vitest run",
+    "e2e": "playwright test",
     "build": "pnpm --filter @erp/web --filter @erp/api build",
     "check:deploy": "tsx scripts/check-deploy-config.ts",
     "deps:audit": "node scripts/check-deps-audit.mjs",

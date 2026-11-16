@@ -1,0 +1,15 @@
+{
+  // 只为编辑器/IDE 服务：让 tests/e2e 里的 `@erp/contracts` 能解析到源码。
+  // `include` 故意为空 —— `pnpm typecheck` 只覆盖 apps/api 与 apps/web，
+  // E2E spec 的类型由 Playwright 运行时和 eslint 兜底，不在这里检查。
+  // 别把它改成 include:["tests"] 当门禁用：那会让 tsc 去解析 Playwright 的
+  // 运行期全局，收益低而噪音大。
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@erp/contracts": ["./packages/contracts/src/index.ts"]
+    }
+  },
+  "include": []
+}

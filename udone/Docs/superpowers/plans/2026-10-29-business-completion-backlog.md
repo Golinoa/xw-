@@ -66,7 +66,7 @@
 
 ### A1 前端主线 E2E（Playwright + 网络拦截）
 
-- [ ] 新增 3 个 spec，覆盖「登录 → 订单列表 → 订单详情金额行 → 发起收款申请 → 审批通过 → 金额从在途转已收」
+- [x] 新增 3 个 spec，覆盖「登录 → 订单列表 → 订单详情金额行 → 发起收款申请 → 审批通过 → 金额从在途转已收」
 
 **现状证据:** `tests/e2e/` 仅 2 个 spec / 6 用例，全部围绕登录与成员邀请；上一轮提交说明里明确写了「这个界面没有在浏览器里跑过」。
 
@@ -79,16 +79,21 @@
 - 新增 ≥3 个 spec，`pnpm e2e` 本地全绿。
 - 提交说明写明边界：**只证明前端渲染与交互，不证明服务端行为**。
 
-**当前进度（2026-11-16 13:35，未提交，现场在这）:**
-- 三个新 spec **已写好**：`order-list-states.spec.ts`、`order-finance-flow.spec.ts`、`order-permission-guards.spec.ts`，
-  外加 `tests/e2e/support/api-stub.ts`（出站响应先过契约再返回）。
-- 配套改动：`playwright.config.ts`、`package.json` 加 `e2e` 脚本、`udone/tsconfig.json`（E2E 目录纳入类型检查）。
-- **卡在一条断言**：`auth.spec.ts:61`（原有用例，被改成 antd 下拉交互之后）
-  `getByRole('heading', { name: 'Beta Travel' })` 5 秒内不可见 ——
-  公司切换点开了 `.account-tools .ant-select` 并点了 `Beta Travel`，但页面标题没跟着变。
-  下一步要确认是「选项没点中（选择器不匹配 portal 里的 dropdown）」还是「切公司后标题渲染逻辑没触发」。
-- 另：`npx playwright test` 跑完 worker 不退出（300s 后强杀），需要 `--workers=2` 或排查 dev server 句柄。
-- ⚠️ 这些文件**都在工作区未提交**。下次接手请先 `git status` 看清再动，不要重写 spec。
+**完成（2026-11-16 21:40）:** 5 个 spec / **11 用例**（10 通过 + 1 条需 CAPTCHA 测试密钥而跳过）。
+
+**那条卡住的断言，根因不是选择器，是桩的响应不合契约。**
+`auth.spec.ts` 里切换公司的响应体只写了 `userId/organizationId/role/sessionId`，
+而 `authContextSchema` 还要求 `permissions` 与 `dataScope`。客户端校验失败 → 抛错 →
+标题自然不变。表现是「点了 Beta Travel 标题没变」，看着像下拉没点中，实际是响应不合格。
+修法：桩体改为 `authContextSchema.parse(...)` / `meResponseSchema.parse(...)` 构造，
+漂移会当场炸在构造那一行，而不是伪装成交互问题。
+
+**`npx playwright test` 卡死是 `npx` 去联网找包的缘故，不是用例问题。**
+用 `pnpm e2e`（走本地 bin）或 `node node_modules/@playwright/test/cli.js test` 都正常，
+11 个用例 25 秒内跑完并退出。之前那句「worker 不退出、要 --workers=2」是误判，已修正。
+
+**边界（写进提交说明）:** 这套用例只证明**前端渲染与交互**；桩不模拟 RLS、事务与并发锁，
+服务端行为由 pgTAP 与 HTTP 集成测试负责。
 
 **规模:** M
 
