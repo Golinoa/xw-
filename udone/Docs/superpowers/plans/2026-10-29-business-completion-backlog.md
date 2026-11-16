@@ -79,6 +79,17 @@
 - 新增 ≥3 个 spec，`pnpm e2e` 本地全绿。
 - 提交说明写明边界：**只证明前端渲染与交互，不证明服务端行为**。
 
+**当前进度（2026-11-16 13:35，未提交，现场在这）:**
+- 三个新 spec **已写好**：`order-list-states.spec.ts`、`order-finance-flow.spec.ts`、`order-permission-guards.spec.ts`，
+  外加 `tests/e2e/support/api-stub.ts`（出站响应先过契约再返回）。
+- 配套改动：`playwright.config.ts`、`package.json` 加 `e2e` 脚本、`udone/tsconfig.json`（E2E 目录纳入类型检查）。
+- **卡在一条断言**：`auth.spec.ts:61`（原有用例，被改成 antd 下拉交互之后）
+  `getByRole('heading', { name: 'Beta Travel' })` 5 秒内不可见 ——
+  公司切换点开了 `.account-tools .ant-select` 并点了 `Beta Travel`，但页面标题没跟着变。
+  下一步要确认是「选项没点中（选择器不匹配 portal 里的 dropdown）」还是「切公司后标题渲染逻辑没触发」。
+- 另：`npx playwright test` 跑完 worker 不退出（300s 后强杀），需要 `--workers=2` 或排查 dev server 句柄。
+- ⚠️ 这些文件**都在工作区未提交**。下次接手请先 `git status` 看清再动，不要重写 spec。
+
 **规模:** M
 
 ### A2 `.vue` 纳入类型检查 — 已完成
