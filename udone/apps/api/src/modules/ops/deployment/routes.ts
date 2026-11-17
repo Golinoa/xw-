@@ -244,6 +244,7 @@ opsDeploymentRoutes.post(OPS_ROUTES.createOpsDeployment.path, requireOpsAuth(), 
       p_maintenance_until: body.maintenanceUntil ?? null,
       p_owner_operator_id: body.ownerOperatorId ?? null,
       p_license_id: body.licenseId ?? null,
+      p_request_id: context.get('requestId') ?? crypto.randomUUID(),
       p_contract_id: body.contractId ?? null,
     },
     deploymentCreateEnvelopeSchema,
@@ -333,6 +334,7 @@ opsDeploymentRoutes.patch(
         p_instance_id: deploymentId,
         p_patch: patch,
         p_expected_version: body.version,
+        p_request_id: context.get('requestId') ?? crypto.randomUUID(),
       },
       deploymentUpdateEnvelopeSchema,
     );
@@ -391,6 +393,7 @@ opsDeploymentRoutes.post(
         p_reason: body.reason ?? null,
         p_go_live_on: body.goLiveOn ?? null,
         p_expected_version: body.version,
+        p_request_id: context.get('requestId') ?? crypto.randomUUID(),
       },
       deploymentTransitionEnvelopeSchema,
     );
@@ -443,6 +446,7 @@ opsDeploymentRoutes.post(
         p_result: body.result,
         p_impact_note: body.impactNote ?? null,
         p_rollback_note: body.rollbackNote ?? null,
+        p_request_id: context.get('requestId') ?? crypto.randomUUID(),
       },
       versionRecordCreateEnvelopeSchema,
     );

@@ -326,7 +326,14 @@ describe('POST /deployments', () => {
       p_owner_operator_id: OWNER_ID,
       p_license_id: LICENSE_ID,
       p_contract_id: CONTRACT_ID,
+      p_request_id: expect.any(String),
     });
+    // `toEqual` 把 undefined 当成「没有这个键」，所以上面那条拦不住
+    // 「忘了传 requestId」。审计要靠 requestId 串起「这一次请求」。
+    // `toEqual` 把 undefined 当成「没有这个键」，而 `undefined` 在 JSON 序列化时
+    // 会被整条丢掉——所以「传了但没值」和「根本没传」在线上是同一种结果。
+    // 路由因此给了兜底值，这里断言它一定是个非空字符串。
+    expect(typeof rpcBodies[0]?.body.p_request_id).toBe('string');
     expect(response.body).toMatchObject({ deployment: { status: 'planned' } });
   });
 
@@ -490,6 +497,7 @@ describe('PATCH /deployments/{id}', () => {
       p_instance_id: DEPLOYMENT_ID,
       p_patch: { name: '甲客户主实例（改）' },
       p_expected_version: 3,
+      p_request_id: expect.any(String),
     });
   });
 
@@ -596,6 +604,7 @@ describe('POST /deployments/{id}/transition', () => {
       p_reason: null,
       p_go_live_on: '2026-11-01',
       p_expected_version: 0,
+      p_request_id: expect.any(String),
     });
     expect(response.body).toMatchObject({ allowedActions: ['start_maintenance', 'retire'] });
   });
@@ -702,6 +711,7 @@ describe('POST /deployments/{id}/version-records', () => {
       p_result: 'succeeded',
       p_impact_note: '停机 20 分钟',
       p_rollback_note: null,
+      p_request_id: expect.any(String),
     });
     expect(response.body).toMatchObject({
       versionRecord: { result: 'succeeded' },
