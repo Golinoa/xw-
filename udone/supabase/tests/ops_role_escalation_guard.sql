@@ -2,7 +2,7 @@ BEGIN;
 
 
 SELECT
-  plan (4);
+  plan (6);
 
 
 -- ── 夹具 ────────────────────────────────────────────────────────────────────
@@ -81,6 +81,15 @@ SELECT
     TRUE
   );
 
+-- 版本号先存下来：切到 authenticated 之后就没有表的读权限了。
+SELECT
+  set_config('scope.version', version::text, TRUE)
+FROM
+  ops.operators
+WHERE
+  id = '00000000-0000-4000-8000-000000000e01';
+
+
 SET LOCAL ROLE authenticated;
 
 
@@ -113,6 +122,36 @@ SELECT
     'ok',
     '授予集合 ⊆ 自己已有权限时可以建角色'
   );
+
+
+-- 另一半：把已有的全权角色分给自己。这一步只有 RPC 内部判得了
+-- （表级触发器在「先删后插」之后看不到调用者原来的权限）。
+SELECT
+  is(
+    ops.update_operator (
+      p_operator_id => '00000000-0000-4000-8000-000000000e01',
+      p_expected_version => current_setting('scope.version')::integer,
+      p_role_codes => array['scope_manager', 'platform_admin'],
+      p_reason => '把自己升成全权'
+    ) ->> 'status',
+    'permission_out_of_scope',
+    '不能把超出自己权限范围的角色分给自己'
+  );
+
+
+-- 范围之内的分配要放行，否则守卫会把正常运营拦住。
+SELECT
+  is(
+    ops.update_operator (
+      p_operator_id => '00000000-0000-4000-8000-000000000e01',
+      p_expected_version => current_setting('scope.version')::integer,
+      p_role_codes => array['scope_manager', 'scope_subset_role'],
+      p_reason => '分配范围之内的角色'
+    ) ->> 'status',
+    'ok',
+    '范围之内的角色分配不受影响'
+  );
+
 
 
 -- 一通尝试之后，A 手上的权限没有变多：仍只有那两条。
