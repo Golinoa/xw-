@@ -2,7 +2,7 @@ BEGIN;
 
 
 SELECT
-  plan (17);
+  plan (18);
 
 
 -- ── 夹具 ────────────────────────────────────────────────────────────────────
@@ -135,6 +135,19 @@ VALUES
     now() - interval '10 minutes',
     'dead-worker',
     now() - interval '5 minutes'
+  ),
+  (
+    't-nomap-live',
+    'activate',
+    '契约测试夹具',
+    NULL,
+    'dispatching',
+    0,
+    NULL,
+    8,
+    now(),
+    'worker-5',
+    now() + interval '5 minutes'
   );
 
 
@@ -361,6 +374,24 @@ SELECT
     ) ->> 'status',
     'lease_holder_mismatch',
     '非持有人写结果被拒（防止原 worker 回来覆盖回收器的判定）'
+  );
+
+SELECT
+  is(
+    ops.complete_tenant_command (
+      (
+        SELECT
+          id
+        FROM
+          ops.tenant_commands
+        WHERE
+          idempotency_key = 't-nomap-live'
+      ),
+      'worker-5',
+      'succeeded'
+    ) ->> 'status',
+    'mapping_required',
+    '没有映射的命令写结果时明确拒绝，而不是让底层函数抛异常'
   );
 
 

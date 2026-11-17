@@ -170,6 +170,13 @@ begin
     return jsonb_build_object('status', 'lease_expired');
   end if;
 
+  -- `record_tenant_command_attempt` 在 mapping 为空时会抛
+  -- `record "mapping_entry" is not assigned yet`（既有缺陷，未修）。
+  -- 在这里挡住，让调用方拿到可判定的结果，而不是一个 500。
+  if command_entry.mapping_id is null then
+    return jsonb_build_object('status', 'mapping_required');
+  end if;
+
   return ops.record_tenant_command_attempt(
     p_command_id,
     p_outcome,
