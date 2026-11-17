@@ -48,18 +48,34 @@ node scripts/db/local-db.mjs verify
 审计报告曾把它列为口径 bug，实际源码注释写明是契约 §5.7 的刻意决定：
 「只问现在还能不能重试，不问该不该」。改之前先读注释，避免把设计当 bug 修。
 
-## 4. 明确没做（不要当成已交付）
+## 4. 第二段：派发层（同日晚补齐）
 
-- **没有 worker / 定时器**。现在能认领，但没人定时去认领；`wrangler.toml` 无 `[triggers]`，
-  `index.ts` 只有 `export default app`。所以这套东西目前是「有锁没有开门的人」。
-- **没有下发实现**。`claim` 出来的命令没有消费方去调租户 API。
-- 因此 `dispatching` 只会因租约过期被回收，不会真正完成。
-- T6 第 4 条的「调用租户 API 只传业务字段」这半句仍未落地。
+第一段交付后这套东西是「有锁没有开门的人」——能认领，没人定时去认领。当晚补上驱动侧（`1666a0b`）：
 
-## 5. 下一步（按顺序）
+| 项 | 做法 |
+| --- | --- |
+| 编排 | `dispatchOnce` 纯函数：claim → deliver → complete，每条命令独立 `AbortController` |
+| 超时 | 默认 15s，归 `transient`（值得再试）；其余异常归 `unknown`，两者错误码可区分 |
+| 回写被拒 | 计 `skipped`，不算成功也不重试（租约被回收 / 持有人不符 / 无映射） |
+| 幂等 | 下发带 `Idempotency-Key: <command_no>`，远端据此去重 |
+| 触发 | `wrangler.toml` 的 `[triggers] crons = ["* * * * *"]`；**不进请求链** |
+| 导出 | 用 `Object.assign(app, { scheduled })` 挂到同一对象，默认导出身份不变，既有单测零改动 |
+
+验证：`vitest run` 66 文件 / 869 条全绿（新增 6 条）；`tsc --noEmit -p apps/api` 无输出。
+另外 `generate-db-schema --write` 因新增迁移重生成 `.harness/docs/generated/db-schema.md`——
+这一条是仓库既有门禁抓出来的（`harness-config.test.ts` 会比对清单是否过期）。
+
+## 5. 明确没做（不要当成已交付）
+
+- **租户侧接收端（M1）不存在**：派发会真的发 HTTP 出去，但对面还没端点接。
+  在 M1 建好之前，`TENANT_API_BASE_URL` 指向任何地址都只会拿到 4xx/连接失败，
+  命令会按分类落 `failed` —— 这是**预期**行为，不是 bug。
+- `TENANT_API_BASE_URL` 未配置时按失败处理（不静默跳过），所以上线前必须配。
+- 没有 staging 验证过「真的发出去了、对面真的收到了」。
+
+## 6. 下一步（按顺序）
 
 1. 修 §3(一) 的 `mapping_entry` 缺陷（一个迁移，替换函数体）。
-2. worker：`export default { fetch: app.fetch, scheduled }` + `[triggers] crons`，
-   注意改默认导出会波及所有 `import app from '../src/index'` 的测试，需要一起改。
-3. 租户侧接收端（M1）：新 `INTERNAL_TOKEN`、机器对机器端点、按 `Idempotency-Key` 去重。
+2. 租户侧接收端（M1）：新 `INTERNAL_TOKEN`、机器对机器端点、按 `Idempotency-Key` 去重。
    这一步必须 staging，本地只能验逻辑不能验通讯。
+3. 配 `TENANT_API_BASE_URL` 并观察一轮真实派发（journal 记下首轮的去重与失败分布）。
