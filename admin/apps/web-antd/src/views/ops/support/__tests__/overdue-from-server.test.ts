@@ -1,5 +1,7 @@
+/// <reference types="node" />
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { cwd } from 'node:process';
 
 import { describe, expect, it, vi } from 'vitest';
 
@@ -28,11 +30,7 @@ const SUPPORT_SOURCES = [
 
 /** 定位 support 域源码（cwd 可能是 admin 根，也可能是 apps/web-antd）。 */
 function readSupportSource(relative: string): string {
-  const roots = [
-    process.cwd(),
-    resolve(process.cwd(), '..'),
-    resolve(process.cwd(), '..', '..'),
-  ];
+  const roots = [cwd(), resolve(cwd(), '..'), resolve(cwd(), '..', '..')];
   for (const root of roots) {
     for (const base of [
       resolve(root, 'src/views/ops/support'),
@@ -45,7 +43,7 @@ function readSupportSource(relative: string): string {
     }
   }
   throw new Error(
-    `找不到 support 域源文件：${relative}（cwd=${process.cwd()}）`,
+    `找不到 support 域源文件：${relative}（cwd=${cwd()}）`,
   );
 }
 
