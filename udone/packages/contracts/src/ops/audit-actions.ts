@@ -377,6 +377,21 @@ export const OPS_AUDIT_ACTIONS = [
     description:
       '实例状态迁移：POST /deployments/{id}/transition 的每一条合法边都落这个词，reason 原样入库（`retire` 必填），前后摘要带 from/to 的 status 与 action。',
   },
+  // 工单，o-t7 补。两个词由 `ops.tickets` 的 AFTER 触发器统一产生，
+  // **不是**在各 RPC 里逐处调用——建单、改状态、指派三条路径都会落，
+  // 将来新增流转也不用记得补审计。
+  // 摘要只含 status / priority / assigneeOperatorId / waitingOn / resolutionSummary：
+  // 工单正文（subject/description）是客户内容，进审计表等于把客户原文又存一份。
+  {
+    code: 'ticket.created',
+    description:
+      '建单：`ops.tickets` 插入时落这个词，before 为空，after 摘要带 status / priority / assigneeOperatorId。',
+  },
+  {
+    code: 'ticket.updated',
+    description:
+      '工单变更：`ops.tickets` 任一列被改时落这个词，before/after 各带一份摘要；值完全没变的更新不记账（避免「跑了一次 SQL」污染审计表）。',
+  },
   // 设置页，o-t13 新增。三个词按「改的是哪一张表」切：参数项是 `settings`，
   // 字典条目是 `dictionary_item`。参数项没有 created / deleted——它只有三行，
   // 由迁移植入，端点只能改值；字典条目有 created / updated，没有 deleted，

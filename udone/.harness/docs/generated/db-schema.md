@@ -3,12 +3,12 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 47
+- Migration sources scanned: 48
 - Tables discovered: 63
-- Functions discovered: 255
+- Functions discovered: 257
 - Indexes discovered: 94
 - RLS policies discovered: 76
-- Triggers discovered: 10
+- Triggers discovered: 11
 
 | Migration | Tables | Functions | Indexes | Policies | Triggers |
 |---|---|---|---|---|---|
@@ -59,3 +59,4 @@
 | `20261116000007_tourist_roster.sql` | `public.tourists` | `public.import_tourists` | `tourists_order_idx`, `tourists_order_document_key` | `tourists_select_reader`, `tourists_insert_writer`, `tourists_update_writer`, `tourists_delete_writer` | — |
 | `20261117000001_ops_tenant_command_dispatch.sql` | — | `ops.claim_tenant_commands`, `ops.complete_tenant_command`, `ops.reap_tenant_commands` | `tenant_commands_lease_idx` | — | — |
 | `20261117000002_ops_role_escalation_guard.sql` | — | `ops.privileged_session`, `ops.caller_permission_codes`, `ops.enforce_role_permission_scope` | — | — | `role_permissions_scope_guard` |
+| `20261117000003_ops_ticket_audit.sql` | — | `ops.ticket_audit_summary`, `ops.audit_ticket_change` | — | — | `tickets_audit_change` |
