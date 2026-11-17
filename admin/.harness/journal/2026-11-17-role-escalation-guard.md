@@ -41,20 +41,40 @@ node scripts/db/local-db.mjs verify
 → 全部通过：39 个测试文件
 ```
 
-新文件 `ops_role_escalation_guard.sql` 四条断言：
+新文件 `ops_role_escalation_guard.sql` 六条断言：
 
 1. 无 `SET ROLE` 的会话（种子路径）写入不受限；
 2. 以受限管理员身份建「带 operator.read 的角色」→ 42501；
 3. 建「只含自己已有权限的角色」→ ok；
-4. 反复尝试之后权限集合没有扩大，仍是 `role.manage + operator.manage`。
+4. 把 `platform_admin` 分给自己 → `permission_out_of_scope`；
+5. 分配范围之内的角色 → ok；
+6. 反复尝试之后权限集合没有扩大，仍是 `role.manage + operator.manage`。
 
-## 4. 没补的那一半，以及为什么
+## 4. 被补上的那一半（当晚补完）
 
-「把**已有的**全权角色分配给自己」堵不住，因为在 `ops.update_operator` 里顺序是
-**先删调用者现有角色、再插入新角色**——插入时调用者自己的权限已经是空集，
-表级触发器拿不到「删除前」的基线。第一版我确实写了 `operator_roles` 的触发器，
-它把正常的分角色也拦了（`ops_identity_rls.sql` 第 492 行的多角色并集用例当场变红），
-所以撤掉，不留一个会误伤的表级守卫。
+原本写在这里的是「分配已有全权角色这一半没补」。**当晚补完了**（`91b0669`），
+做法是在 `ops.update_operator` 写库之前比较
+「`after_permissions − before_permissions` ⊆ 调用者权限」，越界返回
+`permission_out_of_scope`（与该函数其它失败分支同形状）。
+
+为什么只能在 RPC 内部判：该函数是**先删调用者现有角色、再插入新角色**，
+插入那一刻调用者自己的权限已被删空，表级触发器拿不到删除前的基线。
+第一版确实写了 `operator_roles` 的触发器，它把正常的分角色也拦了
+（`ops_identity_rls.sql` 第 492 行的多角色并集用例当场变红），所以撤掉——
+宁可不留一个会误伤的表级守卫。
+
+### 这里踩的坑（值得记）
+
+`ops.update_operator` 在仓库里有**两份**历史定义：`20261030000005` 的 7 参数版，
+和 `20261030000006` 里 `DROP` 后重建的 8 参数版（多 `p_display_name`）。
+第一版我抄了旧的那份，`CREATE OR REPLACE` 于是造出第二个 overload，后果是：
+
+- 调用方按 6 个位置参数调用直接报 `function ops.update_operator(...) is not unique`；
+- 新 overload 默认对 `PUBLIC` 有 `EXECUTE`，`ops_cross_domain_denials` 的 A2 当场变红。
+
+**教训：`CREATE OR REPLACE` 一个历史函数前，先 `grep "FUNCTION ops.<name>"` 数一遍定义，
+以最后一份为准。** 参数列表差一个默认参数，就不会替换而是新增。
+
 
 正解是在 `ops.update_operator` 内部做语义检查：比较
 「after_permissions − before_permissions（新增部分）」是否 ⊆ 调用者权限，在 DELETE 之前判。
