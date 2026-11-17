@@ -39,6 +39,13 @@ export interface ApiEnvironment {
      */
     OPS_AUTH_UPSTREAM?: OpsAuthUpstream;
     /**
+     * 租户侧接收端的基址（定时派发用）。
+     *
+     * 没配时不静默跳过：命令会落 `failed/unknown` 并留一条可查记录，
+     * 因为「看起来在跑、其实一次都没发出去」比直接失败更难查。
+     */
+    TENANT_API_BASE_URL?: string;
+    /**
      * GoTrue `auth.admin` 的注入点，只存在于测试。理由同 `OPS_AUTH_UPSTREAM`：
      * 邀请要真的建一个 auth 用户，而本地没有 `/auth/v1`。
      */

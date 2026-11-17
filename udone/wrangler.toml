@@ -19,6 +19,12 @@ run_worker_first = ["/api/*"]
 # production incident leaves no request-level trace to read.
 [observability]
 enabled = true
+
+# 租户命令派发。1 分钟是 Cloudflare 的最小粒度，再密没有意义：
+# 单条命令的下发超时是 15 秒，租约 5 分钟，一分钟一轮已经够覆盖重试节奏。
+# 只有这里触发，**不要**把派发挂进请求链——那等于让运营点一次按钮就下发一次。
+[triggers]
+crons = ["* * * * *"]
 head_sampling_rate = 1
 
 [env.staging]

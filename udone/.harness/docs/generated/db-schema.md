@@ -3,10 +3,10 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 45
+- Migration sources scanned: 46
 - Tables discovered: 63
-- Functions discovered: 249
-- Indexes discovered: 93
+- Functions discovered: 252
+- Indexes discovered: 94
 - RLS policies discovered: 76
 - Triggers discovered: 9
 
@@ -57,3 +57,4 @@
 | `20261115000006_route_master.sql` | `public.routes` | — | `routes_organization_idx` | `routes_select_reader`, `routes_insert_writer`, `routes_update_writer`, `routes_delete_writer` | — |
 | `20261116000001_supplier_delete.sql` | — | — | — | `suppliers_delete_writer` | — |
 | `20261116000007_tourist_roster.sql` | `public.tourists` | `public.import_tourists` | `tourists_order_idx`, `tourists_order_document_key` | `tourists_select_reader`, `tourists_insert_writer`, `tourists_update_writer`, `tourists_delete_writer` | — |
+| `20261117000001_ops_tenant_command_dispatch.sql` | — | `ops.claim_tenant_commands`, `ops.complete_tenant_command`, `ops.reap_tenant_commands` | `tenant_commands_lease_idx` | — | — |

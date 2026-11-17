@@ -31,6 +31,7 @@ import { opsSettingsRoutes } from './modules/ops/settings/routes';
 import { opsExportsRoutes } from './modules/ops/exports/routes';
 import { opsEntitlementRoutes } from './modules/ops/entitlements/routes';
 import { opsTenantIntegrationRoutes } from './modules/ops/tenant-integration/routes';
+import { runScheduledDispatch } from './modules/ops/tenant-integration/dispatch';
 import { opsTicketRoutes } from './modules/ops/tickets/routes';
 
 export const app = new Hono<ApiEnvironment>();
@@ -96,4 +97,20 @@ app.route('/', opsOverviewRoutes);
 // 放在总览之后是读的顺序，不是依赖——两者互不调用。
 app.route('/', opsReportRoutes);
 
-export default app;
+/**
+ * 定时派发租户命令。
+ *
+ * Cloudflare 只在**默认导出的对象**上找 `scheduled`，所以把处理器挂到同一个 app 上：
+ * 默认导出的身份不变，既有的 `app.request(...)` 单测不用改一行。
+ * 触发器在 `wrangler.toml` 的 `[triggers]`，注意别把派发放进请求处理链——
+ * 那等于让一个运营点按钮去触发下发。
+ */
+const worker: typeof app & {
+  scheduled: (controller: unknown, env: ApiEnvironment['Bindings']) => Promise<void>;
+} = Object.assign(app, {
+  scheduled: async (_controller: unknown, env: ApiEnvironment['Bindings']) => {
+    await runScheduledDispatch(env);
+  },
+});
+
+export default worker;
