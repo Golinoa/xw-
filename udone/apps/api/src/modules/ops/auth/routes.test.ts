@@ -83,6 +83,7 @@ function stubDirectory(replies: DirectoryReplies = {}) {
       return json(replies.activation ?? 'activated', replies.activationStatus ?? 200);
     }
     if (name === 'touch_last_login') return json(replies.lastLogin ?? 'ok');
+    if (name === 'record_access_audit') return json({ status: 'ok', eventId: 'audit-1' });
     throw new Error(`unexpected rpc: ${name}`);
   });
   vi.stubGlobal('fetch', fetchMock);
@@ -128,7 +129,7 @@ describe('POST /api/v1/ops/auth/login', () => {
     expect(cookie).toContain('Path=/api/v1/ops/auth');
 
     // 已经是 active 的账号不该被「激活」一次：那会白涨一格乐观锁版本。
-    expect(calls).toEqual(['login_member_state', 'touch_last_login']);
+    expect(calls).toEqual(['login_member_state', 'touch_last_login', 'record_access_audit']);
   });
 
   it('never echoes the refresh token in the body', async () => {
@@ -219,7 +220,12 @@ describe('POST /api/v1/ops/auth/login', () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ accessToken: 'access-token' });
     expect(response.headers.get('set-cookie')).toContain('ops_refresh=refresh-token');
-    expect(calls).toEqual(['login_member_state', 'activate_invited_member', 'touch_last_login']);
+    expect(calls).toEqual([
+      'login_member_state',
+      'activate_invited_member',
+      'touch_last_login',
+      'record_access_audit',
+    ]);
   });
 
   /**
@@ -250,6 +256,7 @@ describe('POST /api/v1/ops/auth/login', () => {
       'activate_invited_member',
       'login_member_state',
       'touch_last_login',
+      'record_access_audit',
     ]);
   });
 

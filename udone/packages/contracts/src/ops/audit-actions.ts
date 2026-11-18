@@ -377,6 +377,20 @@ export const OPS_AUDIT_ACTIONS = [
     description:
       '实例状态迁移：POST /deployments/{id}/transition 的每一条合法边都落这个词，reason 原样入库（`retire` 必填），前后摘要带 from/to 的 status 与 action。',
   },
+  // 访问审计（登录 / 登出）。这两个词由 `ops.record_access_audit` 产生：
+  // 登录成功时运策端拿**刚签发的令牌**调它，actor 因此是本人，不是参数传进来的字符串。
+  // 失败登录（密码错）**不记**——那一刻没有可信身份，记下来的「actor」只能是别人填的；
+  // 这类事件走请求日志与速率限制。实体类型统一是 `operator_session`。
+  {
+    code: 'auth.login',
+    description:
+      '登录成功：POST /ops/auth/login 换取令牌并确认账号活跃后落这个词，实体是 operator_session，entityId 为操作员 id，requestId 随请求带入。',
+  },
+  {
+    code: 'auth.logout',
+    description:
+      '登出：POST /ops/auth/logout 带 Authorization 时落这个词（没有令牌就无从归属，不记）。',
+  },
   // 工单，o-t7 补。两个词由 `ops.tickets` 的 AFTER 触发器统一产生，
   // **不是**在各 RPC 里逐处调用——建单、改状态、指派三条路径都会落，
   // 将来新增流转也不用记得补审计。

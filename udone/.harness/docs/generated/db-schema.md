@@ -3,9 +3,9 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 49
+- Migration sources scanned: 50
 - Tables discovered: 63
-- Functions discovered: 258
+- Functions discovered: 259
 - Indexes discovered: 94
 - RLS policies discovered: 76
 - Triggers discovered: 11
@@ -61,3 +61,4 @@
 | `20261117000002_ops_role_escalation_guard.sql` | — | `ops.privileged_session`, `ops.caller_permission_codes`, `ops.enforce_role_permission_scope` | — | — | `role_permissions_scope_guard` |
 | `20261117000003_ops_ticket_audit.sql` | — | `ops.ticket_audit_summary`, `ops.audit_ticket_change` | — | — | `tickets_audit_change` |
 | `20261117000004_ops_operator_role_scope.sql` | — | `ops.update_operator` | — | — | — |
+| `20261118000001_ops_access_audit.sql` | — | `ops.record_access_audit` | — | — | — |

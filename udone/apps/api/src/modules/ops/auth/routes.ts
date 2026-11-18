@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import {
   ERROR_CODES,
   OPS_ROUTES,
@@ -7,6 +7,7 @@ import {
   type OpsTokenResponse,
 } from '@erp/contracts';
 import { parseJson, respond, respondNoContent } from '../../../lib/contract';
+import { createRestClient } from '../../../lib/rest-client';
 import { createFixedWindowRateLimiter } from '../../../lib/rate-limit-store';
 import type { ApiEnvironment } from '../../../middleware/auth';
 import { ApiHttpError } from '../../../middleware/error-handler';
@@ -18,6 +19,50 @@ import {
 import { clientKey } from '../../../middleware/rate-limit';
 import { clearRefreshCookie, readRefreshToken, writeRefreshCookie } from './cookie';
 import { createGoTrueUpstream, type OpsAuthUpstream } from './upstream';
+
+/** 从 Authorization: Bearer 里取访问令牌；没有就返回 null（登出允许匿名调用）。 */
+function readAccessToken(context: Context<ApiEnvironment>): string | null {
+  const header = context.req.header('authorization');
+  if (!header) return null;
+  const match = /^Bearer\s+(.+)$/i.exec(header.trim());
+  return match?.[1] ?? null;
+}
+
+/**
+ * 写一条访问审计。
+ *
+ * 用**调用者的令牌**调 RPC，而不是 service_role + 传 actor：传 actor 等于让任何人
+ * 都能替别人留痕，那比不记更糟。
+ *
+ * 失败只记日志不抛：审计写不进去不该让登录失败——否则审计表的可用性会绑架整个后台。
+ */
+async function recordAccessAudit(
+  context: Context<ApiEnvironment>,
+  accessToken: string,
+  action: 'auth.login' | 'auth.logout',
+): Promise<void> {
+  try {
+    const client = createRestClient(context.env, accessToken);
+    await client.rest('rpc/record_access_audit', {
+      method: 'POST',
+      profile: 'ops',
+      body: {
+        p_action: action,
+        p_request_id: context.get('requestId') ?? null,
+      },
+    });
+  } catch (cause) {
+    console.error(
+      JSON.stringify({
+        event: 'ops_access_audit_write_failed',
+        action,
+        message: cause instanceof Error ? cause.message : 'unknown',
+        requestId: context.get('requestId'),
+      }),
+    );
+  }
+}
+
 
 export const opsAuthRoutes = new Hono<ApiEnvironment>();
 
@@ -145,6 +190,11 @@ opsAuthRoutes.post(OPS_ROUTES.postOpsLogin.path, async (context) => {
       }),
     );
   }
+
+  // 访问审计：拿刚签发的令牌写，actor 就是本人（这一刻还拿不到别的可信身份）。
+  // 写失败不影响登录——登录是主流程，审计是留痕；把留痕失败做成登录失败，
+  // 等于让审计表的可用性绑架整个后台。
+  await recordAccessAudit(context, grant.accessToken, 'auth.login');
 
   writeRefreshCookie(context, grant.refreshToken);
   const payload: OpsTokenResponse = { accessToken: grant.accessToken };
