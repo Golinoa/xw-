@@ -42,6 +42,15 @@ export const ERROR_CODES = {
   /** 创建人不能审批自己提交的申请（当前固定禁止，不做开关）。 */
   FINANCE_SELF_APPROVAL_FORBIDDEN: 'FINANCE_SELF_APPROVAL_FORBIDDEN',
   /**
+   * 结算金额超过这条应付明细还能结的额度（应付金额 − 已确认结算）。
+   *
+   * 不复用 `FINANCE_AMOUNT_EXCEEDS_AVAILABLE`：那个码的文案是「可申请余额（已扣在途）」，
+   * 而结算看的是累计已结算金额，两者不是同一个数。混用会让用户盯着错误的数字改金额。
+   */
+  SETTLEMENT_AMOUNT_EXCEEDS_AVAILABLE: 'SETTLEMENT_AMOUNT_EXCEEDS_AVAILABLE',
+  /** 结算批次已确认或已作废，不能再确认 / 作废。 */
+  SETTLEMENT_STATE_CONFLICT: 'SETTLEMENT_STATE_CONFLICT',
+  /**
    * 同一个 Idempotency-Key 被用于了不一样的内容。
    *
    * 与通用 `CONFLICT` 分开是为了让调用方能区分「业务对象状态冲突」与

@@ -26,6 +26,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   FINANCE_APPLICATION_STATE_CONFLICT: '该申请已被处理，请刷新后再看',
   FINANCE_SELF_APPROVAL_FORBIDDEN: '不能审批自己提交的申请',
   TOURIST_DOCUMENT_CONFLICT: '这个证件号已经在游客名单里了',
+  SETTLEMENT_AMOUNT_EXCEEDS_AVAILABLE: '结算金额超过该明细还能结的额度（已扣除已结算部分）',
+  SETTLEMENT_STATE_CONFLICT: '该结算批次已确认或已作废，请刷新后再看',
   RATE_LIMITED: '操作过于频繁，请稍后再试',
   INTERNAL_ERROR: '服务暂时不可用，请稍后重试',
 };

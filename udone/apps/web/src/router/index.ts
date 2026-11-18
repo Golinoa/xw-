@@ -51,6 +51,11 @@ export function createAppRouter(
             name: 'finance-applications',
             component: () => import('../views/finance/FinanceApplicationListView.vue'),
           },
+          {
+            path: 'settlements',
+            name: 'settlements',
+            component: () => import('../views/settlements/SettlementListView.vue'),
+          },
         ],
       },
       { path: '/:pathMatch(.*)*', redirect: '/' },

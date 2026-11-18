@@ -12,6 +12,7 @@ import { customerRoutes } from './modules/customers/routes';
 import { orderRoutes } from './modules/orders/routes';
 import { supplierRoutes } from './modules/suppliers/routes';
 import { routeRoutes } from './modules/routes/routes';
+import { settlementRoutes } from './modules/settlements/routes';
 import { touristRoutes } from './modules/tourists/routes';
 import { financeRoutes } from './modules/finance/routes';
 import { financeApplicationRoutes } from './modules/finance-applications/routes';
@@ -59,6 +60,8 @@ app.route('/', routeRoutes);
 app.route('/', touristRoutes);
 app.route('/', financeRoutes);
 app.route('/', financeApplicationRoutes);
+// 结算接在付款申请之后：结算批次是付款申请的上游（先结算，再申请付款）。
+app.route('/', settlementRoutes);
 // 运营后台：路径自带 /api/v1/ops 前缀，鉴权是 requireOpsAuth 而不是 requireAuth。
 app.route('/', opsAuthRoutes);
 app.route('/', opsMetaRoutes);

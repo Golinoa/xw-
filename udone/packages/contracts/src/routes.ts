@@ -279,6 +279,16 @@ import {
   supplierResponseSchema,
 } from './suppliers';
 import {
+  cancelSettlementRequestSchema,
+  createSettlementRequestSchema,
+  settlementBatchDetailResponseSchema,
+  settlementCandidateListQuerySchema,
+  settlementCandidateListResponseSchema,
+  settlementListQuerySchema,
+  settlementListResponseSchema,
+  settlementTransitionResponseSchema,
+} from './settlements';
+import {
   createTourRouteRequestSchema,
   tourRouteDeletedResponseSchema,
   tourRouteListQuerySchema,
@@ -618,6 +628,48 @@ export const ROUTES = {
     path: '/api/routes/:routeId',
     request: tourRouteParamsSchema,
     response: tourRouteDeletedResponseSchema,
+  }),
+  /**
+   * 批量结算（R-SETTLE-01）。
+   *
+   * 待结算候选单独成一个端点，而不是让前端翻 `/api/payables` 自己算「还能结多少」：
+   * 该数字依赖已确认批次的累计金额，前端拼两棵树迟早算错，而这个数字算错
+   * 就是重复结算。
+   */
+  listSettlements: defineRoute({
+    method: 'GET',
+    path: '/api/settlements',
+    request: settlementListQuerySchema,
+    response: settlementListResponseSchema,
+  }),
+  listSettlementCandidates: defineRoute({
+    method: 'GET',
+    path: '/api/settlement-candidates',
+    request: settlementCandidateListQuerySchema,
+    response: settlementCandidateListResponseSchema,
+  }),
+  getSettlement: defineRoute({
+    method: 'GET',
+    path: '/api/settlements/:batchId',
+    response: settlementBatchDetailResponseSchema,
+  }),
+  createSettlement: defineRoute({
+    method: 'POST',
+    path: '/api/settlements',
+    request: createSettlementRequestSchema,
+    // 返回完整明细：新建后紧接着就是「二次确认」，让前端再打一次详情接口只是多一次往返。
+    response: settlementBatchDetailResponseSchema,
+  }),
+  confirmSettlement: defineRoute({
+    method: 'POST',
+    path: '/api/settlements/:batchId/confirm',
+    response: settlementTransitionResponseSchema,
+  }),
+  cancelSettlement: defineRoute({
+    method: 'POST',
+    path: '/api/settlements/:batchId/cancel',
+    request: cancelSettlementRequestSchema,
+    response: settlementTransitionResponseSchema,
   }),
   getOrderFinance: defineRoute({
     method: 'GET',
