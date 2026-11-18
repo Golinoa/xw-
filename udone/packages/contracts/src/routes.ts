@@ -1,4 +1,5 @@
 import type { z } from 'zod';
+import { auditFacetsResponseSchema, auditListQuerySchema, auditListResponseSchema } from './audit';
 import { authContextSchema } from './auth';
 import { companySettingsSchema, updateCompanySettingsRequestSchema } from './company-settings';
 import {
@@ -369,6 +370,17 @@ export const ROUTES = {
     method: 'POST',
     path: '/api/organizations/:id/switch',
     response: authContextSchema,
+  }),
+  listAuditEvents: defineRoute({
+    method: 'GET',
+    path: '/api/audit-events',
+    request: auditListQuerySchema,
+    response: auditListResponseSchema,
+  }),
+  listAuditFacets: defineRoute({
+    method: 'GET',
+    path: '/api/audit-events/facets',
+    response: auditFacetsResponseSchema,
   }),
   getCompanySettings: defineRoute({
     method: 'GET',

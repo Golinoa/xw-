@@ -72,6 +72,13 @@ async function logout() {
           >
             设置
           </RouterLink>
+          <RouterLink
+            to="/audit-events"
+            class="nav-link"
+            :class="{ 'nav-link-active': route.name === 'audit-events' }"
+          >
+            日志
+          </RouterLink>
         </nav>
       </div>
       <div class="account-tools">

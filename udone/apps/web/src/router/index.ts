@@ -61,6 +61,11 @@ export function createAppRouter(
             name: 'company-settings',
             component: () => import('../views/settings/CompanySettingsView.vue'),
           },
+          {
+            path: 'audit-events',
+            name: 'audit-events',
+            component: () => import('../views/audit/AuditListView.vue'),
+          },
         ],
       },
       { path: '/:pathMatch(.*)*', redirect: '/' },
