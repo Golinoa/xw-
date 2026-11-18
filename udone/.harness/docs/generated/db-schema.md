@@ -3,11 +3,11 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 51
-- Tables discovered: 65
-- Functions discovered: 262
+- Migration sources scanned: 52
+- Tables discovered: 66
+- Functions discovered: 264
 - Indexes discovered: 98
-- RLS policies discovered: 78
+- RLS policies discovered: 79
 - Triggers discovered: 11
 
 | Migration | Tables | Functions | Indexes | Policies | Triggers |
@@ -63,3 +63,4 @@
 | `20261117000004_ops_operator_role_scope.sql` | — | `ops.update_operator` | — | — | — |
 | `20261118000001_ops_access_audit.sql` | — | `ops.record_access_audit` | — | — | — |
 | `20261118000002_settlement_batches.sql` | `public.settlement_batches`, `public.settlement_items` | `public.create_settlement_batch`, `public.confirm_settlement_batch`, `public.cancel_settlement_batch` | `settlement_batches_supplier_period_key`, `settlement_batches_status_index`, `settlement_items_batch_index`, `settlement_items_payable_index` | `settlement_batches_select_reader`, `settlement_items_select_reader` | — |
+| `20261118000003_company_settings.sql` | `public.company_settings` | `public.get_company_settings`, `public.update_company_settings` | — | `company_settings_select_member` | — |

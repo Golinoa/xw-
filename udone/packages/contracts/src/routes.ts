@@ -1,5 +1,6 @@
 import type { z } from 'zod';
 import { authContextSchema } from './auth';
+import { companySettingsSchema, updateCompanySettingsRequestSchema } from './company-settings';
 import {
   createCustomerRequestSchema,
   createCustomerResponseSchema,
@@ -368,6 +369,17 @@ export const ROUTES = {
     method: 'POST',
     path: '/api/organizations/:id/switch',
     response: authContextSchema,
+  }),
+  getCompanySettings: defineRoute({
+    method: 'GET',
+    path: '/api/company-settings',
+    response: companySettingsSchema,
+  }),
+  updateCompanySettings: defineRoute({
+    method: 'PATCH',
+    path: '/api/company-settings',
+    request: updateCompanySettingsRequestSchema,
+    response: companySettingsSchema,
   }),
   listMembers: defineRoute({
     method: 'GET',

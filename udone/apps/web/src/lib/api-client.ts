@@ -18,6 +18,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   VALIDATION_ERROR: '提交的内容不合法，请检查后重试',
   NOT_FOUND: '记录不存在或已被删除',
   CONFLICT: '数据已存在或状态冲突，请刷新后重试',
+  STATE_CONFLICT: '当前状态不允许该操作，请刷新后再试',
   OBJECT_REFERENCED: '该记录仍被其他单据引用，不能删除',
   ORDER_STATE_CONFLICT: '当前订单状态不允许该操作，请刷新后重试',
   ORDER_LINE_HAS_PAYMENTS: '该金额行已有确认或在途款项，不能删除',

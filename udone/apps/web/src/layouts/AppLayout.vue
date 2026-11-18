@@ -65,6 +65,13 @@ async function logout() {
           >
             结算
           </RouterLink>
+          <RouterLink
+            to="/company-settings"
+            class="nav-link"
+            :class="{ 'nav-link-active': route.name === 'company-settings' }"
+          >
+            设置
+          </RouterLink>
         </nav>
       </div>
       <div class="account-tools">

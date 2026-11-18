@@ -56,6 +56,11 @@ export function createAppRouter(
             name: 'settlements',
             component: () => import('../views/settlements/SettlementListView.vue'),
           },
+          {
+            path: 'company-settings',
+            name: 'company-settings',
+            component: () => import('../views/settings/CompanySettingsView.vue'),
+          },
         ],
       },
       { path: '/:pathMatch(.*)*', redirect: '/' },
