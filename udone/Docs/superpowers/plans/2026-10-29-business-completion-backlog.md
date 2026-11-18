@@ -491,7 +491,7 @@ Playwright 进程收尾有未释放句柄，`timeout` 到点退出；用例状�
 | C7 | R-BALANCE-01 账户余额 | 无资金账户概念 | L |
 | C8 | R-REPORT-01 报表与统一口径 | 无统计服务（ops 侧总览指标已有，租户侧无） | L |
 | C9 | R-NOTIFY-01 站内通知 | 无 | M |
-| C10 | R-AUDIT-01 审计日志 | 无独立审计表，仅有业务轨迹（ops 侧 `ops.audit_events` 不算租户侧） | M |
+| C10 | R-AUDIT-01 审计日志 | **表已有**：`public.audit_events`（20261003000000）且成员生命周期/审批等已在写；缺的是租户侧查询 API/页面、IP/设备摘要字段与强制动作覆盖补全 | M |
 | C11 | R-CRM-01/02 线索与公海 | 无 `leads` 表 | L |
 | ~~C12~~ | R-SETTING-01 公司配置 | ✅ **已验证 2026-11-18**：配置表 + 版本化 RPC + 2 端点 + Web 设置页；二次确认落在服务端；pgTAP 44 文件、HTTP 集成 26 文件/418 用例、Vitest 68/888 全绿；证据 `.harness/journal/2026-11-18-c12-company-settings.md` | S |
 
