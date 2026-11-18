@@ -3,6 +3,13 @@ import { auditFacetsResponseSchema, auditListQuerySchema, auditListResponseSchem
 import { authContextSchema } from './auth';
 import { companySettingsSchema, updateCompanySettingsRequestSchema } from './company-settings';
 import {
+  markNotificationsReadRequestSchema,
+  markNotificationsReadResponseSchema,
+  notificationListQuerySchema,
+  notificationListResponseSchema,
+  notificationUnreadResponseSchema,
+} from './notifications';
+import {
   createCustomerRequestSchema,
   createCustomerResponseSchema,
   createCustomerTagRequestSchema,
@@ -381,6 +388,23 @@ export const ROUTES = {
     method: 'GET',
     path: '/api/audit-events/facets',
     response: auditFacetsResponseSchema,
+  }),
+  listNotifications: defineRoute({
+    method: 'GET',
+    path: '/api/notifications',
+    request: notificationListQuerySchema,
+    response: notificationListResponseSchema,
+  }),
+  notificationUnreadCount: defineRoute({
+    method: 'GET',
+    path: '/api/notifications/unread-count',
+    response: notificationUnreadResponseSchema,
+  }),
+  markNotificationsRead: defineRoute({
+    method: 'PATCH',
+    path: '/api/notifications/read',
+    request: markNotificationsReadRequestSchema,
+    response: markNotificationsReadResponseSchema,
   }),
   getCompanySettings: defineRoute({
     method: 'GET',

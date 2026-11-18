@@ -1,10 +1,28 @@
 <script setup lang="ts">
+import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
 const auth = useAuthStore();
 const route = useRoute();
 const router = useRouter();
+const unreadCount = ref(0);
+
+async function loadUnreadCount() {
+  if (!auth.currentOrganization.value) {
+    unreadCount.value = 0;
+    return;
+  }
+  try {
+    const result = await auth.api.call('notificationUnreadCount');
+    unreadCount.value = result.count;
+  } catch {
+    unreadCount.value = 0;
+  }
+}
+
+onMounted(loadUnreadCount);
+watch(() => auth.currentOrganization.value?.organizationId, loadUnreadCount);
 async function onOrganizationChange(organizationId: string) {
   await auth.switchOrganization(organizationId);
 }
@@ -78,6 +96,13 @@ async function logout() {
             :class="{ 'nav-link-active': route.name === 'audit-events' }"
           >
             日志
+          </RouterLink>
+          <RouterLink
+            to="/notifications"
+            class="nav-link"
+            :class="{ 'nav-link-active': route.name === 'notifications' }"
+          >
+            <a-badge :count="unreadCount" :offset="[6, -2]">通知</a-badge>
           </RouterLink>
         </nav>
       </div>

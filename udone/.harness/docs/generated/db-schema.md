@@ -3,12 +3,12 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 53
-- Tables discovered: 66
-- Functions discovered: 269
-- Indexes discovered: 98
-- RLS policies discovered: 79
-- Triggers discovered: 13
+- Migration sources scanned: 54
+- Tables discovered: 67
+- Functions discovered: 271
+- Indexes discovered: 99
+- RLS policies discovered: 81
+- Triggers discovered: 15
 
 | Migration | Tables | Functions | Indexes | Policies | Triggers |
 |---|---|---|---|---|---|
@@ -65,3 +65,4 @@
 | `20261118000002_settlement_batches.sql` | `public.settlement_batches`, `public.settlement_items` | `public.create_settlement_batch`, `public.confirm_settlement_batch`, `public.cancel_settlement_batch` | `settlement_batches_supplier_period_key`, `settlement_batches_status_index`, `settlement_items_batch_index`, `settlement_items_payable_index` | `settlement_batches_select_reader`, `settlement_items_select_reader` | — |
 | `20261118000003_company_settings.sql` | `public.company_settings` | `public.get_company_settings`, `public.update_company_settings` | — | `company_settings_select_member` | — |
 | `20261119000001_audit_event_enrichment.sql` | — | `public.audit_ip_summary`, `public.audit_device_summary`, `public.write_audit`, `public.audit_order_update`, `public.audit_application_transition` | — | — | `audit_order_update_trigger`, `audit_application_transition_trigger` |
+| `20261119000002_notifications.sql` | `public.notifications` | `public.notify_application_decision`, `public.notify_settlement_confirmed` | `notifications_recipient_unread_idx` | `notifications_select_recipient`, `notifications_update_read` | `notify_application_decision_trigger`, `notify_settlement_confirmed_trigger` |

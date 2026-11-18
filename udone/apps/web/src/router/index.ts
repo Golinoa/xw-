@@ -66,6 +66,11 @@ export function createAppRouter(
             name: 'audit-events',
             component: () => import('../views/audit/AuditListView.vue'),
           },
+          {
+            path: 'notifications',
+            name: 'notifications',
+            component: () => import('../views/notifications/NotificationListView.vue'),
+          },
         ],
       },
       { path: '/:pathMatch(.*)*', redirect: '/' },

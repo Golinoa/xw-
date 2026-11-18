@@ -14,6 +14,7 @@ export * from './finance-applications';
 export * from './health';
 export * from './http';
 export * from './members';
+export * from './notifications';
 export * from './orders';
 export * from './ops';
 export * from './organizations';

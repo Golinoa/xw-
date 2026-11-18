@@ -12,6 +12,7 @@ import type { FinanceApplicationRepository } from '../modules/finance-applicatio
 import type { SettlementRepository } from '../modules/settlements/settlement-service';
 import type { CompanySettingsRepository } from '../modules/company-settings/company-settings-service';
 import type { AuditRepository } from '../modules/audit/audit-service';
+import type { NotificationRepository } from '../modules/notifications/notification-service';
 import { ApiHttpError } from './error-handler';
 import { createSupabaseAuthVerifier } from '../services/supabase-auth-verifier';
 import type { OpsAuthUpstream } from '../modules/ops/auth/upstream';
@@ -36,6 +37,7 @@ export interface ApiEnvironment {
     SETTLEMENT_REPOSITORY?: SettlementRepository;
     COMPANY_SETTINGS_REPOSITORY?: CompanySettingsRepository;
     AUDIT_REPOSITORY?: AuditRepository;
+    NOTIFICATION_REPOSITORY?: NotificationRepository;
     /**
      * GoTrue 的注入点，只存在于测试。
      *

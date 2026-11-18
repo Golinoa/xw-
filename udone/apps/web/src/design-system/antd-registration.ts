@@ -1,5 +1,6 @@
 import {
   Alert,
+  Badge,
   Button,
   Card,
   Checkbox,
@@ -41,6 +42,7 @@ import type { Plugin } from 'vue';
  */
 export const antdComponents: Plugin[] = [
   Alert,
+  Badge,
   Button,
   Card,
   Checkbox,
