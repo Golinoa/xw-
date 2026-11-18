@@ -14,6 +14,7 @@ import type { CompanySettingsRepository } from '../modules/company-settings/comp
 import type { AuditRepository } from '../modules/audit/audit-service';
 import type { NotificationRepository } from '../modules/notifications/notification-service';
 import type { BalanceRepository } from '../modules/balances/balance-service';
+import type { ReportRepository } from '../modules/reports/report-service';
 import { ApiHttpError } from './error-handler';
 import { createSupabaseAuthVerifier } from '../services/supabase-auth-verifier';
 import type { OpsAuthUpstream } from '../modules/ops/auth/upstream';
@@ -40,6 +41,7 @@ export interface ApiEnvironment {
     AUDIT_REPOSITORY?: AuditRepository;
     NOTIFICATION_REPOSITORY?: NotificationRepository;
     BALANCE_REPOSITORY?: BalanceRepository;
+    REPORT_REPOSITORY?: ReportRepository;
     /**
      * GoTrue 的注入点，只存在于测试。
      *

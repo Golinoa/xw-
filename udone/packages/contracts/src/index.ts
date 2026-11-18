@@ -21,6 +21,7 @@ export * from './ops';
 export * from './organizations';
 export * from './pagination';
 export * from './permissions';
+export * from './reports';
 export * from './routes';
 export * from './settlements';
 export * from './suppliers';

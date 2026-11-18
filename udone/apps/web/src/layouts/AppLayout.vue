@@ -105,6 +105,13 @@ async function logout() {
             余额
           </RouterLink>
           <RouterLink
+            to="/reports"
+            class="nav-link"
+            :class="{ 'nav-link-active': route.name === 'reports' }"
+          >
+            报表
+          </RouterLink>
+          <RouterLink
             to="/notifications"
             class="nav-link"
             :class="{ 'nav-link-active': route.name === 'notifications' }"

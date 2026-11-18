@@ -76,6 +76,11 @@ export function createAppRouter(
             name: 'balances',
             component: () => import('../views/balances/BalanceListView.vue'),
           },
+          {
+            path: 'reports',
+            name: 'reports',
+            component: () => import('../views/reports/ReportListView.vue'),
+          },
         ],
       },
       { path: '/:pathMatch(.*)*', redirect: '/' },

@@ -1,6 +1,7 @@
 import type { z } from 'zod';
 import { auditFacetsResponseSchema, auditListQuerySchema, auditListResponseSchema } from './audit';
 import { authContextSchema } from './auth';
+import { reportQuerySchema, reportResponseSchema, supplierReportResponseSchema } from './reports';
 import {
   accountBalanceListResponseSchema,
   adjustBalanceRequestSchema,
@@ -384,6 +385,18 @@ export const ROUTES = {
     method: 'POST',
     path: '/api/organizations/:id/switch',
     response: authContextSchema,
+  }),
+  getTenantReport: defineRoute({
+    method: 'GET',
+    path: '/api/reports/tenant',
+    request: reportQuerySchema,
+    response: reportResponseSchema,
+  }),
+  getSupplierReport: defineRoute({
+    method: 'GET',
+    path: '/api/reports/suppliers',
+    request: reportQuerySchema,
+    response: supplierReportResponseSchema,
   }),
   listAccountBalances: defineRoute({
     method: 'GET',
