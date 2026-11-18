@@ -1,5 +1,11 @@
 # 旅行社 OMS MVP 与试运行上线实施计划
 
+> **状态（2026-11-18 整理）:** 本文件是**阶段划分与验收真源**，但 Task 4–9 的 TDD 步骤
+> 复选框没有随实际进度同步，39 个 `- [ ]` **不等于 39 条待办**。当前执行态以
+> `2026-10-29-business-completion-backlog.md` 为准：Task 4–6 的大部分已交付；Task 7 的
+> 结算部分代码已写待验证、通知未开始；Task 8 的回收站已交付，CRM/报表未开始；
+> Task 9 的 CI E2E 门禁配置已写、等流水线实跑。请勿按本文复选框数量估算进度。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 在已完成的平台骨架上交付旅行社 OMS P0/P1 多人协作 MVP，并通过真实 staging、隔离、财务、恢复和用户验收后开放团队试运行。

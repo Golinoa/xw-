@@ -130,8 +130,13 @@ Wave 1 只做到「前端登录、菜单、403/404 能对着真 API 跑通」，
 
 ### 0.4 认证代理与受控凭证
 
-- [ ] `POST /api/v1/ops/auth/{login,refresh,logout}` 落进契约与实现
-- [ ] `cors.ts` 仅在配置了 `ALLOWED_ORIGINS` 时开 `credentials`，登录单独限流
+- [x] `POST /api/v1/ops/auth/{login,refresh,logout}` 落进契约与实现
+- [x] `cors.ts` 仅在配置了 `ALLOWED_ORIGINS` 时开 `credentials`，登录单独限流
+
+**补勾证据（2026-11-18）:** 三端点在 `modules/ops/auth/routes.ts`（96/197/222 行）与
+`packages/contracts/src/ops/auth.ts`；`cors.ts` 用 per-origin 判定后单独设
+`Access-Control-Allow-Credentials: true`（未配置来源时不设置），登录失败 5 次返回
+`ERROR_CODES.RATE_LIMITED` / 429（`auth/routes.ts:118`）。
 
 **现状证据:** 前端 `api/core/auth.ts` 已在调这三个路径，并假定「access token 只驻内存、刷新令牌走 Set-Cookie」（`withCredentials: true`）；契约 §5.1 一条都没有。业务端 `cors.ts` 是 `credentials: false`，跨源时浏览器会丢弃 `Set-Cookie`。
 
@@ -145,10 +150,17 @@ Wave 1 只做到「前端登录、菜单、403/404 能对着真 API 跑通」，
 
 ### T-01 契约包与路由骨架
 
-- [ ] `packages/contracts/src/ops/{permissions,errors,routes,meta}.ts`
-- [ ] `apps/api/src/modules/ops/**` 与 `index.ts` 一行挂载
-- [ ] `GET /api/v1/ops/meta`：`contractVersion`、`serverTime`、`timezone`、`supportedSalesModes`、`supportedCurrencies`
-- [ ] 三个新错误码：`STATE_CONFLICT`、`IDEMPOTENCY_CONFLICT`、`SYNC_TARGET_UNAVAILABLE`
+- [x] `packages/contracts/src/ops/{permissions,errors,routes,meta}.ts`
+- [x] `apps/api/src/modules/ops/**` 与 `index.ts` 一行挂载
+- [x] `GET /api/v1/ops/meta`：`contractVersion`、`serverTime`、`timezone`、`supportedSalesModes`、`supportedCurrencies`
+- [x] 错误码 `STATE_CONFLICT`、`IDEMPOTENCY_CONFLICT` 已落地
+- [ ] 错误码 `SYNC_TARGET_UNAVAILABLE` 未按契约 §6.3 落地（**真缺口，2026-11-18 复核**）
+
+**补勾证据（2026-11-18）:** ops 契约在 `packages/contracts/src/ops/session.ts`（`OpsPermission`）、
+`packages/contracts/src/routes.ts:742`（`OPS_ROUTES`）与 `ops/meta.ts`；`modules/ops/` 下 21 个域，
+`index.ts` 已挂载。`STATE_CONFLICT` / `IDEMPOTENCY_CONFLICT` 在 `errors.ts:22/59`。
+`SYNC_TARGET_UNAVAILABLE` 全仓零实现，但 `admin/Docs/ops-api-contract.md:737` 要求它映射
+HTTP 502、带 `commandId` 与 `retryable`；部署域当前直接透传底层错误，见「待办」段。
 
 **做法要点:** `Permission` 保持租户专用联合，**不**把 ops 的 39 个动作码并进去——`customer.read`、`settings.manage`、`audit.read` 在两侧同名但存储不同（`organization_role_permissions` vs `ops.role_permissions`），共用一个类型等于给串号留口子。ops 用独立的 `OpsPermission`。
 
@@ -158,9 +170,12 @@ Wave 1 只做到「前端登录、菜单、403/404 能对着真 API 跑通」，
 
 ### T-02 `ops` schema 引导与 RLS 帮助函数
 
-- [ ] 迁移 `20261030000001_ops_schema_bootstrap.sql`（序号接第 13 个）
-- [ ] `ops.current_operator_id()` / `has_permission(text)` / `get_current_ops_context()` / `write_audit(...)`
-- [ ] `ops.idempotency_records`（配合 0.1）
+- [x] 迁移 `20261030000001_ops_schema_idempotency.sql`（原计划名 `..._ops_schema_bootstrap.sql`，实际落库名不同，内容等价）
+- [x] `ops.current_operator_id()` / `has_permission(text)` / `get_current_ops_context()` / `write_audit(...)`
+- [x] `ops.idempotency_records`（配合 0.1）
+
+**补勾证据（2026-11-18）:** 迁移 `20261030000001_ops_schema_idempotency.sql:20` 建
+`ops.idempotency_records`；四个函数在 `20261030000003_ops_identity.sql:142/154/176/248`。
 
 **验收标准（pgTAP，全部真跑）:** P1 `anon` 无 schema USAGE；P2 租户成员查 `ops.customers` 为 0 行；P10 租户成员调 `public.get_current_auth_context()` 为 0 行；所有函数 `search_path = ''` 且未授予 `public`/`anon`。
 
@@ -168,9 +183,13 @@ Wave 1 只做到「前端登录、菜单、403/404 能对着真 API 跑通」，
 
 ### T-03 运营身份与账号管理
 
-- [ ] 表：`operators`、`roles`、`permissions`、`role_permissions`、`operator_roles`、`audit_events`
-- [ ] RPC：邀请、改状态/角色、改角色权限（均 `SECURITY DEFINER` + 二次校验）
-- [ ] 端点：`/session`、`/permissions`、`/operators*`、`/roles*`、`/audit-events` + 0.4 的认证三端点
+- [x] 表：`operators`、`roles`、`permissions`、`role_permissions`、`operator_roles`、`audit_events`
+- [x] RPC：邀请、改状态/角色、改角色权限（均 `SECURITY DEFINER` + 二次校验）
+- [x] 端点：`/session`、`/permissions`、`/operators*`、`/roles*`、`/audit-events` + 0.4 的认证三端点
+
+**补勾证据（2026-11-18）:** 表建在 `20261030000003_ops_identity.sql`；写 RPC 同文件并经历
+`20261030000005/0006` 重载修正；端点登记在 `packages/contracts/src/routes.ts:771~824`。
+邀请仍是单测替身（本地无 GoTrue），此项按原验收分层不算端到端验证。
 
 **验收分层（必须分开写，不许混算）:**
 

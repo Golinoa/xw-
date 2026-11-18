@@ -310,8 +310,14 @@
 
 ## Self-Review Checklist
 
-- [ ] Every requirement in `TECH_SELECTION.md` sections 5–10 is represented by a task or explicitly deferred.
-- [ ] No task writes business tables for orders or finance before identity/RLS passes.
-- [ ] Shared types and route signatures are consistent across Tasks 2, 4, 5, and 6.
-- [ ] Database policy tests cover cross-tenant denial and organization context changes.
-- [ ] Real deployed request/response evidence is collected before calling the foundation complete.
+- [x] Every requirement in `TECH_SELECTION.md` sections 5–10 is represented by a task or explicitly deferred.
+- [x] No task writes business tables for orders or finance before identity/RLS passes.
+- [x] Shared types and route signatures are consistent across Tasks 2, 4, 5, and 6.
+- [x] Database policy tests cover cross-tenant denial and organization context changes.
+- [x] Real deployed request/response evidence is collected before calling the foundation complete.
+
+**补勾证据（2026-11-18）:** ①`TECH_SELECTION.md` §5–10 的决策落到本计划任务与本文
+「明确排除」（文件工作流暂缓）；②Task 1 的 RLS 验收先于 Task 4–6 业务写入
+（journal `2026-10-05-task1-organization-rls.md`）；③`route-parity` 双向对账与共享契约；
+④同文件含跨租户拒绝与组织切换实测；⑤Task 4 Step 4 的 staging 真实请求/响应记录。
+本清单是平台骨架阶段的验收复核，不代表后续业务阶段完成。
