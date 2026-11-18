@@ -153,14 +153,15 @@ Wave 1 只做到「前端登录、菜单、403/404 能对着真 API 跑通」，
 - [x] `packages/contracts/src/ops/{permissions,errors,routes,meta}.ts`
 - [x] `apps/api/src/modules/ops/**` 与 `index.ts` 一行挂载
 - [x] `GET /api/v1/ops/meta`：`contractVersion`、`serverTime`、`timezone`、`supportedSalesModes`、`supportedCurrencies`
-- [x] 错误码 `STATE_CONFLICT`、`IDEMPOTENCY_CONFLICT` 已落地
-- [ ] 错误码 `SYNC_TARGET_UNAVAILABLE` 未按契约 §6.3 落地（**真缺口，2026-11-18 复核**）
+- [x] 三个新错误码 `STATE_CONFLICT`、`IDEMPOTENCY_CONFLICT`、`SYNC_TARGET_UNAVAILABLE` 已登记进共享契约
 
 **补勾证据（2026-11-18）:** ops 契约在 `packages/contracts/src/ops/session.ts`（`OpsPermission`）、
 `packages/contracts/src/routes.ts:742`（`OPS_ROUTES`）与 `ops/meta.ts`；`modules/ops/` 下 21 个域，
-`index.ts` 已挂载。`STATE_CONFLICT` / `IDEMPOTENCY_CONFLICT` 在 `errors.ts:22/59`。
-`SYNC_TARGET_UNAVAILABLE` 全仓零实现，但 `admin/Docs/ops-api-contract.md:737` 要求它映射
-HTTP 502、带 `commandId` 与 `retryable`；部署域当前直接透传底层错误，见「待办」段。
+`index.ts` 已挂载。三个错误码都在 `packages/contracts/src/errors.ts`，`errors.test.ts` 快照同步。
+`SYNC_TARGET_UNAVAILABLE` 按契约 §6.3 登记为 502 语义（`commandId` + `retryable`），
+但当前没有任何端点同步下发租户命令，所以**它是「已登记、暂无产生端」**——
+定时派发（`tenant-integration/dispatch.ts`）走后台 RPC 回写 failed/unknown，不返回 HTTP 502。
+要让它真正出现，需要新增「同步执行并等待结果」端点，属另一个任务，不在 T-01 范围。
 
 **做法要点:** `Permission` 保持租户专用联合，**不**把 ops 的 39 个动作码并进去——`customer.read`、`settings.manage`、`audit.read` 在两侧同名但存储不同（`organization_role_permissions` vs `ops.role_permissions`），共用一个类型等于给串号留口子。ops 用独立的 `OpsPermission`。
 

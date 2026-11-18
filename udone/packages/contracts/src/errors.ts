@@ -57,6 +57,13 @@ export const ERROR_CODES = {
    * 「幂等键被复用」：后者是客户端 bug，重试永远不会成功，必须换 key。
    */
   IDEMPOTENCY_CONFLICT: 'IDEMPOTENCY_CONFLICT',
+  /**
+   * 租户命令同步目标不可达/超时，结果未知（契约 §6.3，502）。
+   *
+   * details 固定带 `commandId` 与 `retryable`。命令本身仍以 pending 落库，
+   * 运营侧不能把它显示成失败——那会让用户重试出一个重复命令。
+   */
+  SYNC_TARGET_UNAVAILABLE: 'SYNC_TARGET_UNAVAILABLE',
   RATE_LIMITED: 'RATE_LIMITED',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;
