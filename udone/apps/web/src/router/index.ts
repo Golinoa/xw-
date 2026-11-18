@@ -71,6 +71,11 @@ export function createAppRouter(
             name: 'notifications',
             component: () => import('../views/notifications/NotificationListView.vue'),
           },
+          {
+            path: 'balances',
+            name: 'balances',
+            component: () => import('../views/balances/BalanceListView.vue'),
+          },
         ],
       },
       { path: '/:pathMatch(.*)*', redirect: '/' },

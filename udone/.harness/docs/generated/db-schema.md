@@ -3,11 +3,11 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 54
-- Tables discovered: 67
-- Functions discovered: 271
+- Migration sources scanned: 55
+- Tables discovered: 69
+- Functions discovered: 274
 - Indexes discovered: 99
-- RLS policies discovered: 81
+- RLS policies discovered: 83
 - Triggers discovered: 15
 
 | Migration | Tables | Functions | Indexes | Policies | Triggers |
@@ -66,3 +66,4 @@
 | `20261118000003_company_settings.sql` | `public.company_settings` | `public.get_company_settings`, `public.update_company_settings` | — | `company_settings_select_member` | — |
 | `20261119000001_audit_event_enrichment.sql` | — | `public.audit_ip_summary`, `public.audit_device_summary`, `public.write_audit`, `public.audit_order_update`, `public.audit_application_transition` | — | — | `audit_order_update_trigger`, `audit_application_transition_trigger` |
 | `20261119000002_notifications.sql` | `public.notifications` | `public.notify_application_decision`, `public.notify_settlement_confirmed` | `notifications_recipient_unread_idx` | `notifications_select_recipient`, `notifications_update_read` | `notify_application_decision_trigger`, `notify_settlement_confirmed_trigger` |
+| `20261119000003_fund_accounts.sql` | `public.fund_accounts`, `public.balance_adjustments` | `public.account_balances`, `public.create_fund_account`, `public.adjust_account_balance` | — | `fund_accounts_select_member`, `balance_adjustments_select_member` | — |

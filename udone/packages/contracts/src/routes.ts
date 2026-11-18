@@ -1,6 +1,13 @@
 import type { z } from 'zod';
 import { auditFacetsResponseSchema, auditListQuerySchema, auditListResponseSchema } from './audit';
 import { authContextSchema } from './auth';
+import {
+  accountBalanceListResponseSchema,
+  adjustBalanceRequestSchema,
+  adjustBalanceResponseSchema,
+  createFundAccountRequestSchema,
+  createFundAccountResponseSchema,
+} from './balances';
 import { companySettingsSchema, updateCompanySettingsRequestSchema } from './company-settings';
 import {
   markNotificationsReadRequestSchema,
@@ -377,6 +384,23 @@ export const ROUTES = {
     method: 'POST',
     path: '/api/organizations/:id/switch',
     response: authContextSchema,
+  }),
+  listAccountBalances: defineRoute({
+    method: 'GET',
+    path: '/api/account-balances',
+    response: accountBalanceListResponseSchema,
+  }),
+  createFundAccount: defineRoute({
+    method: 'POST',
+    path: '/api/fund-accounts',
+    request: createFundAccountRequestSchema,
+    response: createFundAccountResponseSchema,
+  }),
+  adjustAccountBalance: defineRoute({
+    method: 'POST',
+    path: '/api/account-balances/adjust',
+    request: adjustBalanceRequestSchema,
+    response: adjustBalanceResponseSchema,
   }),
   listAuditEvents: defineRoute({
     method: 'GET',

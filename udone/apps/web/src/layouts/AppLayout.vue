@@ -98,6 +98,13 @@ async function logout() {
             日志
           </RouterLink>
           <RouterLink
+            to="/balances"
+            class="nav-link"
+            :class="{ 'nav-link-active': route.name === 'balances' }"
+          >
+            余额
+          </RouterLink>
+          <RouterLink
             to="/notifications"
             class="nav-link"
             :class="{ 'nav-link-active': route.name === 'notifications' }"

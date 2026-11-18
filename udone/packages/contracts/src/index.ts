@@ -5,6 +5,7 @@
 export { z } from 'zod';
 
 export * from './audit';
+export * from './balances';
 export * from './auth';
 export * from './company-settings';
 export * from './customers';
