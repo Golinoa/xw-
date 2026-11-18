@@ -112,6 +112,13 @@ async function logout() {
             报表
           </RouterLink>
           <RouterLink
+            to="/leads"
+            class="nav-link"
+            :class="{ 'nav-link-active': route.name === 'leads' }"
+          >
+            线索
+          </RouterLink>
+          <RouterLink
             to="/notifications"
             class="nav-link"
             :class="{ 'nav-link-active': route.name === 'notifications' }"

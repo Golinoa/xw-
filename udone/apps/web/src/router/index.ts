@@ -81,6 +81,11 @@ export function createAppRouter(
             name: 'reports',
             component: () => import('../views/reports/ReportListView.vue'),
           },
+          {
+            path: 'leads',
+            name: 'leads',
+            component: () => import('../views/crm/LeadListView.vue'),
+          },
         ],
       },
       { path: '/:pathMatch(.*)*', redirect: '/' },

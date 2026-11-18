@@ -1,6 +1,16 @@
-import type { z } from 'zod';
+import { z } from 'zod';
 import { auditFacetsResponseSchema, auditListQuerySchema, auditListResponseSchema } from './audit';
 import { authContextSchema } from './auth';
+import {
+  convertLeadResponseSchema,
+  createLeadRequestSchema,
+  createLeadResponseSchema,
+  followUpLeadRequestSchema,
+  leadActionRequestSchema,
+  leadDetailResponseSchema,
+  leadListQuerySchema,
+  leadListResponseSchema,
+} from './crm';
 import { reportQuerySchema, reportResponseSchema, supplierReportResponseSchema } from './reports';
 import {
   accountBalanceListResponseSchema,
@@ -385,6 +395,48 @@ export const ROUTES = {
     method: 'POST',
     path: '/api/organizations/:id/switch',
     response: authContextSchema,
+  }),
+  listLeads: defineRoute({
+    method: 'GET',
+    path: '/api/leads',
+    request: leadListQuerySchema,
+    response: leadListResponseSchema,
+  }),
+  getLead: defineRoute({
+    method: 'GET',
+    path: '/api/leads/:leadId',
+    request: z.object({ leadId: z.string().min(1) }),
+    response: leadDetailResponseSchema,
+  }),
+  createLead: defineRoute({
+    method: 'POST',
+    path: '/api/leads',
+    request: createLeadRequestSchema,
+    response: createLeadResponseSchema,
+  }),
+  followUpLead: defineRoute({
+    method: 'POST',
+    path: '/api/leads/follow-up',
+    request: followUpLeadRequestSchema,
+    response: z.object({ success: z.boolean() }),
+  }),
+  claimLead: defineRoute({
+    method: 'POST',
+    path: '/api/leads/claim',
+    request: leadActionRequestSchema,
+    response: z.object({ success: z.boolean() }),
+  }),
+  assignLead: defineRoute({
+    method: 'POST',
+    path: '/api/leads/assign',
+    request: leadActionRequestSchema,
+    response: z.object({ success: z.boolean() }),
+  }),
+  convertLead: defineRoute({
+    method: 'POST',
+    path: '/api/leads/convert',
+    request: z.object({ leadId: z.string().min(1) }),
+    response: convertLeadResponseSchema,
   }),
   getTenantReport: defineRoute({
     method: 'GET',

@@ -3,11 +3,11 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 56
-- Tables discovered: 69
-- Functions discovered: 276
-- Indexes discovered: 99
-- RLS policies discovered: 83
+- Migration sources scanned: 59
+- Tables discovered: 71
+- Functions discovered: 282
+- Indexes discovered: 102
+- RLS policies discovered: 85
 - Triggers discovered: 15
 
 | Migration | Tables | Functions | Indexes | Policies | Triggers |
@@ -68,3 +68,6 @@
 | `20261119000002_notifications.sql` | `public.notifications` | `public.notify_application_decision`, `public.notify_settlement_confirmed` | `notifications_recipient_unread_idx` | `notifications_select_recipient`, `notifications_update_read` | `notify_application_decision_trigger`, `notify_settlement_confirmed_trigger` |
 | `20261119000003_fund_accounts.sql` | `public.fund_accounts`, `public.balance_adjustments` | `public.account_balances`, `public.create_fund_account`, `public.adjust_account_balance` | — | `fund_accounts_select_member`, `balance_adjustments_select_member` | — |
 | `20261119000004_tenant_reports.sql` | — | `public.tenant_report`, `public.tenant_supplier_report` | — | — | — |
+| `20261119000005_crm_leads.sql` | `public.leads`, `public.lead_events` | — | `leads_org_owner_idx`, `leads_org_stage_idx`, `lead_events_lead_idx` | `leads_select_member`, `lead_events_select_member` | — |
+| `20261119000006_crm_lead_followup.sql` | — | `public.create_lead`, `public.record_lead_follow_up` | — | — | — |
+| `20261119000007_crm_lead_pool.sql` | — | `public.claim_lead`, `public.assign_lead`, `public.recycle_stale_leads`, `public.convert_lead_to_customer` | — | — | — |
