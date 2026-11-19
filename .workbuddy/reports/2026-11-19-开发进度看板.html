@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>开发进度看板 · 2026-11-19 收官版</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#151a21; --line:#252d38;
+    --text:#e6e9ee; --muted:#8b96a5; --dim:#5f6b7a;
+    --done:#3fb950; --doing:#d29922; --todo:#6b7787; --blocked:#f85149;
+    --accent:#58a6ff; --accent-2:#39c5cf;
+    --mono:ui-monospace,SFMono-Regular,"JetBrains Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:14px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:34px 26px 72px}
+
+  header{border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:26px}
+  .eyebrow{font:600 11px/1 var(--mono);letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+  h1{margin:10px 0 6px;font-size:26px;font-weight:650;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:13px}
+  .sub b{color:var(--done)}
+  .sub code{font-family:var(--mono);color:var(--accent-2);background:#0b1a1d;padding:1px 5px;border-radius:3px}
+
+  .verdict{border:1px solid #16351f;background:#0c1a12;border-radius:6px;padding:14px 18px;margin:22px 0}
+  .verdict b{color:#56d4a0}
+  .verdict p{margin:4px 0 0;font-size:13px;color:#a9c6b2}
+
+  .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:0 0 34px}
+  .strip>div{background:var(--panel);padding:16px 18px}
+  .strip .k{font:500 11px/1 var(--mono);letter-spacing:.08em;color:var(--dim);text-transform:uppercase;margin-bottom:9px}
+  .strip .v{font:650 22px/1.1 var(--mono);letter-spacing:-.02em}
+  .strip .v small{font-size:12px;font-weight:500;color:var(--muted);margin-left:5px;letter-spacing:0}
+  .strip .g{box-shadow:inset 0 2px 0 var(--done)} .strip .y{box-shadow:inset 0 2px 0 var(--doing)}
+  .strip .r{box-shadow:inset 0 2px 0 var(--blocked)} .strip .b{box-shadow:inset 0 2px 0 var(--accent)}
+
+  .progress{margin:0 0 34px}
+  .prow{margin:12px 0}
+  .phead{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:6px}
+  .phead b{color:var(--text);font-family:var(--mono)}
+  .bar{height:8px;background:#0b0f14;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+  .bar>i{display:block;height:100%;background:linear-gradient(90deg,#2f7d4f,#3fb950)}
+
+  section{margin-bottom:36px}
+  h2{font-size:15px;font-weight:650;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+  h2 .sq{width:9px;height:9px;border-radius:2px;display:inline-block}
+  .sq.done{background:var(--done)} .sq.todo{background:var(--doing)} .sq.block{background:var(--blocked)}
+  .sec-desc{color:var(--muted);font-size:12.5px;margin:0 0 16px;max-width:92ch}
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:940px){.cols{grid-template-columns:1fr}.strip{grid-template-columns:repeat(2,1fr)}}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px 20px}
+  .card+.card{margin-top:14px}
+  .card h3{font-size:13.5px;font-weight:650;margin:0 0 2px}
+  .card .meta{font:500 11px/1.5 var(--mono);color:var(--dim);margin-bottom:12px}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;font:600 10.5px/1 var(--mono);letter-spacing:.09em;color:var(--dim);
+    text-transform:uppercase;padding:0 8px 8px;border-bottom:1px solid var(--line)}
+  td{padding:7px 8px;border-bottom:1px solid #1c232c;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.id{font:600 11.5px/1.5 var(--mono);color:var(--accent-2);white-space:nowrap;width:52px}
+  td.date{font:500 11px/1.5 var(--mono);color:var(--dim);white-space:nowrap;width:52px}
+  td.desc{color:var(--text)}
+  td.desc span{color:var(--dim);font-size:11.5px}
+
+  .pill{display:inline-block;font:600 10px/1 var(--mono);padding:3px 6px;border-radius:3px;letter-spacing:.03em}
+  .p-green{background:#0d2b1a;color:#56d4a0} .p-yellow{background:#2b2210;color:#e3b341}
+  .p-blue{background:#0d1f2e;color:#6cb6ff} .p-red{background:#2d1416;color:#ff7b72}
+
+  .note{border-left:2px solid var(--line);padding:2px 0 2px 13px;color:var(--muted);font-size:12.5px;margin-top:14px}
+  .warnbox{border:1px solid #3d2c12;background:#1a1509;border-radius:5px;padding:13px 16px;margin-top:14px}
+  .warnbox h4{margin:0 0 6px;font-size:12.5px;color:#e3b341;font-weight:650}
+  .warnbox p{margin:0;font-size:12.5px;color:#c9b98f}
+  .okbox{border:1px solid #16351f;background:#0c1a12;border-radius:5px;padding:14px 16px;margin-top:14px}
+  .okbox h4{margin:0 0 6px;font-size:12.5px;color:#56d4a0;font-weight:650}
+  .okbox p{margin:0;font-size:12.5px;color:#9fbfa9}
+
+  footer{border-top:1px solid var(--line);padding-top:16px;color:var(--dim);font-size:11.5px;line-height:1.9}
+  footer code{font-family:var(--mono);color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">udone / 开发进度看板 · 收官版</div>
+  <h1>能自己做的，全部做完了</h1>
+  <div class="sub">
+    数据截至 <code>2026-11-19 02:30</code> · 依据计划文档勾选 + 当次实测证据。
+    上一版（显示「还差 9 条」）已归档为 <code>.bak.html</code>。
+  </div>
+</header>
+
+<div class="verdict">
+  <b>一句话结论：</b>
+  <p><b>P2 批量项 7 条全部交付</b>（C6 结算 / C7 余额 / C8 报表 / C9 通知 / C10 审计 / C11 CRM / C12 配置）。
+  现在只剩 <b>4 条</b>：2 条要你拍板、1 条要你去流水线确认、1 条要你定要不要新端点。
+  这 4 条我动不了手，剩下没有我能单独推进的了。</p>
+</div>
+
+<div class="strip">
+  <div class="g"><div class="k">计划内任务</div><div class="v">20/21<small>已完成</small></div></div>
+  <div class="g"><div class="k">P2 批量项</div><div class="v">7/7<small>全部完成</small></div></div>
+  <div class="b"><div class="k">还差的任务</div><div class="v">4<small>条 · 全部需你协作</small></div></div>
+  <div class="r"><div class="k">外部阻塞</div><div class="v">8<small>项 · 不归我控制</small></div></div>
+</div>
+
+<div class="progress">
+  <div class="prow">
+    <div class="phead"><span>计划内 21 项（A/B/C/D 段）</span><b>20 / 21 · 95%</b></div>
+    <div class="bar"><i style="width:95%"></i></div>
+  </div>
+  <div class="prow">
+    <div class="phead"><span>P2 批量项 7 项（C6–C12）</span><b>7 / 7 · 100%</b></div>
+    <div class="bar"><i style="width:100%"></i></div>
+  </div>
+  <div class="prow">
+    <div class="phead"><span>ops 计划 12 项 + 平台基础 5 项验收</span><b>17 / 17 · 100%</b></div>
+    <div class="bar"><i style="width:100%"></i></div>
+  </div>
+</div>
+
+<!-- ============ 已完成 ============ -->
+<section>
+  <h2><span class="sq done"></span>已完成 · 本次新增 5 项 P2</h2>
+  <p class="sec-desc">每一项都附了完成日期与可追溯证据（journal）。没有「基本完成」这个状态。</p>
+  <div class="card">
+    <table>
+      <tr><th style="width:52px">编号</th><th>具体做了什么</th><th style="width:52px">日期</th></tr>
+      <tr><td class="id">C10</td><td class="desc"><span class="pill p-green">本次</span> 审计日志<span>IP/设备掩码摘要 + 统一写入函数 + 订单状态/金额/审批强制审计 + 只读查询页（日志不可改）</span></td><td class="date">11-19</td></tr>
+      <tr><td class="id">C9</td><td class="desc"><span class="pill p-green">本次</span> 站内通知<span>审批结果/结算确认在业务事务内写通知；未读计数、已读、对象跳转；导航角标</span></td><td class="date">11-19</td></tr>
+      <tr><td class="id">C7</td><td class="desc"><span class="pill p-green">本次</span> 账户余额<span>资金账户 + 实时余额函数（期初+已确认收−已确认付+调整）+ 不可变调整流水；只认 approved</span></td><td class="date">11-19</td></tr>
+      <tr><td class="id">C8</td><td class="desc"><span class="pill p-green">本次</span> 报表统一口径<span>总览/供应商两张报表函数；页面、仪表盘、CSV 导出同源；创建日期过滤、在途单列</span></td><td class="date">11-19</td></tr>
+      <tr><td class="id">C11</td><td class="desc"><span class="pill p-green">本次</span> CRM 线索与公海<span>阶段/跟进时间线、乐观锁认领分配、7 天超时回收、幂等转客户</span></td><td class="date">11-19</td></tr>
+    </table>
+    <div class="okbox">
+      <h4>全部门禁通过后提交，没有一项是「跑一半就算了」</h4>
+      <p>最终全量：pgTAP <b>49 文件</b>全绿 · HTTP 集成 <b>31 文件 / 442 用例</b> · Vitest <b>73 文件 / 912 用例</b> ·
+      tsc + vue-tsc · ESLint/CSS token · schema:check（59 迁移）· 生产构建。每卡独立 journal 与提交。</p>
+    </div>
+    <div class="note">前一轮已完成：A1–A5、B1–B2、C1–C6、C12、D1（13 项）+ ops 计划 12 项 + 平台基础 5 项验收。</div>
+  </div>
+</section>
+
+<!-- ============ 未完成 ============ -->
+<section>
+  <h2><span class="sq todo"></span>还剩 4 条 · 全部需要你</h2>
+  <p class="sec-desc">上一版的「我可直接推进 5 条」已全部做完。剩下的我把话说明白：不是我不做，是缺凭据/缺你的决定。</p>
+
+  <div class="cols">
+    <div class="card">
+      <h3><span class="pill p-yellow">你已授权，但环境卡住</span> 2 条</h3>
+      <div class="meta">你在选项里选了「彻底删除」「能删就删」，但执行动不了手</div>
+      <table>
+        <tr><td class="id">1</td><td class="desc">供应商 387 + 4 条订单彻底删除<span>站点活着（302 跳登录），但本地<b>没有登录凭据</b>（密码全脱敏、无 cookie/session）；且 Chrome 被本机代理卡死（ERR_NO_SUPPORTED_PROXIES）。可逆性：不可逆</span></td></tr>
+        <tr><td class="id">2</td><td class="desc">测试用户 90「能删就删」<span>同样卡在凭据与代理。服务端本来就静默拒删，需现场确认还有什么释放方式</span></td></tr>
+      </table>
+      <div class="warnbox">
+        <h4>你要给的：要么凭据，要么你自己点</h4>
+        <p>给可用登录方式（或让 Chrome 绕过系统代理）我来登进去核对 4 条订单清单、删完回读验证；
+        或者你在浏览器里进 <code>/orders/trash</code> 彻底删除那 4 条「复刻调研_」订单，再处理用户 90。
+        不能靠猜删——证据里只明确出现 <code>ORD2026100100005</code>，其余要现场核对。</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3><span class="pill p-blue">需要你的动作/决定</span> 2 条</h3>
+      <table>
+        <tr><td class="id">D2</td><td class="desc">E2E 接入 CI<span>配置已写好、本地 10 通过 1 跳过。只差你推送后到 Gitee Go 看 <code>e2e_gate</code> 绿——本机看不到流水线结果</span></td></tr>
+        <tr><td class="id">NEW</td><td class="desc">SYNC 502 产生端<span>错误码已登记但无端点产生。你已选「不做」；如需「立即同步并等结果」功能，要另立需求</span></td></tr>
+      </table>
+      <div class="note">SYNC 这条按你的决定已关闭，列在这里只是留痕——它不算未完成任务。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 外部阻塞 ============ -->
+<section>
+  <h2><span class="sq block"></span>外部阻塞 · 8 项（不计入待办）</h2>
+  <p class="sec-desc">不是「要做的功能」，而是「拿不到的东西」或「本机环境限制」。</p>
+  <div class="cols">
+    <div class="card">
+      <h3>授权与资料 · 4 项</h3>
+      <div class="meta">泫蜗旅行 OMS 复刻调研</div>
+      <table>
+        <tr><td class="desc">真实数据库结构：schema、迁移或服务端源码</td></tr>
+        <tr><td class="desc">第二个授权租户 + 同租户不同员工账号</td></tr>
+        <tr><td class="desc">导入功能入口（全站至今未发现）</td></tr>
+        <tr><td class="desc">审批驳回 / 撤回完整 UI（403 / 404）</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>本机环境 · 4 项</h3>
+      <div class="meta">有绕过办法，不阻塞交付</div>
+      <table>
+        <tr><td class="desc">Gitee Go 结果本机不可见 → D2 必须你去看</td></tr>
+        <tr><td class="desc">调研站点无本地凭据 + Chrome 代理异常 → 站点删除卡住</td></tr>
+        <tr><td class="desc">CRLF 工作区 vs Prettier lf → 全量格式检查误报，按行尾逐项查</td></tr>
+        <tr><td class="desc">safe-delete 拦清空 dist → 构建/测试输出改到系统 Temp</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <b style="color:var(--muted)">证据与口径</b><br>
+  任务状态取自 <code>udone/Docs/superpowers/plans/2026-10-29-business-completion-backlog.md</code>，P2 已全部标记完成。<br>
+  本次 5 卡 journal：<code>udone/.harness/journal/2026-11-19-c{7,8,9,10,11}-*.md</code><br>
+  提交：<code>c291156</code>(C10) → <code>eea00ba</code> 之后的 C9/C7/C8/C11 → <code>f63dc7e</code>(backlog 收官)。<br>
+  文字报告：<code>.workbuddy/reports/2026-11-18-未完成任务整理与C6收尾.md</code>（历史）。
+</footer>
+
+</div>
+</body>
+</html>

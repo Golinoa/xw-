@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>待办清单 · 2026-11-16</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#151a21; --line:#252d38;
+    --text:#e6e9ee; --muted:#8b96a5; --dim:#5f6b7a;
+    --done:#3fb950; --doing:#d29922; --blocked:#f85149;
+    --accent:#58a6ff; --accent-2:#39c5cf; --be:#56d4a0; --fe:#6cb6ff;
+    --mono:ui-monospace,SFMono-Regular,"JetBrains Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:14px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1100px;margin:0 auto;padding:36px 26px 72px}
+  code{font-family:var(--mono);color:var(--accent-2);background:#0b1a1d;padding:1px 5px;border-radius:3px;font-size:12px}
+
+  header{border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:22px}
+  .eyebrow{font:600 11px/1 var(--mono);letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+  h1{margin:10px 0 6px;font-size:25px;font-weight:650;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:13px;max-width:96ch}
+
+  .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:20px 0 30px}
+  .strip>div{background:var(--panel);padding:14px 16px}
+  .strip .k{font:500 10.5px/1 var(--mono);letter-spacing:.08em;color:var(--dim);text-transform:uppercase;margin-bottom:9px}
+  .strip .v{font:650 21px/1.1 var(--mono);letter-spacing:-.02em}
+  .strip .v small{font-size:11.5px;font-weight:500;color:var(--muted);margin-left:5px;letter-spacing:0}
+  .strip .now{background:#121a14;box-shadow:inset 0 2px 0 var(--done)}
+  .strip .wait{background:#1a1214;box-shadow:inset 0 2px 0 var(--blocked)}
+  @media(max-width:880px){.strip{grid-template-columns:repeat(2,1fr)}}
+
+  h2{font-size:15px;font-weight:650;margin:0 0 5px;display:flex;align-items:center;gap:9px}
+  h2 .tag{font:600 10px/1 var(--mono);letter-spacing:.1em;padding:4px 7px;border-radius:3px;
+    background:#1f2937;color:var(--muted);text-transform:uppercase}
+  h2 .tag.a{background:#0d2b22;color:var(--be)}
+  h2 .tag.b{background:#2d1416;color:#ff7b72}
+  h2 .tag.c{background:#0d1f2e;color:var(--fe)}
+  .sec-desc{color:var(--muted);font-size:12.5px;margin:0 0 15px;max-width:94ch}
+  section{margin-bottom:36px}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:17px}
+  .card+.card{margin-top:13px}
+  .card h3{font-size:13.5px;font-weight:650;margin:0 0 3px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .card h3 em{font-style:normal;font:600 11px/1 var(--mono);color:var(--dim)}
+  .card .meta{font:500 11.5px/1.5 var(--mono);color:var(--dim);margin-bottom:13px}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;font:600 10.5px/1 var(--mono);letter-spacing:.09em;color:var(--dim);
+    text-transform:uppercase;padding:0 8px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:8px 8px;border-bottom:1px solid #1c232c;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  td.id{font:600 11.5px/1.5 var(--mono);color:var(--dim);white-space:nowrap}
+  td.name span{display:block;color:var(--dim);font-size:11.5px;margin-top:1px}
+
+  .pill{display:inline-block;font:600 10.5px/1 var(--mono);padding:4px 7px;border-radius:3px;letter-spacing:.03em;white-space:nowrap}
+  .p-done{background:#0d2b1a;color:#56d4a0}
+  .p-doing{background:#2b2210;color:#e3b341}
+  .p-todo{background:#1e242c;color:#8b96a5}
+  .p-blocked{background:#2d1416;color:#ff7b72}
+
+  .note{border-left:2px solid var(--line);padding:2px 0 2px 13px;color:var(--muted);font-size:12px;margin-top:13px}
+  .warnbox{border:1px solid #3d2c12;background:#1a1509;border-radius:5px;padding:13px 15px;margin-top:13px}
+  .warnbox h4{margin:0 0 5px;font-size:12.5px;color:#e3b341;font-weight:650}
+  .warnbox p{margin:0;font-size:12px;color:#c9b98f}
+  footer{border-top:1px solid var(--line);padding-top:16px;color:var(--dim);font-size:11.5px;line-height:1.9;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">XW-ERP · 待办汇总</div>
+  <h1>还剩什么，各卡在哪</h1>
+  <div class="sub">
+    两条线合在一起看：<b>udone 业务端</b>计划内只剩 D2 一次流水线验证；
+    <b>admin 运营后台</b>还有 57 条，其中 46 条联调现在就能做。
+    下面按「谁能推动」分成三块，不按项目分——这样才知道下一步该找谁。
+  </div>
+</header>
+
+<div class="strip">
+  <div class="now"><div class="k">现在就能开工</div><div class="v">48<small>条 · 联调 46 + 遗留 2</small></div></div>
+  <div class="wait"><div class="k">要你给条件</div><div class="v">10<small>条 · D2 + 验收 9</small></div></div>
+  <div><div class="k">要先出需求</div><div class="v">7<small>张 · C6–C12</small></div></div>
+  <div><div class="k">已完成</div><div class="v">39<small>项 · udone 计划内</small></div></div>
+</div>
+
+<section>
+  <h2><span class="tag a">能推进</span> 不等任何人，48 条</h2>
+  <p class="sec-desc">
+    运营后台的页面代码都写完了，缺的是「和真后端对一遍」。这件事本地就能做：admin 前端 + ops 后端同机起服务，
+    按条走通再勾复选框（原计划规定只在联调通过后才勾）。
+  </p>
+
+  <div class="card">
+    <h3>admin · Task 3–8 真实 API 联调 <em>46 条</em></h3>
+    <div class="meta">本地起 admin + ops 后端 · 按条验证后勾选</div>
+    <table>
+      <tr><th style="width:52px">任务</th><th>范围</th><th style="width:64px">条数</th><th style="width:88px">状态</th></tr>
+      <tr><td class="id">T3</td><td class="name">应用壳 / 登录 / 403·404 / 权限目录</td><td class="num">9</td><td><span class="pill p-doing">代码完成</span></td></tr>
+      <tr><td class="id">T4</td><td class="name">客户 · 产品套餐 · 合同<span>20 个页面</span></td><td class="num">8</td><td><span class="pill p-doing">代码完成</span></td></tr>
+      <tr><td class="id">T5</td><td class="name">应收 · 收款 · 核销 · 退款<span>风险最高的一组</span></td><td class="num">8</td><td><span class="pill p-doing">代码完成</span></td></tr>
+      <tr><td class="id">T6</td><td class="name">权益 · 租户交付</td><td class="num">8</td><td><span class="pill p-doing">代码完成</span></td></tr>
+      <tr><td class="id">T7</td><td class="name">私有化部署 · 售后工单</td><td class="num">6</td><td><span class="pill p-doing">代码完成</span></td></tr>
+      <tr><td class="id">T8</td><td class="name">账号 · 审计 · 总览 · 报表 · 导出</td><td class="num">7</td><td><span class="pill p-doing">代码完成</span></td></tr>
+      <tr><td class="id">合计</td><td class="name">—</td><td class="num">46</td><td><span class="pill p-todo">待启动</span></td></tr>
+    </table>
+    <div class="note">
+      建议顺序：T3（壳与权限目录）→ T5（钱，风险最高）→ T4 → T6 → T7 → T8。
+      先把权限目录对上，后面每一页的按钮显隐才有依据；钱那组早暴露问题，改起来最便宜。
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>admin · Task 2 门禁遗留 <em>2 条</em></h3>
+    <div class="meta">工程债 · 与功能无关，但不还就会一直挂着 advisory</div>
+    <table>
+      <tr><th style="width:190px">事项</th><th>说明</th></tr>
+      <tr><td class="name">advisory 清账</td><td class="name">依赖告警还剩 high 2，critical 已 0<span>要么升级，要么写进白名单并标到期日</span></td></tr>
+      <tr><td class="name">托管 CI 落地</td><td class="name">门禁目前本地跑，托管流水线还没接<span>T2 现在 9/11</span></td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="tag b">要你给条件</span> 10 条，我做不了</h2>
+  <p class="sec-desc">这两块的共同点是：结论都在我够不到的地方——一个在 Gitee Go 的页面里，一个需要一台 staging 机器。</p>
+
+  <div class="card">
+    <h3>udone · D2 E2E 接入 CI <em>1 张</em></h3>
+    <div class="meta">代码已就绪 · 只缺一次流水线结果</div>
+    <table>
+      <tr><th style="width:110px">状态</th><th>说明</th></tr>
+      <tr>
+        <td><span class="pill p-blocked">等你看</span></td>
+        <td class="name">
+          <code>.workflow/ci.yml</code> 的 <code>e2e_gate</code> 已写好，A1 的 11 条用例本地全绿（<code>102d3a1</code> 已推送）
+          <span>卡片要求「看到流水线真实跑过」，而本机看不了 Gitee Go 结果。你在流水线页面确认一次即可勾掉。</span>
+        </td>
+      </tr>
+    </table>
+    <div class="warnbox">
+      <h4>如果红在 <code>--with-deps</code></h4>
+      <p>说明镜像不允许 apt 装系统库。正确处理是在镜像里预装 Chromium 依赖；
+      <b>不要删掉那行</b>让用例假装通过——那等于把这条门禁换成装饰。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>admin · Task 9 端到端验收 <em>9 条</em></h3>
+    <div class="meta">security / 兼容 / 部署 / 双身份 · 全都要 staging</div>
+    <table>
+      <tr><th style="width:110px">状态</th><th>说明</th></tr>
+      <tr>
+        <td><span class="pill p-blocked">阻塞 · 环境</span></td>
+        <td class="name">
+          staging 需 2–3 天搭建，它卡着这 9 条验收
+          <span>排期里建议 W1 并行启动：它对关键路径的贡献是零，但晚一天就把整体往后推一天。</span>
+        </td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="tag c">要先出需求</span> 7 张，P2</h2>
+  <p class="sec-desc">
+    这 7 张是原始计划之外的 P2 批量项，<b>需求还没开始</b>，所以现在连「做几天」都估不准。
+    需要先把口径定下来（尤其 C8 报表口径、C6 批量结算的失败处理），再拆成可执行的粒度。
+  </p>
+  <div class="card">
+    <table>
+      <tr><th style="width:60px">编号</th><th>需求</th><th style="width:130px">现状</th><th style="width:52px">规模</th></tr>
+      <tr><td class="id">C6</td><td class="name">R-SETTLE-01 批量结算</td><td class="name">无表无 API</td><td class="num">L</td></tr>
+      <tr><td class="id">C7</td><td class="name">R-BALANCE-01 账户余额</td><td class="name">无资金账户概念</td><td class="num">L</td></tr>
+      <tr><td class="id">C8</td><td class="name">R-REPORT-01 报表与统一口径</td><td class="name">无统计服务</td><td class="num">L</td></tr>
+      <tr><td class="id">C9</td><td class="name">R-NOTIFY-01 站内通知</td><td class="name">无</td><td class="num">M</td></tr>
+      <tr><td class="id">C10</td><td class="name">R-AUDIT-01 审计日志</td><td class="name">只有业务轨迹，无独立审计表</td><td class="num">M</td></tr>
+      <tr><td class="id">C11</td><td class="name">R-CRM-01/02 线索与公海</td><td class="name">无 <code>leads</code> 表</td><td class="num">L</td></tr>
+      <tr><td class="id">C12</td><td class="name">公司配置</td><td class="name">未开</td><td class="num">M</td></tr>
+    </table>
+    <div class="note">
+      顺带一句：C8 和 C6 会反过来影响 admin 的报表页与结算页。若这两项迟早要做，
+      T8 联调时先把「口径从哪来」问清楚，比做完再改页面便宜。
+    </div>
+  </div>
+</section>
+
+<footer>
+  数据来源：<code>.workbuddy/reports/2026-11-14-任务清单与排期.html</code>（11-16 更新）·<br>
+  <code>udone/Docs/superpowers/plans/2026-10-29-business-completion-backlog.md</code> ·<br>
+  统计口径：udone 39 项已交付 = B1/B2/C1–C5/D1/A1/A5 + 11 个域；admin 57 条 = 46 联调 + 9 验收 + 2 遗留。
+</footer>
+
+</div>
+</body>
+</html>

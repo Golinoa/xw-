@@ -13,3 +13,11 @@ dist/
 # 发布产物：由流水线在构建时生成，不入库
 /artifacts/
 .release/resolved.json
+
+# 本地排查留痕：探针包、临时 PostgreSQL 数据目录、pnpm 坏链残留。
+# 这些都是单机诊断产物，对仓库没有任何价值，且体积大、含绝对路径。
+/.probe/
+/.probe-pkg/
+udone/.tmp-pg*/
+udone/_tmp_*
+.nm-bad/

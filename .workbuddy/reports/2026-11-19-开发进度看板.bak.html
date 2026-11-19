@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>开发进度看板 · 2026-11-19</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#151a21; --panel-2:#1b212a; --line:#252d38;
+    --text:#e6e9ee; --muted:#8b96a5; --dim:#5f6b7a;
+    --done:#3fb950; --doing:#d29922; --todo:#6b7787; --blocked:#f85149;
+    --accent:#58a6ff; --accent-2:#39c5cf;
+    --mono:ui-monospace,SFMono-Regular,"JetBrains Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:14px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:34px 26px 72px}
+
+  header{border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:26px}
+  .eyebrow{font:600 11px/1 var(--mono);letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+  h1{margin:10px 0 6px;font-size:26px;font-weight:650;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:13px}
+  .sub b{color:var(--done)}
+  .sub code{font-family:var(--mono);color:var(--accent-2);background:#0b1a1d;padding:1px 5px;border-radius:3px}
+
+  .verdict{border:1px solid #16351f;background:#0c1a12;border-radius:6px;padding:14px 18px;margin:22px 0}
+  .verdict b{color:#56d4a0}
+  .verdict p{margin:4px 0 0;font-size:13px;color:#a9c6b2}
+
+  .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:0 0 34px}
+  .strip>div{background:var(--panel);padding:16px 18px}
+  .strip .k{font:500 11px/1 var(--mono);letter-spacing:.08em;color:var(--dim);text-transform:uppercase;margin-bottom:9px}
+  .strip .v{font:650 22px/1.1 var(--mono);letter-spacing:-.02em}
+  .strip .v small{font-size:12px;font-weight:500;color:var(--muted);margin-left:5px;letter-spacing:0}
+  .strip .g{box-shadow:inset 0 2px 0 var(--done)} .strip .y{box-shadow:inset 0 2px 0 var(--doing)}
+  .strip .r{box-shadow:inset 0 2px 0 var(--blocked)} .strip .b{box-shadow:inset 0 2px 0 var(--accent)}
+
+  .progress{margin:0 0 34px}
+  .prow{margin:12px 0}
+  .phead{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:6px}
+  .phead b{color:var(--text);font-family:var(--mono)}
+  .bar{height:8px;background:#0b0f14;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+  .bar>i{display:block;height:100%;background:linear-gradient(90deg,#2f7d4f,#3fb950)}
+  .bar>i.y{background:linear-gradient(90deg,#8a6415,#d29922)}
+  .bar>i.b{background:linear-gradient(90deg,#1f4d7a,#58a6ff)}
+
+  section{margin-bottom:36px}
+  h2{font-size:15px;font-weight:650;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+  h2 .sq{width:9px;height:9px;border-radius:2px;display:inline-block}
+  .sq.done{background:var(--done)} .sq.todo{background:var(--doing)} .sq.block{background:var(--blocked)}
+  .sec-desc{color:var(--muted);font-size:12.5px;margin:0 0 16px;max-width:92ch}
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:940px){.cols{grid-template-columns:1fr}.strip{grid-template-columns:repeat(2,1fr)}}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px 20px}
+  .card+.card{margin-top:14px}
+  .card h3{font-size:13.5px;font-weight:650;margin:0 0 2px}
+  .card .meta{font:500 11px/1.5 var(--mono);color:var(--dim);margin-bottom:12px}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;font:600 10.5px/1 var(--mono);letter-spacing:.09em;color:var(--dim);
+    text-transform:uppercase;padding:0 8px 8px;border-bottom:1px solid var(--line)}
+  td{padding:7px 8px;border-bottom:1px solid #1c232c;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.id{font:600 11.5px/1.5 var(--mono);color:var(--accent-2);white-space:nowrap;width:46px}
+  td.date{font:500 11px/1.5 var(--mono);color:var(--dim);white-space:nowrap;width:76px}
+  td.desc{color:var(--text)}
+  td.desc span{color:var(--dim);font-size:11.5px}
+  .dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:7px;vertical-align:1px}
+  .d-done{background:var(--done)} .d-todo{background:var(--doing)}
+  .d-blocked{background:var(--blocked)} .d-ext{background:var(--accent)}
+
+  .pill{display:inline-block;font:600 10px/1 var(--mono);padding:3px 6px;border-radius:3px;letter-spacing:.03em}
+  .p-green{background:#0d2b1a;color:#56d4a0} .p-yellow{background:#2b2210;color:#e3b341}
+  .p-red{background:#2d1416;color:#ff7b72} .p-blue{background:#0d1f2e;color:#6cb6ff}
+  .p-gray{background:#1e242c;color:#8b96a5}
+
+  .note{border-left:2px solid var(--line);padding:2px 0 2px 13px;color:var(--muted);font-size:12.5px;margin-top:14px}
+  .warnbox{border:1px solid #3d2c12;background:#1a1509;border-radius:5px;padding:13px 16px;margin-top:14px}
+  .warnbox h4{margin:0 0 6px;font-size:12.5px;color:#e3b341;font-weight:650}
+  .warnbox p,.warnbox li{font-size:12.5px;color:#c9b98f;margin:0}
+  .warnbox ul{margin:6px 0 0;padding-left:18px}
+
+  footer{border-top:1px solid var(--line);padding-top:16px;color:var(--dim);font-size:11.5px;line-height:1.9}
+  footer code{font-family:var(--mono);color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">udone / 开发进度看板</div>
+  <h1>做了什么，还差什么，卡在哪</h1>
+  <div class="sub">
+    数据截至 <code>2026-11-19 00:20</code> · 依据计划文档勾选 + 当次实测证据。
+    上一版看板停在 11-14（显示「75 项未完成」），已作废。
+  </div>
+</header>
+
+<div class="verdict">
+  <b>一句话结论：</b>
+  <p>计划内 21 项已交付 20 项，只剩 <b>D2 等一次流水线实跑</b>；
+  P2 批量项 7 项做完 2 项（C6 结算、C12 公司配置），<b>剩 5 项功能可以直接开工</b>。
+  真正需要你出手的只有 <b>2 条业务决策</b>。</p>
+</div>
+
+<div class="strip">
+  <div class="g"><div class="k">计划内任务</div><div class="v">20/21<small>已完成</small></div></div>
+  <div class="y"><div class="k">P2 批量项</div><div class="v">2/7<small>C6 C12 完成</small></div></div>
+  <div class="b"><div class="k">还差的任务</div><div class="v">9<small>条</small></div></div>
+  <div class="r"><div class="k">外部阻塞</div><div class="v">8<small>项 · 不归我控制</small></div></div>
+</div>
+
+<div class="progress">
+  <div class="prow">
+    <div class="phead"><span>计划内 21 项（A/B/C/D 段）</span><b>20 / 21 · 95%</b></div>
+    <div class="bar"><i style="width:95%"></i></div>
+  </div>
+  <div class="prow">
+    <div class="phead"><span>P2 批量项 7 项（C6–C12）</span><b>2 / 7 · 29%</b></div>
+    <div class="bar"><i class="y" style="width:29%"></i></div>
+  </div>
+  <div class="prow">
+    <div class="phead"><span>ops 计划 12 项 + 平台基础 5 项验收</span><b>17 / 17 · 100%</b></div>
+    <div class="bar"><i style="width:100%"></i></div>
+  </div>
+</div>
+
+<!-- ============ 已完成 ============ -->
+<section>
+  <h2><span class="sq done"></span>已完成 · 20 项计划内 + 2 项 P2</h2>
+  <p class="sec-desc">每一项都附了完成日期与可追溯证据（journal / 提交哈希）。没有「基本完成」这个状态。</p>
+
+  <div class="cols">
+    <div class="card">
+      <h3>A 段 · 验证闭环（5/5）</h3>
+      <div class="meta">先把「没验证过」变成「验证过」</div>
+      <table>
+        <tr><td class="id">A1</td><td class="desc">前端主线 E2E，5 spec / 11 用例<span>浏览器真实点击，10 通过 1 跳过（CAPTCHA 缺 key）</span></td><td class="date">11-16</td></tr>
+        <tr><td class="id">A2</td><td class="desc">.vue 纳入类型检查<span>vue-tsc 首跑暴露 10 条真实错误，零 @ts-nocheck</span></td><td class="date">10-30</td></tr>
+        <tr><td class="id">A3</td><td class="desc">服务端 HTTP 集成真链路<span>真实 PostgREST + PostgreSQL，15 条用例跑通</span></td><td class="date">10-29</td></tr>
+        <tr><td class="id">A4</td><td class="desc">vitest worker 超时定位<span>连续 5 次全绿</span></td><td class="date">10-30</td></tr>
+        <tr><td class="id">A5</td><td class="desc">供应商模块行为测试<span>补上唯一「完整交付但零断言」的模块</span></td><td class="date">11-16</td></tr>
+      </table>
+
+      <h3 style="margin-top:20px">B 段 · 数据完整性（2/2）</h3>
+      <div class="meta">越晚做，历史数据越难迁</div>
+      <table>
+        <tr><td class="id">B1</td><td class="desc">审批历史不随明细行删除消失<span>有历史申请的明细行禁止硬删</span></td><td class="date">11-15</td></tr>
+        <tr><td class="id">B2</td><td class="desc">客户回收站与 restore 权限<span>回收站页 + 恢复端点 + 专用权限</span></td><td class="date">11-15</td></tr>
+      </table>
+
+      <h3 style="margin-top:20px">D 段 · 工程与性能（1/2）</h3>
+      <table>
+        <tr><td class="id">D1</td><td class="desc">前端产物体积拆分<span>入口 chunk 1,871→38 kB，首屏 JS 降 21.8%</span></td><td class="date">11-16</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>C 段 · 业务功能（C1–C6、C12 完成）</h3>
+      <div class="meta">C7–C11 见下方「未完成」</div>
+      <table>
+        <tr><td class="id">C1</td><td class="desc">审批流配置化<span>配置表 + 快照 + 级次驱动，改配置不动在途申请</span></td><td class="date">11-15</td></tr>
+        <tr><td class="id">C2</td><td class="desc">客户来源维护<span>CRUD 端点 + 表单二级下拉</span></td><td class="date">11-15</td></tr>
+        <tr><td class="id">C3</td><td class="desc">标签管理补全<span>改名 / 删除 RESTRICT / 批量打标</span></td><td class="date">11-15</td></tr>
+        <tr><td class="id">C4</td><td class="desc">线路主数据<span>线路表 + 下拉 + 订单保存名称快照</span></td><td class="date">11-15</td></tr>
+        <tr><td class="id">C5</td><td class="desc">游客名单<span>名单 CRUD + 证件去重 + CSV 整批原子导入</span></td><td class="date">11-16</td></tr>
+        <tr><td class="id">C6</td><td class="desc"><span class="pill p-green">本次新增</span> 批量结算<span>2 表 + 3 RPC + 4 端点 + Web 页；修掉「拒绝留空草稿」缺陷</span></td><td class="date">11-18</td></tr>
+        <tr><td class="id">C12</td><td class="desc"><span class="pill p-green">本次新增</span> 公司配置<span>版本化 RPC + 二次确认 + 变更键审计 + 设置页</span></td><td class="date">11-18</td></tr>
+      </table>
+
+      <h3 style="margin-top:20px">配套清理（不在 21 项内）</h3>
+      <table>
+        <tr><td class="id">✓</td><td class="desc">ops 计划 12 项全部按证据回勾<span>此前「做完了没回勾」，已补证据</span></td></tr>
+        <tr><td class="id">✓</td><td class="desc">平台基础 5 条验收清单回勾<span>此前未勾，证据齐全</span></td></tr>
+        <tr><td class="id">✓</td><td class="desc">SYNC_TARGET_UNAVAILABLE 登记进契约<span>唯一真缺口，已补，附「暂无产生端」说明</span></td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 未完成 ============ -->
+<section>
+  <h2><span class="sq todo"></span>未完成 · 9 条</h2>
+  <p class="sec-desc">按「谁能推进」分成三块。第一块我可以直接开工，第二块要你拍板，第三块等外部条件。</p>
+
+  <div class="cols">
+    <div class="card">
+      <h3><span class="pill p-green">我可直接推进</span> 5 条</h3>
+      <div class="meta">需求文档 R-ID 口径齐全，不需要补业务规则</div>
+      <table>
+        <tr><th style="width:46px">编号</th><th>具体做什么</th><th style="width:44px">规模</th></tr>
+        <tr><td class="id">C7</td><td class="desc">账户余额<span>资金账户概念；余额 = 期初 + 已确认收款 − 已确认付款；调整走不可变流水</span></td><td>L</td></tr>
+        <tr><td class="id">C8</td><td class="desc">报表与统一口径<span>经营总览 / 订单明细 / 供应商统计；报表与导出共用一套口径函数</span></td><td>L</td></tr>
+        <tr><td class="id">C9</td><td class="desc">站内通知<span>审批待办 / 驳回 / 临期 / 出团提醒；未读计数、已读、对象跳转</span></td><td>M</td></tr>
+        <tr><td class="id">C10</td><td class="desc">审计日志<span>表已有、已在写；缺查询 API/页面、IP/设备摘要、强制动作覆盖</span></td><td>M</td></tr>
+        <tr><td class="id">C11</td><td class="desc">CRM 线索与公海<span>线索阶段 / 跟进时间线 / 认领分配 / 7 天超时回收 / 幂等转客户</span></td><td>L</td></tr>
+      </table>
+      <div class="note">建议顺序：C10（表已在，最小）→ C9 → C7 → C8 → C11。C7 与刚做完的 C6 结算累计额度是两笔账，动工前要对齐口径。</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="pill p-yellow">等你拍板</span> 2 条</h3>
+      <div class="meta">涉及不可逆操作 / 产品规则，我不擅自决定</div>
+      <table>
+        <tr><td class="id">1</td><td class="desc">供应商 387 删不掉<span>回收站 4 条「复刻调研_」订单的应付项目卡住引用；唯一路径是「彻底删除」（不可逆）</span></td></tr>
+        <tr><td class="id">2</td><td class="desc">测试用户 90<span>服务端拒删，现为「禁用」仍占配额；要产品定规则</span></td></tr>
+      </table>
+
+      <h3 style="margin-top:20px"><span class="pill p-blue">等外部条件</span> 2 条</h3>
+      <table>
+        <tr><td class="id">D2</td><td class="desc">E2E 接入 CI<span><code>ci.yml</code> 的 <code>e2e_gate</code> 已写好；本地 10 通过 1 跳过，只差一次真实流水线跑绿</span></td></tr>
+        <tr><td class="id">NEW</td><td class="desc">SYNC 502 产生端<span>错误码已登记但无端点产生；要不要新增「同步下发并等待结果」端点，需你定</span></td></tr>
+      </table>
+      <div class="warnbox">
+        <h4>D2 这一格为什么还不能打勾</h4>
+        <p>写完 yml 不算完成，卡片要求「看到流水线真实跑过」。本机看不到 Gitee Go 结果 ——
+        需要你推送一次后到流水线页面确认 <code>e2e_gate</code> 绿。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 外部阻塞 ============ -->
+<section>
+  <h2><span class="sq block"></span>外部阻塞 · 8 项（不计入待办）</h2>
+  <p class="sec-desc">不是「要做的功能」，而是「拿不到的东西」或「本机环境限制」。前者卡调研精度，后者都已有绕过办法。</p>
+
+  <div class="cols">
+    <div class="card">
+      <h3>授权与资料 · 4 项</h3>
+      <div class="meta">泫蜗旅行 OMS 复刻调研</div>
+      <table>
+        <tr><td class="dot d-ext"></td><td class="desc">真实数据库结构：schema、迁移或服务端源码</td></tr>
+        <tr><td class="dot d-ext"></td><td class="desc">第二个授权租户 + 同租户不同员工账号（隔离验证）</td></tr>
+        <tr><td class="dot d-ext"></td><td class="desc">导入功能入口（全站至今未发现）</td></tr>
+        <tr><td class="dot d-ext"></td><td class="desc">审批驳回 / 撤回完整 UI（403 / 404，权限不足）</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>本机环境 · 4 项</h3>
+      <div class="meta">有绕过办法，不阻塞交付</div>
+      <table>
+        <tr><td class="dot d-ext"></td><td class="desc">Gitee Go 结果本机不可见 → D2 必须你去看流水线</td></tr>
+        <tr><td class="dot d-ext"></td><td class="desc">4173 端口被别的进程占用 → E2E 临时用 4174，配置已恢复</td></tr>
+        <tr><td class="dot d-ext"></td><td class="desc">CRLF 工作区 vs Prettier lf → 全量格式检查误报，按行尾逐项检查</td></tr>
+        <tr><td class="dot d-ext"></td><td class="desc">safe-delete 拦清空 dist → 构建/测试输出改到系统 Temp</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <b style="color:var(--muted)">证据与口径</b><br>
+  任务状态取自 <code>udone/Docs/superpowers/plans/2026-10-29-business-completion-backlog.md</code> 的勾选与完成情况记录；<br>
+  C6 / C12 证据：<code>udone/.harness/journal/2026-11-18-c6-settlement-batches.md</code>、
+  <code>2026-11-18-c12-company-settings.md</code>；<br>
+  最近提交：<code>f166b57</code>（C6）、<code>c291156</code>（C12）、<code>9475b92</code>/<code>eea00ba</code>（勾选整理）、<code>9d2f28c</code>（C10 状态更正）。<br>
+  完整文字报告：<code>.workbuddy/reports/2026-11-18-未完成任务整理与C6收尾.md</code>
+</footer>
+
+</div>
+</body>
+</html>

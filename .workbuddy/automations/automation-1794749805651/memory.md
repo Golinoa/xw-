@@ -1,0 +1,66 @@
+# 自动化执行记录：udone 业务 backlog 持续推进
+
+## 2026-11-16 07:4x — D1 前端产物体积 ✅
+
+- 单元：`app.use(Antd)` 全量注册 → 显式 27 组件清单（`design-system/antd-registration.ts`）
+  + `vite.config.ts` 按生态 manualChunks + 守卫测试 `antd-registration.test.ts`（模板标签 ↔
+  install 注册名对账）。顺手删掉无效的 `StyleProvider` 注册。
+- **核心结论**：卡片问的「antd 按需加载是否生效」答案是**从未生效**；根因是逻辑不是路由。
+  入口 chunk 1,871.64 → **38.04 kB**，首屏 JS 合计 −408 kB（gzip −21.4%）。
+- **有意不做**：`vendor-antd` 895 kB 不再硬拆（构成全是真在用的组件）；分页面局部注册
+  只是把 Table/DatePicker 推迟、总量不减，等 A1 浏览器回归后再上。
+- 门禁：pgTAP 36 文件 / 单测 64 文件 851 用例 / typecheck / lint+CSS / build /
+  Chromium 实测 `/login` 零 `Failed to resolve component`。
+- 提交 `d550cb2`，已 push origin main。journal：`2026-11-16-d1-web-bundle-size.md`。
+- 坑：`app.use(StyleProvider)` 只注册组件名、从没包裹过树 ⇒ 原本无效；
+  手写注册清单漏项的失败形态是「构建和类型都不报，浏览器空白」。
+- 范围外发现（已报未改）：`format:check` 全仓 225 文件红（CRLF，含未碰过的文件）；
+  `apps/{api,web}/.nm-bad/` 残留目录刷 git 警告。
+- **D2 判定为卡住**：依赖 A1 的 spec，且需能查看 Gitee Go 流水线真实结果（无控制台凭据）。
+- 下一张：**A1 前端主线 E2E**（P0，M；3 个 spec，stub 必须先用 `@erp/contracts` 解析）
+  → A5 供应商行为测试 → C6–C12。
+
+## 2026-11-16 05:3x — C5 游客名单 ✅
+
+- 单元：DB（`20261116000007_tourist_roster.sql`：`tourists` 表 + 规范化生成列 + 部分唯一索引
+  + 4 条 RLS + `import_tourists` 库函数）+ 契约 `tourists.ts`（7 条 ROUTES、新错误码
+  `TOURIST_DOCUMENT_CONFLICT`）+ 服务/路由 `modules/tourists/`（含纯 CSV 解析器）
+  + 前端订单详情名单区（`TouristRosterSection/FormModal/ImportModal`）。
+- **核心取舍**：不新增 `tourist.*` 权限（复用 order.read/write）；可见性用 EXISTS 继承订单 RLS；
+  导入走库函数保证覆盖模式整批原子；模板只有表头（示例行会被真导入）。
+- 门禁：pgTAP 36 文件（新 17 断言，变异红 7 条）/ 单测 63 文件 849 用例 / typecheck /
+  lint+CSS / HTTP 集成 24 文件 402 用例（新 `tests/integration/tourists.test.ts` 11 条）。
+- 提交：`5dcdac7` + 自审修复 `6b75d30`，已 push origin main。
+  journal：`2026-11-16-c5-tourist-roster.md`。
+- 坑：新表 `organization_id` 无默认值 → 直插测试必须显式传；掩码字段不能回填进可编辑输入框；
+  编辑表单要逐个核对「界面能改的字段是否真的进了请求体」（这次漏了 `personType`）。
+- 下一张：**D1 前端产物体积**（主 chunk 1638 kB，需 manualChunks 拆分或给出不能拆的结论）
+  → D2 E2E 接 CI → A1 → A5。
+
+## 2026-11-16 03:5x — C4 线路主数据 ✅
+
+- 单元：DB（`20261115000006_route_master.sql`：`routes` 表 + 组织内名称唯一 + 4 条 RLS +
+  `GRANT SELECT/INSERT/UPDATE/DELETE` + `route.read`/`route.write` 播种）+ 契约（`tour-routes.ts`、
+  4 条 ROUTES、权限矩阵）+ 服务/路由 `modules/routes/` + 前端 `views/routes/*` 与订单表单线路下拉。
+- **核心取舍：不给 `orders` 加 `route_id`**，订单只存名称快照（按值），pgTAP 断言改名/删线路后订单不变。
+- 门禁：pgTAP 35 文件（新 `route_master.sql` 10 断言，变异红 4 条）/ 单测 61 文件 819 用例 /
+  typecheck / lint+CSS / HTTP 集成 23 文件 391 用例（新 `tests/integration/routes.test.ts` 6 条）。
+- 提交：`c115a4f`，已 push origin main。journal：`2026-11-15-c4-route-master.md`。
+- 坑：数据修改型 CTE 必须在语句最外层；`permissions_and_disabled_sessions.sql` 的 operator
+  权限快照断言遇到新权限必红（设计如此，按需更新）；`db:local.mjs http` 首次仍 PostgREST 超时，重跑即过。
+- 范围外发现（已在回复中报给用户，未改）：`updated_by` 列在 routes/customers/sources/tags 上都无人写。
+- 下一张：**C5 游客名单**（L，表/API/页面全无；按证件类型+规范化证件号去重，CSV 整批原子）。
+
+## 2026-11-16 01:56 — C3 标签管理补全 ✅
+
+- 单元：DB（`20261115000005_customer_tag_manage.sql`：GRANT DELETE + UPDATE/DELETE 策略 +
+  `customer_tag_links_tag_fk` CASCADE→RESTRICT）+ 契约 3 路由 + 服务
+  `updateTag/deleteTag/batchTag` + `PATCH/DELETE /api/customer-tags/:tagId`、
+  `POST /api/customers/batch-tags` + 两个前端弹窗（标签管理 / 批量打标）+ 列表勾选。
+- 门禁：pgTAP 34 文件（新 7 断言，变异改回 CASCADE 红 3 条）/ 单测 60 文件 809 用例 /
+  typecheck / lint+CSS token / HTTP 集成 22 文件 385 用例（新增 `customer-tags.test.ts` 5 条）。
+- 提交：`dd8cf92`，已 push origin main。journal：`2026-11-15-c3-customer-tag-manage.md`。
+- 下一张：**C4 线路主数据**（`orders.route_name` 是纯文本，无线路表；需「订单保存名称与金额快照」）。
+- 环境坑（已记）：`format:sql.mjs --write` 会因 CRLF vs LF 改写 68 个历史 SQL；本机只对新文件跑。
+  `db:local.mjs http` 首次常 PostgREST 启动超时，重跑即过（B2 也是）。
+- 无外部阻塞项。

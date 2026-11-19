@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XW-ERP 任务清单与排期 · 2026-11-14</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#151a21; --panel-2:#1b212a; --line:#252d38;
+    --text:#e6e9ee; --muted:#8b96a5; --dim:#5f6b7a;
+    --done:#3fb950; --doing:#d29922; --todo:#6b7787; --blocked:#f85149;
+    --accent:#58a6ff; --accent-2:#39c5cf; --be:#56d4a0; --fe:#6cb6ff;
+    --mono:ui-monospace,SFMono-Regular,"JetBrains Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:14px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1300px;margin:0 auto;padding:36px 26px 72px}
+  code{font-family:var(--mono);color:var(--accent-2);background:#0b1a1d;padding:1px 5px;border-radius:3px;font-size:12px}
+
+  header{border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:26px}
+  .eyebrow{font:600 11px/1 var(--mono);letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+  h1{margin:10px 0 6px;font-size:26px;font-weight:650;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:13px;max-width:100ch}
+
+  .strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:22px 0 34px}
+  .strip>div{background:var(--panel);padding:15px 17px}
+  .strip .k{font:500 10.5px/1 var(--mono);letter-spacing:.08em;color:var(--dim);text-transform:uppercase;margin-bottom:9px}
+  .strip .v{font:650 21px/1.1 var(--mono);letter-spacing:-.02em}
+  .strip .v small{font-size:11.5px;font-weight:500;color:var(--muted);margin-left:5px;letter-spacing:0}
+  .strip .hl{background:#121a14;box-shadow:inset 0 2px 0 var(--done)}
+  .strip .bl{background:#1a1214;box-shadow:inset 0 2px 0 var(--blocked)}
+
+  h2{font-size:15px;font-weight:650;margin:0 0 4px;display:flex;align-items:center;gap:9px}
+  h2 .tag{font:600 10px/1 var(--mono);letter-spacing:.1em;padding:4px 7px;border-radius:3px;
+    background:#1f2937;color:var(--muted);text-transform:uppercase}
+  h2 .tag.be{background:#0d2b22;color:var(--be)}
+  h2 .tag.fe{background:#0d1f2e;color:var(--fe)}
+  h2 .tag.gt{background:#1c2430;color:var(--accent)}
+  .sec-desc{color:var(--muted);font-size:12.5px;margin:0 0 16px;max-width:92ch}
+  section{margin-bottom:42px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:1040px){.cols{grid-template-columns:1fr}.strip{grid-template-columns:repeat(2,1fr)}}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px}
+  .card+.card{margin-top:14px}
+  .card h3{font-size:13.5px;font-weight:650;margin:0 0 3px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .card h3 em{font-style:normal;font:600 11px/1 var(--mono);color:var(--dim)}
+  .card .meta{font:500 11.5px/1.5 var(--mono);color:var(--dim);margin-bottom:14px}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;font:600 10.5px/1 var(--mono);letter-spacing:.09em;color:var(--dim);
+    text-transform:uppercase;padding:0 8px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:7px 8px;border-bottom:1px solid #1c232c;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  td.name{color:var(--text)}
+  td.name span{display:block;color:var(--dim);font-size:11.5px;margin-top:1px}
+  .grp td{background:#12161c;font:600 10.5px/1 var(--mono);letter-spacing:.09em;color:var(--dim);
+    text-transform:uppercase;padding:8px}
+
+  .pill{display:inline-block;font:600 10.5px/1 var(--mono);padding:4px 7px;border-radius:3px;letter-spacing:.03em;white-space:nowrap}
+  .p-done{background:#0d2b1a;color:#56d4a0}
+  .p-doing{background:#2b2210;color:#e3b341}
+  .p-todo{background:#1e242c;color:#8b96a5}
+  .p-blocked{background:#2d1416;color:#ff7b72}
+  .p-p0{background:#2d1416;color:#ff7b72}
+  .p-p1{background:#2b2210;color:#e3b341}
+  .p-p2{background:#1e242c;color:#8b96a5}
+
+  ul.plain{list-style:none;margin:6px 0 0;padding:0}
+  ul.plain li{padding:8px 0;border-bottom:1px solid #1c232c;display:flex;gap:10px;align-items:flex-start}
+  ul.plain li:last-child{border-bottom:none}
+  ul.plain .id{font:600 11px/1.5 var(--mono);color:var(--dim);min-width:46px;padding-top:1px}
+  ul.plain .txt{flex:1;font-size:12.5px}
+  ul.plain .txt i{display:block;font-style:normal;color:var(--dim);font-size:11.5px;margin-top:2px}
+
+  .note{border-left:2px solid var(--line);padding:2px 0 2px 13px;color:var(--muted);font-size:12px;margin-top:14px}
+  .warnbox{border:1px solid #3d2c12;background:#1a1509;border-radius:5px;padding:13px 15px;margin-top:14px}
+  .warnbox h4{margin:0 0 5px;font-size:12.5px;color:#e3b341;font-weight:650}
+  .warnbox p{margin:0;font-size:12px;color:#c9b98f}
+  .redbox{border:1px solid #3d1a1c;background:#1a0f11;border-radius:5px;padding:13px 15px;margin-top:14px}
+  .redbox h4{margin:0 0 5px;font-size:12.5px;color:#ff7b72;font-weight:650}
+  .redbox p{margin:0;font-size:12px;color:#c99a9a}
+
+  /* gantt */
+  table.gt{table-layout:fixed}
+  table.gt th{text-align:center;padding:0 4px 8px;border-bottom:1px solid var(--line)}
+  table.gt th:first-child{text-align:left;width:200px;padding-left:8px}
+  table.gt td{padding:3px 4px;border-bottom:1px solid #1c232c;text-align:center;height:29px}
+  table.gt td.gl{text-align:left;padding-left:8px;font-size:12px;color:var(--text)}
+  table.gt td.gl small{display:block;color:var(--dim);font-size:11px}
+  table.gt td.gl.lane{background:#12161c;font:600 10.5px/1 var(--mono);letter-spacing:.09em;color:var(--dim);text-transform:uppercase;height:26px;vertical-align:middle}
+  i.b{display:block;height:15px;border-radius:3px;margin:0 1px}
+  i.b.be{background:#1f4030;border:1px solid #3a7a55}
+  i.b.fe{background:#16304a;border:1px solid #35648f}
+  i.b.ext{background:#2b2b2b;border:1px dashed #5f6b7a}
+  i.b.blk{background:repeating-linear-gradient(135deg,#3d1a1c,#3d1a1c 5px,#2a1214 5px,#2a1214 10px);border:1px solid #a03a3a}
+  i.b.ms{background:#3a3118;border:1px solid #d29922;height:9px;border-radius:2px}
+
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;font-size:11.5px;color:var(--muted)}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .legend i{width:20px;height:9px;border-radius:2px;display:inline-block}
+
+  footer{border-top:1px solid var(--line);padding-top:16px;color:var(--dim);font-size:11.5px;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">XW-ERP / 任务清单 · 完成度 · 排期</div>
+  <h1>后端 38 项已交付 · T6 执行机构已落地 · 提权与工单审计已补 · 前端 9 段卡在联调</h1>
+  <div class="sub">
+    基线：<code>027b546</code> + 本轮 9 个提交（T6 数据层 <code>3e34806</code> / 派发层 <code>1666a0b</code>）。
+    排期按 2026-11-16 起算、每周 5 个工作日、后端与前端联调并行；数字核对于 2026-11-17 22:10。
+  </div>
+</header>
+
+<div class="strip">
+  <div><div class="k">后端已交付</div><div class="v">38 项<small>11 域 + B1/B2/C1–C5/A1/A5</small></div></div>
+  <div><div class="k">后端未完成</div><div class="v">1 张<small>D2 只差一次流水线实跑</small></div></div>
+  <div><div class="k">前端已交付</div><div class="v">77 页<small>9 域 · 桩验证</small></div></div>
+  <div class="bl"><div class="k">admin 前端未完成</div><div class="v">57 条<small>联调 46 / 验收 9 / 遗留 2</small></div></div>
+  <div class="hl"><div class="k">可整体验收</div><div class="v">12-11<small>W4 末</small></div></div>
+</div>
+
+<!-- ==================== 今日进展 ==================== -->
+<section>
+  <h2><span class="tag be">11-17 / 11-18</span> 本轮：租户命令能真正发出去，审计与口径补上证据</h2>
+  <p class="sec-desc">
+    此前命令台账只会「创建 → 停在 <code>pending</code>」：推进终态的函数存在，但生产代码零调用方，
+    也就是「有账本没有寄信的人」。今天把它接上了，分两段：先给数据层加锁和租约，再给驱动侧加定时派发。
+  </p>
+
+  <div class="card">
+    <h3>本轮 9 个提交 <em>每一个都带门禁</em></h3>
+    <table>
+      <thead><tr><th style="width:110px">提交</th><th>做了什么</th><th style="width:150px">门禁</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>3e34806</code></td>
+          <td class="name">数据层：<code>dispatching</code> 状态 + 租约（<code>claimed_by</code> / <code>lease_expires_at</code>），认领 / 完成 / 回收三个函数，只授 <code>service_role</code></td>
+          <td><span class="pill p-done">pgTAP 38 文件全绿</span></td>
+        </tr>
+        <tr>
+          <td><code>587afcc</code></td>
+          <td class="name">完成时遇到无映射命令明确拒绝（底层函数会抛异常，不该让调用方吃 500）</td>
+          <td><span class="pill p-done">18 条断言</span></td>
+        </tr>
+        <tr>
+          <td><code>1666a0b</code></td>
+          <td class="name">派发层：认领 → 下发 → 回写，每条命令独立超时 15s，下发带 <code>Idempotency-Key</code>，<code>[triggers]</code> 每分钟触发</td>
+          <td><span class="pill p-done">单测 66 文件 869 条</span></td>
+        </tr>
+        <tr>
+          <td><code>1a4839e</code></td>
+          <td class="name">journal + exec plan 状态（把「为什么还不勾」写清楚）</td>
+          <td><span class="pill p-done">—</span></td>
+        </tr>
+        <tr>
+          <td><code>cc03778</code></td>
+          <td class="name">自我提权防护：建/改角色时授予集合必须是调用者权限的子集（表级触发器，覆盖全部写入口）</td>
+          <td><span class="pill p-doing">pgTAP 39 文件 · 补了一半</span></td>
+        </tr>
+        <tr>
+          <td><code>c242f97</code></td>
+          <td class="name">工单审计：<code>ops.tickets</code> 此前零审计写入，补 <code>ticket.created</code> / <code>ticket.updated</code> 与契约词表</td>
+          <td><span class="pill p-done">pgTAP 40 文件</span></td>
+        </tr>
+        <tr>
+          <td><code>93f7e01</code> <code>7cf9afb</code></td>
+          <td class="name">两份 journal（提权防护为什么要用表级触发器、工单审计的边界）</td>
+          <td><span class="pill p-done">—</span></td>
+        </tr>
+
+        <tr>
+          <td><code>4adb4aa</code></td>
+          <td class="name">访问审计：登录/登出第一次留痕（用刚签发的令牌写，actor 即本人）</td>
+          <td><span class="pill p-done">pgTAP 41 文件</span></td>
+        </tr>
+        <tr>
+          <td><code>5da60ad</code></td>
+          <td class="name">总览口径：三个指标改为与底表独立复算比对，并锁住「无权 = 不出现，不是 0」</td>
+          <td><span class="pill p-done">pgTAP 42 文件</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>为什么 T6 第 4 条仍然不勾 <em>差的是另一半</em></h3>
+    <table>
+      <thead><tr><th style="width:190px">要求</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr><td>命令事务 / 状态机</td><td>✅ <code>pending → dispatching → succeeded/failed</code>，退避与次数用尽都有断言</td></tr>
+        <tr><td>可信身份与权限</td><td>✅ 认领/完成只授 <code>service_role</code>，对 <code>public/anon/authenticated</code> 显式 REVOKE</td></tr>
+        <tr><td>不直写租户内部表</td><td>✅ 只改 ops 域的台账与映射</td></tr>
+        <tr><td>调用租户 API 只传业务字段</td><td>⚠️ 派发会真的发 HTTP，但<strong>租户侧接收端（M1）还不存在</strong>，没人接</td></tr>
+        <tr><td>staging 验收</td><td>❌ 未做，无法证明「发出去并被对面收到」</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>今天挖出来的两个既有缺陷 <em>都不是我改出来的</em></h3>
+    <table>
+      <thead><tr><th style="width:230px">缺陷</th><th>影响</th><th style="width:130px">本轮处置</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="name"><code>record_tenant_command_attempt</code> 在 <code>mapping_id</code> 为空时抛 <code>record "mapping_entry" is not assigned yet</code></td>
+          <td>回收是批处理，一条这样的行会让整批连带事务回滚。列可空，所以路径可达</td>
+          <td><span class="pill p-doing">已跳过并计数，未修</span></td>
+        </tr>
+        <tr>
+          <td class="name"><code>retryable</code> 不看 <code>next_retry_at</code>（审计曾判为 bug）</td>
+          <td>其实是契约 §5.7 的刻意决定：只问「能不能」不问「该不该」</td>
+          <td><span class="pill p-done">确认非缺陷</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ==================== 后端 ==================== -->
+<section>
+  <h2><span class="tag be">后端</span> udone · 接口、数据、门禁</h2>
+  <p class="sec-desc">
+    后端的完成口径是「库 + 接口 + 断言三件齐」：每个域都有迁移、有端点、有拒绝路径的测试。
+    已交付 27 项里，13 项是运营后台的域，剩下是平台基座、业务域与最后一轮验收。
+  </p>
+
+  <div class="card">
+    <h3>已完成 <em>27 项 · 证据见各自 journal</em></h3>
+    <table>
+      <tr><td class="grp" colspan="2">平台基座</td></tr>
+      <tr><td class="name">P0 硬化：CORS 白名单 / REST client / 请求守卫 / CI</td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">契约优先 zod pipeline + 漂移守卫<span>route parity · response guard</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">幂等表收敛 PK(scope,key)<span>response_status / body / actor_id 对齐契约</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">本地 PostgREST 真实 HTTP 集成链路<span>不再只对 mock 断言</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">本地对象存储替身<span>签名由存储签，不再本地拼</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">部署配置检查 + 生产禁本地 JWT</td><td class="num"><span class="pill p-done">完成</span></td></tr>
+
+      <tr><td class="grp" colspan="2">业务端域（SaaS 侧，31 端点）</td></tr>
+      <tr><td class="name">客户主数据<span>敏感字段脱敏、软删可见性</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">订单与供应商<span>服务端金额重算、明细行状态守卫</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">财务应收范围</td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">收款申请 + 业务端界面</td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">组织上下文 / 成员生命周期 / 权限</td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">审批轨迹不随明细行删除消失<span>B1 · 删行前脱钩，19 条 pgTAP 断言</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">审批流配置化（DB 层）<span>C1 · 按机构 1~3 级 + 实例快照，14 条断言</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">客户回收站与 restore 权限<span>B2 · 权限+策略+函数+端点，12 条 pgTAP + 3 条单测</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">客户来源维护<span>C2 · 4 条路由 + 表单下拉，6 条 pgTAP + 7 条单测</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">客户回收站页面<span>B2 收尾 · 回收站可见可恢复</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">标签改名与删除<span>C3 · 被引用时 OBJECT_REFERENCED</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">线路主数据<span>C4 · 订单存名称快照而非引用</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">游客名单<span>C5 · 证件重复整批拒绝</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">前端产物体积<span>D1 · 首屏 JS 少 408 kB</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">供应商模块行为测试<span>A5 · 12 条单测 + 6 条 pgTAP</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">前端主线 E2E<span>A1 · 5 spec / 11 用例，桩先过契约</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+
+      <tr><td class="grp" colspan="2">运营后台域（ops 侧，120 端点）</td></tr>
+      <tr><td class="name">身份基座<span>6 表 4 函数 39 权限码</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">登录代理 + /meta + /session + /permissions<span>HttpOnly cookie、登录单独限流</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">账号角色写侧<span>LAST_ROLE / LAST_ADMIN 拒绝</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">客户域</td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">产品套餐目录<span>价格版本只追加</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">合同<span>状态机不可变、计划合计校验、附件对象校验</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">应收计划</td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">收款 / 核销 / 退款<span>登记人≠审核人、核销上限走 SQL 聚合、冲正生成反向流水</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">权益<span>订阅 / 授权 / 变更申请 / 快照只 INSERT</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">租户交付<span>映射 + 命令台账，202 只表示「已受理」</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">私有化部署台账<span>版本只能由「登记 + 成功」推进</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">售后工单</td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">总览 + 报表<span>口径只算一次，与列表逐值相等</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">设置 + 字典<span>读与写分属两道权限</span></td><td class="num"><span class="pill p-done">完成</span></td></tr>
+
+      <tr><td class="grp" colspan="2">验收</td></tr>
+      <tr><td class="name">跨域拒绝 P1–P13 逐行断言 + 401/403 扫全部 120 端点</td><td class="num"><span class="pill p-done">完成</span></td></tr>
+      <tr><td class="name">触发器函数 PUBLIC EXECUTE 修复 + 迁移版本号唯一性校验</td><td class="num"><span class="pill p-done">完成</span></td></tr>
+    </table>
+    <div class="note">
+      规模：45 迁移 / 37 pgTAP / 24 集成测试文件 / 5 E2E spec；单测 65 文件 863 用例、集成 402 例、E2E 11 例；13 道门禁全绿（2026-11-16）。
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>未完成 <em>1 张 · 只差流水线验证</em></h3>
+    <table>
+      <tr><th style="width:56px">编号</th><th>任务</th><th style="width:74px">规模</th><th style="width:66px">优先级</th><th style="width:88px">状态</th></tr>
+      <tr><td class="num" style="text-align:left">D2</td><td class="name">E2E 接入 CI<span>ci.yml 已加 e2e_gate，D2 只差一次流水线实跑</span></td><td class="num">S</td><td><span class="pill p-p1">P1</span></td><td><span class="pill p-blocked">等流水线</span></td></tr>
+      <tr><td class="num" style="text-align:left">C6–C12</td><td class="name">结算 / 余额 / 报表 / 通知 / 审计 / CRM / 公司配置<span>7 张 P2，口径与 C1 同批</span></td><td class="num">L</td><td><span class="pill p-p2">P2</span></td><td><span class="pill p-todo">待启动</span></td></tr>
+    </table>
+    <div class="note">原计划 21 项，已完成 A2（.vue 纳入类型检查）、A3（PostgREST 真实 HTTP 集成）、A4（vitest worker 超时定位）。</div>
+  </div>
+</section>
+
+<!-- ==================== 前端 ==================== -->
+<section>
+  <h2><span class="tag fe">前端</span> 两个应用 · 一个卡在联调，一个卡在覆盖</h2>
+  <p class="sec-desc">
+    前端所有「写代码」的活都完了。业务端 Web 的主线 E2E 已在 11-16 补齐（11 用例全绿）；
+    现在只剩运营后台卡在「没和真后端对上」。
+  </p>
+
+  <div class="cols">
+    <div class="card">
+      <h3>运营后台 admin <em>9 域 / 77 页</em></h3>
+      <div class="meta">Vben + Vue 3 · 10 个路由模块 · 桩与真后端两套 e2e 实例</div>
+      <table>
+        <tr><th style="width:58px">任务</th><th>内容</th><th style="width:104px">状态</th></tr>
+        <tr><td class="num" style="text-align:left">T1</td><td class="name">模板导入锁定<span>7/7 勾选</span></td><td><span class="pill p-done">完成</span></td></tr>
+        <tr><td class="num" style="text-align:left">T2</td><td class="name">工程门禁<span>9/11，advisory 与托管 CI 未清</span></td><td><span class="pill p-doing">9/11</span></td></tr>
+        <tr><td class="num" style="text-align:left">T3</td><td class="name">应用壳 / 登录 / 403·404 / 权限目录<span>9 条待联调</span></td><td><span class="pill p-doing">代码完成</span></td></tr>
+        <tr><td class="num" style="text-align:left">T4</td><td class="name">客户 · 产品套餐 · 合同<span>20 页面 · 8 条待联调</span></td><td><span class="pill p-doing">代码完成</span></td></tr>
+        <tr><td class="num" style="text-align:left">T5</td><td class="name">应收 · 收款 · 核销 · 退款<span>8 条待联调，风险最高</span></td><td><span class="pill p-doing">代码完成</span></td></tr>
+        <tr><td class="num" style="text-align:left">T6</td><td class="name">权益 · 租户交付<span>8 条待联调</span></td><td><span class="pill p-doing">代码完成</span></td></tr>
+        <tr><td class="num" style="text-align:left">T7</td><td class="name">私有化部署 · 售后工单<span>6 条待联调</span></td><td><span class="pill p-doing">代码完成</span></td></tr>
+        <tr><td class="num" style="text-align:left">T8</td><td class="name">账号 · 审计 · 总览 · 报表 · 导出<span>7 条待联调</span></td><td><span class="pill p-doing">代码完成</span></td></tr>
+        <tr><td class="num" style="text-align:left">T9</td><td class="name">端到端验收<span>安全 / 兼容 / 部署 / 双身份</span></td><td><span class="pill p-blocked">阻塞 · 环境</span></td></tr>
+      </table>
+      <div class="note">
+        另已完成：依赖门禁分级 + 白名单到期日（critical 0 / high 2）、契约版本门、e2e 双实例。
+        「代码完成」不等于任务完成 —— 原计划规定复选框只在联调通过后才勾。
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>业务端 Web <em>13 页 · 5 模块</em></h3>
+      <div class="meta">udone/apps/web · 对接 31 个业务端点</div>
+      <table>
+        <tr><th>模块</th><th>内容</th><th style="width:104px">状态</th></tr>
+        <tr><td class="name">登录 · 首页</td><td class="name">登录、布局壳、首页</td><td><span class="pill p-done">完成</span></td></tr>
+        <tr><td class="name">客户</td><td class="name">列表 / 表单 / 详情抽屉</td><td><span class="pill p-done">完成</span></td></tr>
+        <tr><td class="name">订单</td><td class="name">列表 / 表单 / 详情 / 应付汇总</td><td><span class="pill p-done">完成</span></td></tr>
+        <tr><td class="name">供应商</td><td class="name">列表 / 表单</td><td><span class="pill p-done">完成</span></td></tr>
+        <tr><td class="name">财务</td><td class="name">应收列表</td><td><span class="pill p-done">完成</span></td></tr>
+        <tr><td class="name">主线 E2E</td><td class="name">登录 → 订单 → 收款 → 审批</td><td><span class="pill p-done">完成</span></td></tr>
+      </table>
+      <div class="redbox">
+        <h4>现有 E2E 只覆盖登录与邀请</h4>
+        <p>2 个 spec / 6 个用例，客户、订单、收付款主线一条都没在浏览器里跑过。
+        上一轮提交说明里原话是「这个界面没有在浏览器里跑过」。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>运营后台 admin 未完成 57 条，拆开是三件事</h3>
+    <table>
+      <tr><th style="width:74px">数量</th><th>内容</th><th style="width:150px">性质</th><th style="width:110px">状态</th></tr>
+      <tr><td class="num" style="text-align:left">46 条</td><td class="name">Task 3–8 真实 API 联调<span>T3 9 · T4 8 · T5 8 · T6 8 · T7 6 · T8 7。11-16 并行审计：<b>已实现 25 / 未实现 19 / 需真跑 2</b>——「未勾选」不等于没写代码。11-17：admin 依赖未装好，前端侧仍无法开跑</span></td><td class="name">必须两端同时在场</td><td><span class="pill p-blocked">等 admin 依赖</span></td></tr>
+      <tr><td class="num" style="text-align:left">9 条</td><td class="name">Task 9 端到端验收<span>安全 / 兼容 / 部署 / 双身份</span></td><td class="name">要 staging 环境</td><td><span class="pill p-blocked">阻塞</span></td></tr>
+      <tr><td class="num" style="text-align:left">2 条</td><td class="name">Task 2 门禁遗留<span>advisory 清账、托管 CI 落地</span></td><td class="name">工程债</td><td><span class="pill p-todo">待启动</span></td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ==================== 排期 ==================== -->
+<section>
+  <h2><span class="tag gt">排期</span> 6 周 · 两条泳道并行</h2>
+  <p class="sec-desc">
+    起算 2026-11-16（周一），每周 5 个工作日。后端补功能与前端接真接口同时进行，互不等待；
+    第 5 周留作缓冲，第 6 周起做 P2。斜纹格＝阻塞，灰格＝外部资源。
+  </p>
+
+  <div class="card">
+    <table class="gt">
+      <tr>
+        <th>任务</th>
+        <th>W1<br><small style="color:var(--dim);font-size:10px">11/16–11/20</small></th>
+        <th>W2<br><small style="color:var(--dim);font-size:10px">11/23–11/27</small></th>
+        <th>W3<br><small style="color:var(--dim);font-size:10px">11/30–12/04</small></th>
+        <th>W4<br><small style="color:var(--dim);font-size:10px">12/07–12/11</small></th>
+        <th>W5<br><small style="color:var(--dim);font-size:10px">12/14–12/18</small></th>
+        <th>W6+<br><small style="color:var(--dim);font-size:10px">12/21–</small></th>
+      </tr>
+
+      <tr><td class="gl lane" colspan="7">后端</td></tr>
+      <tr><td class="gl">地基：依赖补全 + 13 门禁全量回归<small>0.5–1 天</small></td>
+          <td><i class="b be"></i></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="gl">B1 审批历史不随明细行消失<small>已完成 · 11-15</small></td>
+          <td><i class="b be"></i></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="gl">A1 主线 E2E<small>已完成 · 11 用例</small></td>
+          <td><i class="b be"></i></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="gl">B2 回收站 + restore 权限<small>P1 · DB 已完成，余端点/页面</small></td>
+          <td></td><td><i class="b be"></i></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="gl">A5 供应商行为测试<small>P1 · 1 天</small></td>
+          <td></td><td><i class="b be"></i></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="gl">D2 E2E 入 CI<small>已配置 · 等流水线</small></td>
+          <td></td><td><i class="b be"></i></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="gl">D1 产物体积拆分<small>P2 · 1.5 天</small></td>
+          <td></td><td><i class="b be"></i></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="gl">C2 客户来源 + C3 标签补全<small>P1 · 2 天</small></td>
+          <td></td><td></td><td><i class="b be"></i></td><td></td><td></td><td></td></tr>
+      <tr><td class="gl">C4 线路主数据<small>P1 · 3 天</small></td>
+          <td></td><td></td><td><i class="b be"></i></td><td></td><td></td><td></td></tr>
+      <tr><td class="gl">C5 游客名单<small>已完成</small></td>
+          <td></td><td></td><td></td><td><i class="b be"></i></td><td></td><td></td></tr>
+      <tr><td class="gl">C1 审批流配置化<small>DB 已完成 · 11-15</small></td>
+          <td></td><td></td><td></td><td></td><td><i class="b blk"></i></td><td></td></tr>
+      <tr><td class="gl">C6–C12 七张 P2<small>结算 / 余额 / 报表 / 通知 / 审计 / CRM / 配置</small></td>
+          <td></td><td></td><td></td><td></td><td></td><td><i class="b be"></i></td></tr>
+
+      <tr><td class="gl lane" colspan="7">前端</td></tr>
+      <tr><td class="gl">批 1 · T3 身份联调<small>9 条</small></td>
+          <td><i class="b fe"></i></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="gl">批 2 · T4 客户产品合同<small>8 条</small></td>
+          <td><i class="b fe"></i></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="gl">批 3 · T5 账款（含核销退款）<small>8 条 · 风险最高</small></td>
+          <td></td><td><i class="b fe"></i></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="gl">批 4 · T6 权益 + 租户<small>8 条</small></td>
+          <td></td><td><i class="b fe"></i></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="gl">批 5 · T7 部署 + 工单<small>6 条</small></td>
+          <td></td><td></td><td><i class="b fe"></i></td><td></td><td></td><td></td></tr>
+      <tr><td class="gl">批 6 · T8 账号审计总览导出<small>7 条</small></td>
+          <td></td><td></td><td><i class="b fe"></i></td><td></td><td></td><td></td></tr>
+      <tr><td class="gl">联调尾巴与返工<small>契约偏差在这里暴露</small></td>
+          <td></td><td></td><td><i class="b fe"></i></td><td></td><td></td><td></td></tr>
+      <tr><td class="gl">T9 端到端验收<small>阻塞：staging 未就绪</small></td>
+          <td></td><td></td><td></td><td><i class="b blk"></i></td><td></td><td></td></tr>
+      <tr><td class="gl">缓冲<small>吃掉偏差与口径等待</small></td>
+          <td></td><td></td><td></td><td></td><td><i class="b ext"></i></td><td></td></tr>
+
+      <tr><td class="gl lane" colspan="7">外部与里程碑</td></tr>
+      <tr><td class="gl">staging 环境搭建<small>必须 W1 启动，2–3 天</small></td>
+          <td><i class="b ext"></i></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="gl">首个 tag + 发布链路验证<small>依赖回归全绿</small></td>
+          <td></td><td></td><td></td><td><i class="b ms"></i></td><td></td><td></td></tr>
+    </table>
+
+    <div class="legend">
+      <span><i style="background:#1f4030;border:1px solid #3a7a55"></i>后端任务</span>
+      <span><i style="background:#16304a;border:1px solid #35648f"></i>前端联调</span>
+      <span><i style="background:repeating-linear-gradient(135deg,#3d1a1c,#3d1a1c 5px,#2a1214 5px,#2a1214 10px);border:1px solid #a03a3a"></i>阻塞</span>
+      <span><i style="background:#2b2b2b;border:1px dashed #5f6b7a"></i>外部 / 缓冲</span>
+      <span><i style="background:#3a3118;border:1px solid #d29922;height:7px"></i>里程碑</span>
+    </div>
+    <div class="note">
+      W4 末（12-11）达成「可整体验收」：46 条联调全绿 + 验收 9 条跑完 + 首个 tag 打出。
+      W5 若不被动用，说明偏差在预期内；被动用则验收滑到 W6，P2 顺延。
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 阻塞 ==================== -->
+<section>
+  <h2>阻塞项 <span class="tag">共 3 项真阻塞 + 3 项依赖 + 2 项已解除</span></h2>
+  <p class="sec-desc">区分两类：<strong>真阻塞</strong>等项目外部的东西，干活的人再多也推不动；<strong>依赖</strong>只是顺序，串行即可。</p>
+
+  <div class="card">
+    <table>
+      <tr><th style="width:52px">类型</th><th>项目</th><th>卡住了什么</th><th>解锁条件</th></tr>
+      <tr>
+        <td><span class="pill p-blocked">阻塞</span></td>
+        <td class="name">staging 环境</td>
+        <td class="name">Task 9 全部 9 条<span>双身份验收、性能基线、恢复演练、部署验收</span>；T6 的「真的发出去并收到」</td>
+        <td class="name">提供一套与生产等价的 staging（含 PostgREST + DB + 对象存储）<span>2–3 天，需 W1 就启动</span></td>
+      </tr>
+      <tr>
+        <td><span class="pill p-blocked">阻塞</span></td>
+        <td class="name">本机工作区的删除限制</td>
+        <td class="name">admin 依赖装不完、本地库起不来<span>2026-11-17 实测：工作区内本次新建的文件删不掉（EPERM），
+          而 pnpm 与 initdb 都是「边建边删」</span></td>
+        <td class="name">在带 TTY 的终端里跑 install / 或把易变目录放到 <code>C:\Users\Agust\AppData\Local\Temp</code>
+          <span>已验证：库目录挪到 C 盘后，库验证从 15 分钟卡死 → 1 分 25 秒全绿</span></td>
+      </tr>
+      <tr>
+        <td><span class="pill p-done">已解除</span></td>
+        <td class="name">C1 审批流口径</td>
+        <td class="name">C1 的级次与两个开关</td>
+        <td class="name">已拍板：按机构配置 1~3 级，每级用「所需权限」表达；改配置不影响在途（快照）<span>2026-11-15 · 数据库层已完成</span></td>
+      </tr>
+      <tr>
+        <td><span class="pill p-blocked">阻塞</span></td>
+        <td class="name">看板校验（board:check）</td>
+        <td class="name">CI 里的看板一致性检查<span>只能跳过，等于这条门禁不存在</span></td>
+        <td class="name">把 <code>dev-board.html</code> 放进仓库，或提供固定路径<span>现在是本机没有、CI 也拿不到</span></td>
+      </tr>
+      <tr>
+        <td><span class="pill p-done">已解除</span></td>
+        <td class="name">本机 JS 依赖安装</td>
+        <td class="name">全部 JS 门禁</td>
+        <td class="name">根因是 pnpm 单包 60s 超时（大包 34.5MB / 链路 640KB/s）：放宽超时 + 降并发后装完，门禁全通<span>2026-11-15</span></td>
+      </tr>
+      <tr>
+        <td><span class="pill p-blocked">待验证</span></td>
+        <td class="name">D2 E2E 入 CI</td>
+        <td class="name">D2</td>
+        <td class="name">ci.yml 的 e2e_gate 已就绪，A1 的 11 条用例本地全绿；只缺一次推送后的流水线结果<span>本机看不了 Gitee Go</span></td>
+      </tr>
+            <tr>
+        <td><span class="pill p-todo">依赖</span></td>
+        <td class="name">首个 tag / 发布链路</td>
+        <td class="name">发布验证</td>
+        <td class="name">依赖补全 + 13 门禁全量回归通过<span>W4</span></td>
+      </tr>
+    </table>
+    <div class="warnbox">
+      <h4>最该先动的是看起来最不像开发的那件</h4>
+      <p>staging 搭建要 2–3 天，但它卡着 9 条验收。若等到 W4 才启动，整个排期后移 3 天以上；
+      若 W1 并行启动，它对关键路径的贡献是零。同理，C1 的口径问题现在就该问，而不是等到 W5 再问。</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  基线 <code>027b546</code> · 已完成项逐条对应 <code>udone/.harness/journal/</code> 与 <code>admin/.harness/journal/</code> 的交付记录<br>
+  规模与单元数取自 <code>2026-10-30-long-run.md</code>（70 单元，已完成 46）；排期为估算，不是承诺<br>
+  已核数字：端点 120 + 31、迁移 37、pgTAP 29、集成 21、页面 77 + 13、面板 27 项、卡 18 张、条 57<br>
+  未复跑：1230 断言 / 380 集成 / 786 单测 / 13 门禁 —— 本机依赖不完整（缺 vitest、vue-tsc）
+</footer>
+
+</div>
+</body>
+</html>

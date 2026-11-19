@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XW-ERP 开发进度看板 · 2026-11-14</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#151a21; --panel-2:#1b212a; --line:#252d38;
+    --text:#e6e9ee; --muted:#8b96a5; --dim:#5f6b7a;
+    --done:#3fb950; --doing:#d29922; --todo:#6b7787; --blocked:#f85149;
+    --accent:#58a6ff; --accent-2:#39c5cf;
+    --mono:ui-monospace,SFMono-Regular,"JetBrains Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font:14px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1280px;margin:0 auto;padding:36px 28px 72px}
+  a{color:var(--accent);text-decoration:none}
+
+  /* header */
+  header{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:28px}
+  .eyebrow{font:600 11px/1 var(--mono);letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+  h1{margin:10px 0 6px;font-size:26px;font-weight:650;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:13px}
+  .sub code{font-family:var(--mono);color:var(--accent-2);background:#0b1a1d;padding:1px 5px;border-radius:3px}
+
+  /* summary strip */
+  .strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:24px 0 36px}
+  .strip>div{background:var(--panel);padding:16px 18px}
+  .strip .k{font:500 11px/1 var(--mono);letter-spacing:.08em;color:var(--dim);text-transform:uppercase;margin-bottom:9px}
+  .strip .v{font:650 22px/1.1 var(--mono);letter-spacing:-.02em}
+  .strip .v small{font-size:12px;font-weight:500;color:var(--muted);margin-left:5px;letter-spacing:0}
+  .strip .hl{background:#121a14;box-shadow:inset 0 2px 0 var(--done)}
+
+  h2{font-size:15px;font-weight:650;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+  h2 .tag{font:600 10px/1 var(--mono);letter-spacing:.1em;padding:4px 7px;border-radius:3px;
+    background:#1f2937;color:var(--muted);text-transform:uppercase}
+  h2 .tag.be{background:#0d2b22;color:#56d4a0}
+  h2 .tag.fe{background:#0d1f2e;color:#6cb6ff}
+  .sec-desc{color:var(--muted);font-size:12.5px;margin:0 0 16px;max-width:88ch}
+
+  section{margin-bottom:44px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  @media(max-width:1000px){.cols{grid-template-columns:1fr}.strip{grid-template-columns:repeat(2,1fr)}}
+
+  /* cards */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px}
+  .card+.card{margin-top:16px}
+  .card h3{font-size:14px;font-weight:650;margin:0 0 3px}
+  .card .meta{font:500 11.5px/1.5 var(--mono);color:var(--dim);margin-bottom:16px}
+
+  /* metrics */
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+  .metrics>div{border-left:2px solid var(--line);padding-left:12px}
+  .metrics .v{font:650 19px/1.2 var(--mono);letter-spacing:-.02em}
+  .metrics .k{font-size:11.5px;color:var(--dim);margin-top:3px}
+
+  /* bar */
+  .barrow{margin:14px 0 0}
+  .barhead{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px}
+  .barhead b{color:var(--text);font-weight:600;font-family:var(--mono)}
+  .bar{height:7px;background:#0b0f14;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+  .bar>i{display:block;height:100%;background:linear-gradient(90deg,#2f7d4f,#3fb950)}
+  .bar>i.warn{background:linear-gradient(90deg,#8a6415,#d29922)}
+  .bar>i.none{background:#39424f}
+
+  /* tables */
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+  th{text-align:left;font:600 10.5px/1 var(--mono);letter-spacing:.09em;color:var(--dim);
+    text-transform:uppercase;padding:0 8px 8px;border-bottom:1px solid var(--line)}
+  td{padding:7px 8px;border-bottom:1px solid #1c232c;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  td.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums;color:var(--text)}
+  td.name{color:var(--text)}
+  td.name span{color:var(--dim);font-size:11.5px;margin-left:6px}
+  .dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:7px;vertical-align:1px}
+  .d-done{background:var(--done)} .d-todo{background:var(--todo)}
+  .d-doing{background:var(--doing)} .d-blocked{background:var(--blocked)}
+
+  /* pill */
+  .pill{display:inline-block;font:600 10.5px/1 var(--mono);padding:4px 7px;border-radius:3px;letter-spacing:.03em}
+  .p-done{background:#0d2b1a;color:#56d4a0}
+  .p-doing{background:#2b2210;color:#e3b341}
+  .p-todo{background:#1e242c;color:#8b96a5}
+  .p-blocked{background:#2d1416;color:#ff7b72}
+  .p-p0{background:#2d1416;color:#ff7b72}
+  .p-p1{background:#2b2210;color:#e3b341}
+  .p-p2{background:#1e242c;color:#8b96a5}
+
+  /* list */
+  ul.plain{list-style:none;margin:8px 0 0;padding:0}
+  ul.plain li{padding:9px 0;border-bottom:1px solid #1c232c;display:flex;gap:10px;align-items:flex-start}
+  ul.plain li:last-child{border-bottom:none}
+  ul.plain .id{font:600 11px/1.5 var(--mono);color:var(--dim);min-width:44px;padding-top:1px}
+  ul.plain .txt{flex:1;font-size:13px}
+  ul.plain .txt i{display:block;font-style:normal;color:var(--dim);font-size:11.5px;margin-top:2px}
+
+  .note{border-left:2px solid var(--line);padding:2px 0 2px 14px;color:var(--muted);font-size:12.5px;margin-top:16px}
+  .warnbox{border:1px solid #3d2c12;background:#1a1509;border-radius:5px;padding:14px 16px;margin-top:16px}
+  .warnbox h4{margin:0 0 6px;font-size:12.5px;color:#e3b341;font-weight:650}
+  .warnbox p{margin:0;font-size:12.5px;color:#c9b98f}
+  .okbox{border:1px solid #16351f;background:#0c1a12;border-radius:5px;padding:14px 16px;margin-top:16px}
+  .okbox h4{margin:0 0 6px;font-size:12.5px;color:#56d4a0;font-weight:650}
+  .okbox p{margin:0;font-size:12.5px;color:#9fbfa9}
+
+  footer{border-top:1px solid var(--line);padding-top:18px;color:var(--dim);font-size:11.5px;line-height:1.9}
+  footer code{font-family:var(--mono);color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">XW-ERP / 开发进度看板</div>
+  <h1>两条开发线已合并到 main</h1>
+  <div class="sub">
+    业务端 <code>feat/business-slice</code> 与 运营端 <code>feat/ops-console</code> 收敛于
+    <code>027b546</code>，已推送 Gitee。共 163 个提交、1 处冲突（仅注释差异）。
+    数据核对时间 2026-11-14 19:50。
+  </div>
+</header>
+
+<div class="strip">
+  <div><div class="k">已并入提交</div><div class="v">163<small>业务 125 / 运营 38</small></div></div>
+  <div><div class="k">接口契约端点</div><div class="v">151<small>ops 120 / 业务 31</small></div></div>
+  <div><div class="k">前端业务页面</div><div class="v">90<small>后台 77 / 业务 13</small></div></div>
+  <div><div class="k">未完成任务</div><div class="v">75<small>后端 18 / 前端 57</small></div></div>
+  <div class="hl"><div class="k">到可整体验收</div><div class="v">约 3 周<small>常见档 14 工作日</small></div></div>
+</div>
+
+<!-- ================= 后端 ================= -->
+<section>
+  <h2><span class="tag be">后端</span> udone · 数据与接口</h2>
+  <p class="sec-desc">
+    后端已推进到「所有域都有真接口」。11 个运营域全部落库落接口，13 道门禁在 10-31 收口时全绿；
+    剩下的是业务功能缺口（18 张卡），不是基础设施。
+  </p>
+
+  <div class="cols">
+    <div class="card">
+      <h3>运营后台接口（ops）</h3>
+      <div class="meta">120 端点 · GET 55 / POST 51 / PATCH 13 / DELETE 1</div>
+      <div class="metrics">
+        <div><div class="v">37</div><div class="k">数据库迁移</div></div>
+        <div><div class="v">29</div><div class="k">pgTAP 测试文件</div></div>
+        <div><div class="v">21</div><div class="k">HTTP 集成测试</div></div>
+      </div>
+      <table>
+        <tr><th>域</th><th style="text-align:right">端点</th></tr>
+        <tr><td class="name">权益（订阅 / 授权 / 变更 / 快照）</td><td class="num">15</td></tr>
+        <tr><td class="name">合同（含附件）</td><td class="num">14</td></tr>
+        <tr><td class="name">应收 · 收款 · 核销 · 退款</td><td class="num">14</td></tr>
+        <tr><td class="name">身份 · 账号 · 角色 · 审计</td><td class="num">13</td></tr>
+        <tr><td class="name">产品 · 套餐 · 功能 · 价格版本</td><td class="num">13</td></tr>
+        <tr><td class="name">客户</td><td class="num">11</td></tr>
+        <tr><td class="name">租户交付（映射 / 命令）</td><td class="num">10</td></tr>
+        <tr><td class="name">售后工单</td><td class="num">10</td></tr>
+        <tr><td class="name">总览 · 报表 · 导出</td><td class="num">8</td></tr>
+        <tr><td class="name">私有化部署台账</td><td class="num">7</td></tr>
+        <tr><td class="name">设置 · 字典</td><td class="num">5</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>业务端接口（SaaS）</h3>
+      <div class="meta">31 端点 · 客户 / 订单 / 供应商 / 财务 / 成员 / 组织</div>
+      <div class="metrics">
+        <div><div class="v">1,230</div><div class="k">pgTAP 断言</div></div>
+        <div><div class="v">380</div><div class="k">集成用例</div></div>
+        <div><div class="v">786</div><div class="k">单元用例</div></div>
+      </div>
+
+      <div class="barrow">
+        <div class="barhead"><span>里程碑 M1–M7（可关桩 → 验收就绪）</span><b>7 / 8</b></div>
+        <div class="bar"><i style="width:87.5%"></i></div>
+      </div>
+      <div class="barrow">
+        <div class="barhead"><span>M8 业务 backlog（18 张卡）</span><b>0 / 18</b></div>
+        <div class="bar"><i class="none" style="width:2%"></i></div>
+      </div>
+
+      <div class="okbox">
+        <h4>最后一个单元做的是验收，不是功能</h4>
+        <p>契约 §7.4 的 13 行跨域拒绝表逐行落成断言；401/403 扫描遍历全部 120 条端点（不抽样）；
+        顺手补掉触发器函数残留的 PUBLIC EXECUTE —— 那是「每个迁移手抄 REVOKE 清单」这个做法的必然漏洞。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 前端 ================= -->
+<section>
+  <h2><span class="tag fe">前端</span> 两个应用，状态不同</h2>
+  <p class="sec-desc">
+    运营后台 77 个页面全部「frontend-ready」（对着契约桩跑通），但一条真实接口都还没联调；
+    业务端 Web 只有 13 个页面，主线流程连 E2E 都没覆盖。这两块的剩余工作性质完全不同。
+  </p>
+
+  <div class="cols">
+    <div class="card">
+      <h3>运营后台 admin（Vben + Vue 3）</h3>
+      <div class="meta">9 域 · 77 页面 · 10 个路由模块 · 桩与真实后端两套 e2e</div>
+      <div class="metrics">
+        <div><div class="v">77</div><div class="k">业务页面</div></div>
+        <div><div class="v">9/9</div><div class="k">域已完成（前端）</div></div>
+        <div><div class="v">0/46</div><div class="k">真实联调</div></div>
+      </div>
+      <div class="barrow">
+        <div class="barhead"><span>页面开发（frontend-ready）</span><b>100%</b></div>
+        <div class="bar"><i style="width:100%"></i></div>
+      </div>
+      <div class="barrow">
+        <div class="barhead"><span>真实 API 联调（integration-ready）</span><b>0%</b></div>
+        <div class="bar"><i class="none" style="width:2%"></i></div>
+      </div>
+      <table style="margin-top:16px">
+        <tr><th>域</th><th style="text-align:right">页面</th><th style="text-align:right">后端端点</th></tr>
+        <tr><td class="name">权益</td><td class="num">14</td><td class="num">15</td></tr>
+        <tr><td class="name">身份与审计</td><td class="num">12</td><td class="num">13</td></tr>
+        <tr><td class="name">私有化部署</td><td class="num">9</td><td class="num">7</td></tr>
+        <tr><td class="name">售后工单</td><td class="num">9</td><td class="num">10</td></tr>
+        <tr><td class="name">账款</td><td class="num">8</td><td class="num">14</td></tr>
+        <tr><td class="name">客户</td><td class="num">8</td><td class="num">11</td></tr>
+        <tr><td class="name">产品套餐</td><td class="num">7</td><td class="num">13</td></tr>
+        <tr><td class="name">合同</td><td class="num">5</td><td class="num">14</td></tr>
+        <tr><td class="name">租户交付</td><td class="num">5</td><td class="num">10</td></tr>
+      </table>
+      <div class="note">页面数与端点数不必相等：一个端点常支撑列表 + 详情 + 多个动作页。这里并排只为看「哪一域显薄」。</div>
+    </div>
+
+    <div class="card">
+      <h3>业务端 Web（udone/apps/web）</h3>
+      <div class="meta">13 页面 · 客户 / 订单 / 供应商 / 财务 · 31 端点对接</div>
+      <div class="metrics">
+        <div><div class="v">13</div><div class="k">页面</div></div>
+        <div><div class="v">2</div><div class="k">E2E spec</div></div>
+        <div><div class="v">6</div><div class="k">E2E 用例</div></div>
+      </div>
+      <div class="barrow">
+        <div class="barhead"><span>主流程 E2E 覆盖（登录 → 订单 → 收款 → 审批）</span><b>未覆盖</b></div>
+        <div class="bar"><i class="none" style="width:2%"></i></div>
+      </div>
+      <div class="warnbox">
+        <h4>这里是「做了但不知道对不对」的那块</h4>
+        <p>现有 2 个 spec 只测登录与成员邀请，客户、订单、收付款主线一条都没在浏览器里跑过。
+        A1 卡就是补这个，它同时挡住 D2（E2E 入 CI）。</p>
+      </div>
+      <div class="barrow" style="margin-top:18px">
+        <div class="barhead"><span>产物体积（主 chunk 1,638 kB / gzip 507 kB）</span><b>未拆包</b></div>
+        <div class="bar"><i class="warn" style="width:100%"></i></div>
+      </div>
+      <div class="note">D1 卡：目标主 chunk &lt; 800 kB、gzip &lt; 250 kB，按「运营端 / 业务端 / 共享」三包拆。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 未完成 ================= -->
+<section>
+  <h2>剩余未完成项</h2>
+  <p class="sec-desc">按「谁欠什么」分两侧。后端是功能缺口，前端是验证缺口 —— 后者不是写代码能解决的。</p>
+
+  <div class="cols">
+    <div class="card">
+      <h3>后端 · 18 张卡（M8 业务清零）</h3>
+      <div class="meta">A/B/C/D 四段 · 估约 24 个推进单元</div>
+      <table>
+        <tr><th>编号</th><th>内容</th><th>优先级</th></tr>
+        <tr><td class="num" style="text-align:left">A1</td><td class="name">前端主线 E2E<span>订单 → 收款 → 审批</span></td><td><span class="pill p-p0">P0</span></td></tr>
+        <tr><td class="num" style="text-align:left">A5</td><td class="name">供应商模块行为测试</td><td><span class="pill p-p1">P1</span></td></tr>
+        <tr><td class="num" style="text-align:left">B1</td><td class="name">审批历史不随明细行消失</td><td><span class="pill p-p0">P0</span></td></tr>
+        <tr><td class="num" style="text-align:left">B2</td><td class="name">客户回收站与 restore 权限</td><td><span class="pill p-p1">P1</span></td></tr>
+        <tr><td class="num" style="text-align:left">C1</td><td class="name">审批流配置化<span>R-APPROVAL-01，L</span></td><td><span class="pill p-p1">P1</span></td></tr>
+        <tr><td class="num" style="text-align:left">C2</td><td class="name">客户来源维护</td><td><span class="pill p-p1">P1</span></td></tr>
+        <tr><td class="num" style="text-align:left">C3</td><td class="name">标签管理补全</td><td><span class="pill p-p1">P1</span></td></tr>
+        <tr><td class="num" style="text-align:left">C4</td><td class="name">线路主数据<span>R-ROUTE-01</span></td><td><span class="pill p-p1">P1</span></td></tr>
+        <tr><td class="num" style="text-align:left">C5</td><td class="name">游客名单<span>R-TOURIST-01，依赖 C4</span></td><td><span class="pill p-p1">P1</span></td></tr>
+        <tr><td class="num" style="text-align:left">C6–C12</td><td class="name">结算 / 余额 / 报表 / 通知 / 审计 / CRM / 公司配置<span>7 张</span></td><td><span class="pill p-p2">P2</span></td></tr>
+        <tr><td class="num" style="text-align:left">D1</td><td class="name">前端产物体积拆分</td><td><span class="pill p-p2">P2</span></td></tr>
+        <tr><td class="num" style="text-align:left">D2</td><td class="name">E2E 接入 CI<span>依赖 A1</span></td><td><span class="pill p-p1">P1</span></td></tr>
+      </table>
+      <div class="note">原计划 21 项，A2（.vue 类型检查）、A3（PostgREST 真实 HTTP 集成）、A4（worker 超时）已完成。</div>
+    </div>
+
+    <div class="card">
+      <h3>前端 · 57 条判定 + 1 个环境前提</h3>
+      <div class="meta">原实施计划的复选框一条都不能勾，因为勾的条件是「联调通过」</div>
+      <ul class="plain">
+        <li><span class="id">46 条</span><span class="txt">Task 3–8 真实 API 联调<i>身份 9 · 客户产品合同 8 · 账款 8 · 权益租户 8 · 部署工单 6 · 账号审计总览 7</i></span></li>
+        <li><span class="id">9 条</span><span class="txt">Task 9 端到端验收<i>安全 / 兼容 / 部署 / 双身份，卡在「没有 staging 环境」</i></span></li>
+        <li><span class="id">2 条</span><span class="txt">Task 2 门禁遗留<i>advisory 清账、托管 CI 落地</i></span></li>
+      </ul>
+      <div class="warnbox">
+        <h4>为什么 0/46 不是 0% 工作量</h4>
+        <p>页面、状态覆盖、组件测试已经全部写完并对着契约桩跑通。缺的是「和真后端对上」这一遍：
+        端点形状、字段名、拒绝码、幂等语义。这一遍必须两端同时在场，任何一端单干都会返工。</p>
+      </div>
+      <div class="barrow" style="margin-top:18px">
+        <div class="barhead"><span>依赖安全（critical 0 / high 2 白名单内）</span><b>已收敛</b></div>
+        <div class="bar"><i style="width:94%"></i></div>
+      </div>
+      <div class="note">两条 high：<code>@vue/server-renderer</code>、<code>zod</code>，随主框架升级解决，白名单带到期日。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 工期 ================= -->
+<section>
+  <h2>工期估算 <span class="tag">估算，不是排期</span></h2>
+  <p class="sec-desc">
+    三档分别是：顺利（无口径争议、环境现成）、常见（每段返工一次）、受阻（契约偏差引发跨端改动，或环境迟迟不到位）。
+    口径是<strong>工作日</strong>，不含需求评审与等待决策的时间。
+  </p>
+
+  <div class="card">
+    <h3>四块工作分档</h3>
+    <div class="meta">规模按项目自己的推进单元表口径，不是另编的数</div>
+    <table>
+      <tr>
+        <th>工作</th><th style="text-align:right">规模</th>
+        <th style="text-align:right">顺利</th><th style="text-align:right">常见</th><th style="text-align:right">受阻</th>
+      </tr>
+      <tr>
+        <td class="name">后端 M8 · 18 张功能卡<span>含 A1 / B1 两个 P0</span></td>
+        <td class="num">24 单元</td>
+        <td class="num">3.5 天</td><td class="num">6 天</td><td class="num">9 天</td>
+      </tr>
+      <tr>
+        <td class="name">前端联调 · 46 条判定<span>9 个域，接真后端</span></td>
+        <td class="num">9 域</td>
+        <td class="num">5 天</td><td class="num">8.5 天</td><td class="num">13 天</td>
+      </tr>
+      <tr>
+        <td class="name">工程收尾<span>依赖补全 + 13 门禁全量回归 + 首个 tag</span></td>
+        <td class="num">—</td>
+        <td class="num">1 天</td><td class="num">1.5 天</td><td class="num">2.5 天</td>
+      </tr>
+      <tr>
+        <td class="name">Task 9 验收 · 9 条<span>安全 / 兼容 / 部署 / 双身份</span></td>
+        <td class="num">—</td>
+        <td class="num">3 天</td><td class="num">4 天</td><td class="num">5 天</td>
+      </tr>
+    </table>
+
+    <div class="barrow" style="margin-top:20px">
+      <div class="barhead"><span>一个人串行做完（后端 → 联调 → 收尾 → 验收）</span><b>2.5 / 4 / 6 周</b></div>
+      <div class="bar"><i class="warn" style="width:64%"></i></div>
+    </div>
+    <div class="barrow">
+      <div class="barhead"><span>后端与联调并行（当前的两端分工），走关键路径</span><b>2 / 3 / 4+ 周</b></div>
+      <div class="bar"><i style="width:44%"></i></div>
+    </div>
+    <div class="note">
+      并行时工期取「后端 vs 联调」的较大者，再加收尾与验收；串行时是四块相加。
+      差别全在这一步，不在代码量。
+    </div>
+  </div>
+
+  <div class="cols" style="margin-top:16px">
+    <div class="card">
+      <h3>为什么是这个量级</h3>
+      <ul class="plain">
+        <li><span class="id">实测</span><span class="txt">业务端 3 天交付 11 域 / 120 端点 / 10.2 万行<i>109 个提交，10-29 至 10-31</i></span></li>
+        <li><span class="id">实测</span><span class="txt">运营端 2 天交付 77 页 / 6.5 万行<i>22 个提交，10-30 至 10-31</i></span></li>
+        <li><span class="id">口径</span><span class="txt">主计划 70 个推进单元，已完成 46，剩 24<i>P1–P8 全绿，P9 未开工；24 单元含 C6–C12 七张 P2</i></span></li>
+      </ul>
+      <div class="note">按观察到的速度反推，24 单元本可以更快；给的天数里多出来的部分是<strong>裁决与返工</strong>，不是敲代码。</div>
+    </div>
+
+    <div class="card">
+      <h3>会让估算往右走的三件事</h3>
+      <ul class="plain">
+        <li><span class="id">环境</span><span class="txt">staging 没搭，Task 9 一天都开不了<i>要 2–3 天且必须提前并行启动，否则整体直接右移</i></span></li>
+        <li><span class="id">口径</span><span class="txt">C1 审批流配置化、C5 游客名单要业务拍板<i>这类卡的天数不取决于实现，取决于等回答</i></span></li>
+        <li><span class="id">返工</span><span class="txt">联调暴露的契约偏差要两端一起改<i>10-31 已抓到 2 处「本地必绿、线上必红」，联调期是同类问题的高发窗口</i></span></li>
+      </ul>
+      <div class="warnbox">
+        <h4>最不确定的是中间那段</h4>
+        <p>前端 77 个页面全是桩验证。桩与真后端的偏差只有接上去才知道大小 ——
+        偏差小则联调 5 天，偏大则 13 天，且后端那 18 张卡要跟着往后排。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 风险 ================= -->
+<section>
+  <h2>当前真正的阻塞与风险</h2>
+
+  <div class="cols">
+    <div class="card">
+      <h3>三个卡点</h3>
+      <table>
+        <tr><th>卡点</th><th>影响</th><th>状态</th></tr>
+        <tr><td class="name">没有 staging 环境</td><td class="name" style="color:var(--muted)">双身份验收、性能基线、恢复演练全部做不了</td><td><span class="pill p-blocked">阻塞</span></td></tr>
+        <tr><td class="name">联调从未跑过</td><td class="name" style="color:var(--muted)">前端 77 页全是桩验证，接线时才知道偏差</td><td><span class="pill p-todo">待启动</span></td></tr>
+        <tr><td class="name">仓库 0 个 tag</td><td class="name" style="color:var(--muted)">发布流水线是 tag 触发，等于从未真跑过一次</td><td><span class="pill p-blocked">未验证</span></td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>本轮合并留下的验证缺口</h3>
+      <ul class="plain">
+        <li><span class="id">已验</span><span class="txt">后端源码类型检查通过（0 错误）<i>排除测试文件后跑 tsc，合并未引入类型冲突</i></span></li>
+        <li><span class="id">未验</span><span class="txt">前端两个应用的类型检查<i>本机缺 vue-tsc / admin 无 typescript，依赖未完整安装</i></span></li>
+        <li><span class="id">未验</span><span class="txt">13 道门禁全量回归<i>缺 vitest 与本地 Postgres，无法在本机复现 10-31 的绿</i></span></li>
+      </ul>
+      <div class="note">合并的语义风险本身很低：两条分支的真实分叉点是 <code>c6facfe</code>，之后只共有 1 个改动文件，就是那个仅注释差异的 CI 配置。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 附录 ================= -->
+<section>
+  <h2>数字来源与口径</h2>
+  <div class="card">
+    <table>
+      <tr><th>数字</th><th>来源</th><th>可复现性</th></tr>
+      <tr><td class="name">163 提交 / 1 处冲突 / 双父合并 027b546</td><td class="name">本次 git 操作实测</td><td><span class="pill p-done">已核</span></td></tr>
+      <tr><td class="name">120 + 31 端点、37 迁移、29 pgTAP、21 集成、77 + 13 页面</td><td class="name">合并后工作区静态统计</td><td><span class="pill p-done">已核</span></td></tr>
+      <tr><td class="name">1230 断言 / 380 集成 / 786 单测 / 13 门禁全绿</td><td class="name">10-31 journal 记录</td><td><span class="pill p-todo">未复跑</span></td></tr>
+      <tr><td class="name">57 / 46 / 9 / 2 条复选框</td><td class="name">实施计划文档计数</td><td><span class="pill p-done">已核</span></td></tr>
+      <tr><td class="name">18 张 backlog 卡</td><td class="name">backlog 计划勾选状态</td><td><span class="pill p-done">已核</span></td></tr>
+      <tr><td class="name">工期三档（3.5 / 6 / 9 天等）</td><td class="name">实测速率 × 推进单元数推算</td><td><span class="pill p-doing">估算</span></td></tr>
+    </table>
+    <div class="note">
+      看板源文件 <code>dev-board.html</code> 不在仓库内（约定放 <code>XW-ERP/</code> 同级的仓库外目录），
+      本机没有这份文件，因此「99 卡 / 68 done」这类看板数字无法在此复核，本页一律不使用。
+    </div>
+  </div>
+</section>
+
+<footer>
+  合并提交 <code>027b546</code> · 父提交 <code>38d5cd0</code>（业务端）与 <code>db06f4f</code>（运营端）<br>
+  冲突文件 <code>.workflow/ci.yml</code>：两侧同一修复的注释版本不同，取业务端版本（记录了真实根因）<br>
+  生成于 2026-11-14 · 工作区干净，已推送 Gitee
+</footer>
+
+</div>
+</body>
+</html>
