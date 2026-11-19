@@ -32,10 +32,12 @@
 清单在 `udone/Docs/superpowers/plans/2026-10-29-business-completion-backlog.md`，
 每单元记录在 `udone/.harness/journal/`。
 
-**状态（2026-11-19 夜）：21 项交付 20，只剩 D2 一格未勾（纯平台动作）。**
-- **D2**：配置已写好且经 CI 视角预检（`main` 到 `646f28e`）。卡点不再是代码：
-  Gitee Go 里**还没有流水线对象**，需用户在网页端「新建流水线 → 粘根目录 `.workflow/ci.yml`」；
-  本机拿不到流水线 API（缓存凭据是 9 位账号密码，OpenAPI 拒绝密码认证，401）。
+**状态（2026-11-20 夜）：21 项交付 20，只剩 D2 一格未勾（纯平台动作）。**
+- **D2**：配置已写好，且**整条流水线的 step 序列已在本地按序回放过、全绿**
+  （`main` 到 `f7e0ab4`；单测 74/925、E2E CI=1 24 通过 1 跳过、build/schema/deploy 均过）。
+  卡点不再是代码：Gitee Go 里**还没有流水线对象**，需用户在网页端「新建流水线 → 粘根目录 `.workflow/ci.yml`」；
+  本机拿不到流水线 API（缓存凭据是 9 位账号密码，OpenAPI 拒绝密码认证，401）——**这条别再试**。
+  剩余唯一不确定项：运行镜像能否 `apt` 装 Chromium 依赖（`--with-deps` 失败时要在镜像里预装，不许删这行）。
 
 ### 🔴 `format:check` 在本机恒红，别当门禁信号（2026-11-19）
 `core.autocrlf=true` + `.prettierrc.json` 的 `endOfLine:"lf"` ⇒ 工作区全 CRLF ⇒ **207 文件
@@ -47,7 +49,15 @@
 坑：`git archive` 会吃 autocrlf（不关就还是 CRLF）、git 与 node 都要 Windows 路径
 （`C:/`、`D:/`，`/c/...` 与 `/d/...` 会被拼坏）；先确认导出文件 CR 计数为 0 再谈结论。
 
+### 🔴 `format:sql:check` 的红是真红，但它不该被「格式化抹平」（2026-11-20 纠正）
+前两轮把它当 CRLF 噪音跳过，**错了**：把源文件换行归一化后仍有 **25 个文件**与
+`sql-formatter` 输出不一致（唯一纯 CRLF 假红是 `20261031000011_ops_settings_dictionaries.sql`）。
+但该 formatter 的输出**更差**（`count(*)` → `count (*)`、单行 `CHECK` 被拆成 4 行），
+批量 `--write` 等于重排 25 个已提交迁移。**决定：存量不动，新增迁移必须能被 formatter 接受。**
+它不在 `.workflow/ci.yml` 里，不影响流水线。
+
 ### 前端两条硬经验（2026-11-19）
+
 - 🔴 **`<a-table>` 的 `title` 是渲染函数，不能传字符串**。传字符串 → 挂载时
   `TypeError: title is not a function` → **整页白屏**，而 `vue-tsc` 与生产构建都不报。
   标题写普通元素或 `#title` 插槽。（`/reports` 就是这么白屏的，E2E 才抓到。）

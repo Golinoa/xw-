@@ -80,3 +80,16 @@
 - **D2 仍不勾**：Gitee Go 里没有流水线对象，需用户在网页端新建并贴根目录 `.workflow/ci.yml`。
   本机拿不到流水线 API（缓存凭据是 9 位账号密码，OpenAPI 401）——这条别再试。
 - 下一张：**无**。计划内 21 项只剩 D2 一格，全部依赖用户平台动作 / 密码。
+
+## 2026-11-20 01:4x — D2 全序列回放 ✅（D2 仍未勾）
+
+- 无新卡片可做，改为把 `.workflow/ci.yml` 的 goals **按序逐步原样回放**（不用等价轻量检查替代）：
+  lint 10s / typecheck 11s / test **74 文件 925 用例** 13.6s / build 13s /
+  schema:check 61 迁移一致 / check:deploy 3s / E2E `CI=1` **24 通过 1 跳过** 23.2s；
+  `format:check` 按 LF 导出 0 不合规。Node 24.22.1 复跑单测同样 925 绿。
+  ⇒ 预期流水线首跑即绿，剩余风险只在运行镜像（`--with-deps` 装 Chromium 依赖）。
+- **纠正旧结论**：`format:sql:check` 的红不是 CRLF 噪音（换行归一化后仍 25 文件不一致），
+  但 formatter 输出更差，决定不批量格式化；它不在 ci.yml 里。
+- 提交 `f7e0ab4`，已 push main。journal：`2026-11-20-d2-ci-sequence-replay.md`。
+- 下次若卡片仍全勾：**不要重复回放**（结果已记录）；直接确认 D2 平台侧是否已建流水线。
+
