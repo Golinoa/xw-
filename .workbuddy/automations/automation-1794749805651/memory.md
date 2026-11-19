@@ -64,3 +64,19 @@
 - 环境坑（已记）：`format:sql.mjs --write` 会因 CRLF vs LF 改写 68 个历史 SQL；本机只对新文件跑。
   `db:local.mjs http` 首次常 PostgREST 启动超时，重跑即过（B2 也是）。
 - 无外部阻塞项。
+
+## 2026-11-19 23:5x — D2 预检（清掉「流水线第一步必红」的真缺陷）✅ 部分
+
+- 剩余卡片只有 D2，卡在「本机看不到 Gitee Go 结果」。改为排掉「已知会红」的点。
+- **真缺陷**：`format:check` 在本机恒 207 文件红（autocrlf CRLF + endOfLine lf），
+  一直被当噪音；按 **CI 检出内容（LF 导出）** 复验后只有 **4 个文件**真不合规
+  （`ops/auth/routes.ts`、`CustomerRecycleBinView.vue`、`order-finance-flow.spec.ts`、
+  `order-list-states.spec.ts`）。CI `quality_gate` 第一行就是它 ⇒ 已修，复验 0 不合规。
+- **CI 模式 E2E 不挂**：`CI=1` 全量 24 通过 1 跳过 / 25.6s / 退出码 0 ⇒ 上一轮
+  「跑完不退出」结案（只在复用外部 dev server 时出现，不是流水线风险）。
+  lockfile 与 4 个 importer 逐项一致（`--frozen-lockfile` 安全）。
+- 提交：`646f28e`（格式 4 文件）+ `43c06ce`（journal + 卡片 + 记忆），已 push main。
+  journal：`2026-11-19-d2-ci-preflight.md`。
+- **D2 仍不勾**：Gitee Go 里没有流水线对象，需用户在网页端新建并贴根目录 `.workflow/ci.yml`。
+  本机拿不到流水线 API（缓存凭据是 9 位账号密码，OpenAPI 401）——这条别再试。
+- 下一张：**无**。计划内 21 项只剩 D2 一格，全部依赖用户平台动作 / 密码。
