@@ -309,6 +309,7 @@ import {
   supplierListResponseSchema,
   supplierParamsSchema,
   supplierResponseSchema,
+  updateSupplierRequestSchema,
 } from './suppliers';
 import {
   cancelSettlementRequestSchema,
@@ -763,6 +764,12 @@ export const ROUTES = {
     method: 'POST',
     path: '/api/suppliers',
     request: createSupplierRequestSchema,
+    response: supplierResponseSchema,
+  }),
+  updateSupplier: defineRoute({
+    method: 'PATCH',
+    path: '/api/suppliers/:supplierId',
+    request: updateSupplierRequestSchema,
     response: supplierResponseSchema,
   }),
   deleteSupplier: defineRoute({

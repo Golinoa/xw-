@@ -36,6 +36,8 @@ const total = ref(0);
 const listStatus = ref<'loading' | 'ready' | 'error' | 'forbidden'>('loading');
 const listError = ref('');
 const formOpen = ref(false);
+const editing = ref<Supplier | null>(null);
+const busyId = ref<string | null>(null);
 let requestSeq = 0;
 
 async function load() {
@@ -115,9 +117,64 @@ function onPageChange(nextPage: number, nextPageSize: number) {
 }
 
 async function onSaved(supplier: Supplier) {
-  message.success(`已新建供应商「${supplier.name}」`);
-  page.value = 1;
+  message.success(
+    editing.value ? `已保存供应商「${supplier.name}」` : `已新建供应商「${supplier.name}」`,
+  );
+  if (!editing.value) page.value = 1;
+  editing.value = null;
   await load();
+}
+
+function openCreate() {
+  editing.value = null;
+  formOpen.value = true;
+}
+
+function openEdit(supplier: Supplier) {
+  editing.value = supplier;
+  formOpen.value = true;
+}
+
+/** 停用不删数据：历史应付行还要靠它出对账单。 */
+async function toggleActive(supplier: Supplier) {
+  if (busyId.value) return;
+  busyId.value = supplier.id;
+  try {
+    await auth.api.call('updateSupplier', {
+      params: { supplierId: supplier.id },
+      body: { isActive: !supplier.isActive },
+    });
+    message.success(supplier.isActive ? '供应商已停用' : '供应商已启用');
+    await load();
+  } catch (cause) {
+    message.error(cause instanceof ApiClientError ? cause.message : '操作失败，请重试');
+  } finally {
+    busyId.value = null;
+  }
+}
+
+/**
+ * 删除只对「没被应付行引用」的供应商可行。
+ *
+ * 被引用时服务端回 409 OBJECT_REFERENCED，这里必须把「不能删」与「删失败」
+ * 分开说——前者要用户去停用，后者只需重试。
+ */
+async function remove(supplier: Supplier) {
+  if (busyId.value) return;
+  busyId.value = supplier.id;
+  try {
+    await auth.api.call('deleteSupplier', { params: { supplierId: supplier.id } });
+    message.success(`已删除供应商「${supplier.name}」`);
+    await load();
+  } catch (cause) {
+    if (cause instanceof ApiClientError && cause.code === 'OBJECT_REFERENCED') {
+      message.warning('该供应商已被应付单据引用，不能删除；可以改为停用');
+    } else {
+      message.error(cause instanceof ApiClientError ? cause.message : '删除失败，请重试');
+    }
+  } finally {
+    busyId.value = null;
+  }
 }
 
 const columns = [
@@ -128,6 +185,7 @@ const columns = [
   { title: '结算方式', dataIndex: 'settlement', key: 'settlement', width: 120 },
   { title: '状态', dataIndex: 'isActive', key: 'isActive', width: 90 },
   { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', width: 170 },
+  { title: '操作', key: 'action', width: 200 },
 ];
 
 const pageSizeOptions = PAGE_SIZE_OPTIONS.map((size) => String(size));
@@ -142,12 +200,12 @@ const showTotal = (count: number) => `共 ${count} 个供应商`;
           >供应商</a-typography-title
         >
         <a-typography-paragraph type="secondary" class="page-subtitle">
-          订单应付行必须引用这里维护的供应商；停用、编辑与删除校验暂未开放。
+          订单应付行必须引用这里维护的供应商；停用不删数据，被应付单据引用的供应商只能停用、不能删除。
         </a-typography-paragraph>
       </div>
       <a-space>
         <a-button :loading="listStatus === 'loading'" @click="load">刷新</a-button>
-        <a-button v-if="canWrite" type="primary" @click="formOpen = true">新建供应商</a-button>
+        <a-button v-if="canWrite" type="primary" @click="openCreate">新建供应商</a-button>
       </a-space>
     </header>
 
@@ -223,6 +281,26 @@ const showTotal = (count: number) => `共 ${count} 个供应商`;
             <template v-else-if="column.key === 'createdAt'">
               {{ formatDateTime(record.createdAt) }}
             </template>
+            <template v-else-if="column.key === 'action'">
+              <a-space v-if="canWrite">
+                <a-button size="small" @click="openEdit(record)">编辑</a-button>
+                <a-button
+                  size="small"
+                  :loading="busyId === record.id"
+                  @click="toggleActive(record)"
+                >
+                  {{ record.isActive ? '停用' : '启用' }}
+                </a-button>
+                <a-popconfirm
+                  title="删除后不可恢复；被引用的供应商删不掉，只能停用。"
+                  ok-text="删除"
+                  @confirm="remove(record)"
+                >
+                  <a-button size="small" danger>删除</a-button>
+                </a-popconfirm>
+              </a-space>
+              <span v-else class="muted">只读</span>
+            </template>
           </template>
         </a-table>
         <a-pagination
@@ -240,7 +318,7 @@ const showTotal = (count: number) => `共 ${count} 个供应商`;
       </template>
     </a-card>
 
-    <SupplierFormModal v-model:open="formOpen" @saved="onSaved" />
+    <SupplierFormModal v-model:open="formOpen" :supplier="editing" @saved="onSaved" />
   </section>
 </template>
 
@@ -281,6 +359,10 @@ const showTotal = (count: number) => `共 ${count} 个供应商`;
 
 .keyword-input {
   width: 280px;
+}
+
+.muted {
+  color: var(--color-secondary-text);
 }
 
 .result-count {

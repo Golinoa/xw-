@@ -13,6 +13,20 @@ export class RestRequestError extends Error {
   }
 }
 
+/**
+ * 目标资源不存在：PostgREST 回 404（表/视图没建）或 PGRST202（RPC 没建）。
+ *
+ * 这类错误几乎总是「迁移没应用」或「代码引用了不存在的函数」，属于部署问题。
+ * 不单独区分的话会落到通用的 500「服务暂时不可用」，排查时完全看不出缺的是什么，
+ * 只能一个个人工比对迁移清单。
+ */
+export class RestMissingResourceError extends RestRequestError {
+  constructor(readonly resource: string) {
+    super(404, `Supabase resource missing: ${resource}`);
+    this.name = 'RestMissingResourceError';
+  }
+}
+
 /** A unique-constraint violation, reported either as 409 or as Postgres code 23505. */
 export class RestConflictError extends RestRequestError {
   constructor(message = 'Resource conflict') {
@@ -82,6 +96,13 @@ function parseContentRange(value: string | null): number {
   if (!total || total === '*') return 0;
   const parsed = Number.parseInt(total, 10);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+/** PostgREST 找不到函数/表时给的 code：PGRST202 = 函数不存在，PGRST205 = 表不在 schema 缓存里。 */
+function isMissingResource(payload: unknown): boolean {
+  if (typeof payload !== 'object' || payload === null) return false;
+  const code = (payload as { code?: unknown }).code;
+  return code === 'PGRST202' || code === 'PGRST205';
 }
 
 function isUniqueViolation(payload: unknown): boolean {
@@ -163,6 +184,10 @@ export function createRestClient(
       const payload: unknown = await response.json().catch(() => null);
       if (response.status === 409 || isUniqueViolation(payload)) {
         throw new RestConflictError();
+      }
+      if (response.status === 404 || isMissingResource(payload)) {
+        // path 里已经带了 `rpc/xxx` 或表名，正是排查时最需要的那一条信息。
+        throw new RestMissingResourceError(path.split('?')[0] ?? path);
       }
       throw new RestRequestError(response.status, `Supabase request failed (${response.status})`);
     }

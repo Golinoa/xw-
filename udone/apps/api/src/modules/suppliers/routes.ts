@@ -6,6 +6,7 @@ import {
   createSupplierRequestSchema,
   supplierListQuerySchema,
   supplierParamsSchema,
+  updateSupplierRequestSchema,
 } from '@erp/contracts';
 import { parseJson, parseParams, parseQuery, respond } from '../../lib/contract';
 import type { ApiEnvironment } from '../../middleware/auth';
@@ -55,6 +56,28 @@ supplierRoutes.post(
         throw cause;
       });
     return respond(context, 'createSupplier', { supplier }, 201);
+  },
+);
+
+supplierRoutes.patch(
+  ROUTES.updateSupplier.path,
+  requireAuth(),
+  requirePermission(PERMISSIONS.SUPPLIER_WRITE),
+  async (context) => {
+    const { supplierId } = parseParams(context, supplierParamsSchema);
+    const input = await parseJson(context, updateSupplierRequestSchema);
+    const supplier = await supplierRepository(context.env, context.get('authToken'))
+      .update(context.get('auth').organizationId, supplierId, input)
+      .catch((cause) => {
+        if (cause instanceof SupplierNameConflictError) {
+          throw new ApiHttpError(409, ERROR_CODES.CONFLICT, 'A supplier with this name exists');
+        }
+        throw cause;
+      });
+    if (supplier === 'not_found') {
+      throw new ApiHttpError(404, ERROR_CODES.NOT_FOUND, 'Supplier not found');
+    }
+    return respond(context, 'updateSupplier', { supplier });
   },
 );
 

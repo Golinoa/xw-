@@ -3,12 +3,12 @@
 
 > Migration-derived object inventory. Names are extracted from SQL declarations; this report does not infer product fields or runtime behavior.
 
-- Migration sources scanned: 60
+- Migration sources scanned: 61
 - Tables discovered: 71
-- Functions discovered: 284
+- Functions discovered: 285
 - Indexes discovered: 102
 - RLS policies discovered: 85
-- Triggers discovered: 15
+- Triggers discovered: 16
 
 | Migration | Tables | Functions | Indexes | Policies | Triggers |
 |---|---|---|---|---|---|
@@ -72,3 +72,4 @@
 | `20261119000006_crm_lead_followup.sql` | — | `public.create_lead`, `public.record_lead_follow_up` | — | — | — |
 | `20261119000007_crm_lead_pool.sql` | — | `public.claim_lead`, `public.assign_lead`, `public.recycle_stale_leads`, `public.convert_lead_to_customer` | — | — | — |
 | `20261119000008_crm_lead_order.sql` | — | `public.convert_lead_to_order`, `public.lead_funnel` | — | — | — |
+| `20261119000009_finance_application_line_name.sql` | — | `public.snapshot_finance_application_line_name` | — | — | `finance_applications_line_name_snapshot` |

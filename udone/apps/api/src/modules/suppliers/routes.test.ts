@@ -42,6 +42,7 @@ function repositoryStub(overrides: Partial<SupplierRepository> = {}): SupplierRe
   return {
     list: vi.fn().mockResolvedValue({ items: [], total: 0 }),
     create: vi.fn(),
+    update: vi.fn().mockResolvedValue(supplier({ name: '新名字' })),
     delete: vi.fn().mockResolvedValue('not_found'),
     ...overrides,
   };
@@ -223,5 +224,70 @@ describe('supplier keyword sanitizing', () => {
 
   it('collapses runs of whitespace and trims', () => {
     expect(sanitizeSupplierKeyword('  北京   地接  ')).toBe('北京 地接');
+  });
+});
+
+describe('supplier update', () => {
+  it('改名只提交改动的字段，不顺手清空联系人与备注', async () => {
+    const repository = repositoryStub();
+    const { testApp, env } = setup(repository);
+    const response = await testApp.request(
+      `/api/suppliers/${supplier().id}`,
+      {
+        method: 'PATCH',
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: '新名字' }),
+      },
+      env,
+    );
+    expect(response.status).toBe(200);
+    expect(repository.update).toHaveBeenCalledWith('org-alpha', supplier().id, { name: '新名字' });
+  });
+
+  it('停用单独一次请求', async () => {
+    const repository = repositoryStub({
+      update: vi.fn().mockResolvedValue(supplier({ isActive: false })),
+    });
+    const { testApp, env } = setup(repository);
+    const response = await testApp.request(
+      `/api/suppliers/${supplier().id}`,
+      {
+        method: 'PATCH',
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: false }),
+      },
+      env,
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ supplier: { isActive: false } });
+  });
+
+  it('空 PATCH 被契约挡在 400', async () => {
+    const { testApp, env } = setup(repositoryStub());
+    const response = await testApp.request(
+      `/api/suppliers/${supplier().id}`,
+      {
+        method: 'PATCH',
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      },
+      env,
+    );
+    expect(response.status).toBe(400);
+  });
+
+  it('改到不存在的供应商返回 404', async () => {
+    const repository = repositoryStub({ update: vi.fn().mockResolvedValue('not_found') });
+    const { testApp, env } = setup(repository);
+    const response = await testApp.request(
+      `/api/suppliers/${supplier().id}`,
+      {
+        method: 'PATCH',
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: '新名字' }),
+      },
+      env,
+    );
+    expect(response.status).toBe(404);
   });
 });

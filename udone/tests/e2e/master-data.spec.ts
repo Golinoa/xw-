@@ -1,13 +1,17 @@
 import { expect, test } from '@playwright/test';
 import {
   customerSourceDeletedResponseSchema,
-  notificationUnreadResponseSchema,
   customerSourceListResponseSchema,
   customerSourceResponseSchema,
+  notificationUnreadResponseSchema,
+  supplierDeletedResponseSchema,
+  supplierListResponseSchema,
+  supplierResponseSchema,
   tourRouteDeletedResponseSchema,
   tourRouteListResponseSchema,
   tourRouteResponseSchema,
   type CustomerSource,
+  type Supplier,
   type TourRoute,
 } from '@erp/contracts';
 import {
@@ -31,6 +35,22 @@ const AT = '2026-11-19T03:00:00.000Z';
 interface MasterState {
   routes: TourRoute[];
   sources: CustomerSource[];
+  suppliers: Supplier[];
+}
+
+function supplier(overrides: Partial<Supplier> = {}): Supplier {
+  return {
+    id: 'supplier-1',
+    name: '云岭地接',
+    type: 'other',
+    contactName: '王经理',
+    phone: '13800138000',
+    settlement: 'monthly',
+    isActive: true,
+    createdAt: AT,
+    updatedAt: AT,
+    ...overrides,
+  };
 }
 
 function route(overrides: Partial<TourRoute> = {}): TourRoute {
@@ -113,6 +133,48 @@ function handlers(state: MasterState): StubExtraHandler[] {
         return true;
       }
 
+      if (path === '/api/suppliers' && method === 'GET') {
+        await reply(r, stub, 'GET /api/suppliers', supplierListResponseSchema, {
+          items: state.suppliers,
+          total: state.suppliers.length,
+          page: 1,
+          pageSize: 15,
+        });
+        return true;
+      }
+      const supplierMatch = /^\/api\/suppliers\/([^/]+)$/.exec(path);
+      if (supplierMatch && method === 'PATCH') {
+        const target = state.suppliers.find(
+          (item) => item.id === decodeURIComponent(supplierMatch[1]!),
+        );
+        if (!target) {
+          await replyError(r, 'NOT_FOUND', 'stub: 供应商不存在', 404);
+          return true;
+        }
+        // 服务端 toRecord 会把 null 收成 undefined（契约里这些是 optional 而非 nullable）；
+        // 桩不照做就会在「清空备注」时回一份不合契约的响应。
+        const merged = { ...target, ...(body as Partial<Supplier>), updatedAt: AT } as Record<
+          string,
+          unknown
+        >;
+        for (const key of ['contactName', 'phone', 'remark']) {
+          if (merged[key] === null) delete merged[key];
+        }
+        Object.assign(target, merged);
+        await reply(r, stub, 'PATCH /api/suppliers/:id', supplierResponseSchema, {
+          supplier: target,
+        });
+        return true;
+      }
+      if (supplierMatch && method === 'DELETE') {
+        const id = decodeURIComponent(supplierMatch[1]!);
+        state.suppliers = state.suppliers.filter((item) => item.id !== id);
+        await reply(r, stub, 'DELETE /api/suppliers/:id', supplierDeletedResponseSchema, {
+          deletedSupplierId: id,
+        });
+        return true;
+      }
+
       if (path === '/api/customer-sources' && method === 'GET') {
         await reply(r, stub, 'GET /api/customer-sources', customerSourceListResponseSchema, {
           sources: state.sources,
@@ -162,7 +224,11 @@ function handlers(state: MasterState): StubExtraHandler[] {
 }
 
 function master() {
-  const state: MasterState = { routes: [route()], sources: [source()] };
+  const state: MasterState = {
+    routes: [route()],
+    sources: [source()],
+    suppliers: [supplier()],
+  };
   return { state, extra: handlers(state) };
 }
 
@@ -222,4 +288,53 @@ test('客户来源页：能停用，停用后状态列变灰', async ({ page }) 
   expect(state.sources[0]!.isActive).toBe(false);
   expect(stub.violations).toEqual([]);
   expect(stub.unhandled).toEqual([]);
+});
+
+test('供应商页：改名后列表更新，联系人不被顺手清空', async ({ page }) => {
+  const { state, extra } = master();
+  const stub = await installApiStub(page, { user: adminUser(), handlers: extra });
+  await signIn(page, adminUser());
+  await page.getByRole('link', { name: '供应商', exact: true }).click();
+
+  const row = page.locator('tbody tr.ant-table-row').filter({ hasText: '云岭地接' });
+  await expect(row).toContainText('王经理');
+
+  await row.getByRole('button', { name: buttonName('编辑') }).click();
+  const nameInput = page
+    .locator('.ant-modal-content .ant-form-item')
+    .filter({ hasText: '名称' })
+    .locator('input')
+    .first();
+  await nameInput.fill('云岭地接（新）');
+  await page
+    .locator('.ant-modal-content')
+    .getByRole('button', { name: buttonName('保存') })
+    .click();
+
+  await expect(page.getByText(/已保存供应商/)).toBeVisible();
+  const patched = stub.requestsTo('PATCH', '/api/suppliers/');
+  expect(patched).toHaveLength(1);
+  // 改名不能把联系人/电话一起发过去——那等于用一次改名清空三条信息
+  expect(Object.keys(patched[0]!.body as object).sort()).toEqual(
+    ['contactName', 'name', 'phone', 'remark', 'settlement', 'type'].sort(),
+  );
+  await expect(row).toContainText('云岭地接（新）');
+  await expect(row).toContainText('王经理');
+  expect(state.suppliers[0]!.name).toBe('云岭地接（新）');
+  expect(stub.violations).toEqual([]);
+});
+
+test('供应商页：停用后状态变灰，数据还在', async ({ page }) => {
+  const { state, extra } = master();
+  const stub = await installApiStub(page, { user: adminUser(), handlers: extra });
+  await signIn(page, adminUser());
+  await page.getByRole('link', { name: '供应商', exact: true }).click();
+
+  const row = page.locator('tbody tr.ant-table-row').filter({ hasText: '云岭地接' });
+  await row.getByRole('button', { name: buttonName('停用') }).click();
+  await expect(page.getByText('供应商已停用')).toBeVisible();
+  await expect(row).toContainText('停用');
+  expect(state.suppliers).toHaveLength(1);
+  expect(state.suppliers[0]!.isActive).toBe(false);
+  expect(stub.violations).toEqual([]);
 });

@@ -57,6 +57,28 @@ export const supplierListResponseSchema = z.object({
 
 export const supplierResponseSchema = z.object({ supplier: supplierSchema });
 
+/**
+ * 编辑 / 停用。
+ *
+ * 可空字段沿用「`undefined` = 不修改，`null` = 清空」；`isActive` 单独给，
+ * 停用是业务动作，不应该跟改名字混成一次隐式提交。
+ */
+export const updateSupplierRequestSchema = z
+  .object({
+    name: z.string().trim().min(1).max(100).optional(),
+    type: supplierTypeSchema.optional(),
+    contactName: z.string().trim().max(50).nullable().optional(),
+    phone: z.string().trim().max(32).nullable().optional(),
+    settlement: supplierSettlementSchema.optional(),
+    isActive: z.boolean().optional(),
+    remark: z.string().max(2000).nullable().optional(),
+  })
+  .refine(
+    (value) => Object.values(value).some((field) => field !== undefined),
+    'at least one field is required',
+  );
+export type UpdateSupplierRequest = z.infer<typeof updateSupplierRequestSchema>;
+
 export const supplierParamsSchema = z.object({
   supplierId: z.string().min(1).max(64),
 });

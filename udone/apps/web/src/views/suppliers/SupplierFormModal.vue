@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import {
   type CreateSupplierRequest,
   type Supplier,
@@ -10,7 +10,9 @@ import { ApiClientError } from '../../lib/api-client';
 import { useAuthStore } from '../../stores/auth';
 import { SUPPLIER_SETTLEMENT_OPTIONS, SUPPLIER_TYPE_OPTIONS } from './supplier-display';
 
-const props = defineProps<{ open: boolean }>();
+/** `supplier` 有值就是编辑：空值发 `null` 表示清空，新建则省略这些字段。 */
+const props = defineProps<{ open: boolean; supplier?: Supplier | null }>();
+const isEdit = computed(() => Boolean(props.supplier));
 
 const emit = defineEmits<{
   'update:open': [value: boolean];
@@ -36,12 +38,13 @@ watch(
   (open) => {
     if (!open) return;
     formError.value = '';
-    form.name = '';
-    form.type = undefined;
-    form.contactName = '';
-    form.phone = '';
-    form.settlement = 'per_trip';
-    form.remark = '';
+    const current = props.supplier;
+    form.name = current?.name ?? '';
+    form.type = current?.type;
+    form.contactName = current?.contactName ?? '';
+    form.phone = current?.phone ?? '';
+    form.settlement = current?.settlement ?? 'per_trip';
+    form.remark = current?.remark ?? '';
   },
 );
 
@@ -69,6 +72,23 @@ async function submit() {
 
   saving.value = true;
   try {
+    if (props.supplier) {
+      const result = await auth.api.call('updateSupplier', {
+        params: { supplierId: props.supplier.id },
+        body: {
+          name,
+          type: form.type,
+          settlement: form.settlement,
+          contactName: form.contactName.trim() || null,
+          phone: form.phone.trim() || null,
+          remark: form.remark.trim() || null,
+        },
+      });
+      emit('saved', result.supplier);
+      emit('update:open', false);
+      return;
+    }
+
     const body: CreateSupplierRequest = {
       name,
       type: form.type,
@@ -96,7 +116,7 @@ function close() {
 <template>
   <a-modal
     :open="open"
-    title="新建供应商"
+    :title="isEdit ? '编辑供应商' : '新建供应商'"
     :confirm-loading="saving"
     :mask-closable="!saving"
     :closable="!saving"

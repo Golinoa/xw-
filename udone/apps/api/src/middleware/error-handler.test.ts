@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { RestMissingResourceError } from '../lib/rest-client';
 import type { ApiEnvironment } from './auth';
 import { errorHandler } from './error-handler';
 import { requestId } from './request-id';
@@ -10,6 +11,9 @@ app.use('*', requestId());
 app.onError(errorHandler);
 app.get('/failure', () => {
   throw new Error('internal detail must not leak');
+});
+app.get('/missing-dependency', () => {
+  throw new RestMissingResourceError('rpc/convert_lead_to_order');
 });
 
 describe('errorHandler', () => {
@@ -25,6 +29,26 @@ describe('errorHandler', () => {
       requestId: response.headers.get('X-Request-Id'),
     });
     expect(JSON.stringify(body)).not.toContain('internal detail');
+  });
+
+  it('names the missing dependency and logs it', async () => {
+    // 缺 RPC/表（多半是迁移没应用）必须能一步定位，不能只说「服务暂时不可用」。
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const response = await app.request('/missing-dependency');
+      expect(response.status).toBe(500);
+
+      const body = (await response.json()) as {
+        code: string;
+        details?: { dependency?: string };
+      };
+      expect(body.code).toBe('INTERNAL_ERROR');
+      expect(body.details?.dependency).toBe('rpc/convert_lead_to_order');
+      expect(spy).toHaveBeenCalledWith(expect.stringContaining('rpc/convert_lead_to_order'));
+      expect(JSON.stringify(body)).not.toContain('Supabase resource missing');
+    } finally {
+      spy.mockRestore();
+    }
   });
 });
 

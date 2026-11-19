@@ -63,9 +63,25 @@ export interface SupplierCreateInput {
   remark?: string | null;
 }
 
+export interface SupplierUpdateInput {
+  name?: string;
+  type?: SupplierType;
+  contactName?: string | null;
+  phone?: string | null;
+  settlement?: SupplierSettlement;
+  isActive?: boolean;
+  remark?: string | null;
+}
+
 export interface SupplierRepository {
   list(filter: SupplierListFilter): Promise<{ items: SupplierRecord[]; total: number }>;
   create(organizationId: string, input: SupplierCreateInput): Promise<SupplierRecord>;
+  /** `not_found` 表示该供应商不在当前组织（或已被删）。 */
+  update(
+    organizationId: string,
+    supplierId: string,
+    input: SupplierUpdateInput,
+  ): Promise<SupplierRecord | 'not_found'>;
   /** `in_use` 表示被应付行引用，外键挡住了删除。 */
   delete(organizationId: string, supplierId: string): Promise<'deleted' | 'not_found' | 'in_use'>;
 }
@@ -154,6 +170,40 @@ export function createSupabaseSupplierRepository(
         const row = rows[0];
         if (!row) throw new Error('Supplier creation returned no row');
         return toRecord(row);
+      } catch (cause) {
+        if (cause instanceof RestConflictError) throw new SupplierNameConflictError();
+        throw cause;
+      }
+    },
+
+    async update(organizationId, supplierId, input) {
+      /**
+       * 只把**传了的**字段放进 PATCH。
+       *
+       * 这里不能用 `?? null` 统一兜底：`undefined` 的语义是「不修改」，
+       * 兜成 null 会把没传的备注、联系人全部清空——一次改名顺手抹掉三条信息。
+       */
+      const body: Record<string, unknown> = {};
+      if (input.name !== undefined) body.name = input.name;
+      if (input.type !== undefined) body.type = input.type;
+      if (input.contactName !== undefined) body.contact_name = input.contactName;
+      if (input.phone !== undefined) body.phone = input.phone;
+      if (input.settlement !== undefined) body.settlement = input.settlement;
+      if (input.isActive !== undefined) body.is_active = input.isActive;
+      if (input.remark !== undefined) body.remark = input.remark;
+
+      try {
+        const rows = await client.rest<SupplierRow[]>(
+          `suppliers?organization_id=eq.${encodeURIComponent(organizationId)}&id=eq.${encodeURIComponent(supplierId)}`,
+          {
+            method: 'PATCH',
+            organizationId,
+            headers: { Prefer: 'return=representation' },
+            body,
+          },
+        );
+        const row = rows[0];
+        return row ? toRecord(row) : 'not_found';
       } catch (cause) {
         if (cause instanceof RestConflictError) throw new SupplierNameConflictError();
         throw cause;

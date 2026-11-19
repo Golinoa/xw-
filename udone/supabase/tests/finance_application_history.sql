@@ -10,7 +10,7 @@ BEGIN;
 
 
 SELECT
-  plan (19);
+  plan (20);
 
 
 INSERT INTO
@@ -380,6 +380,23 @@ SELECT
     1,
     'the rejected application survives the line deletion'
   );
+
+
+SELECT
+  IS (
+    (
+      SELECT
+        line_name
+      FROM
+        public.finance_applications
+      WHERE
+        id = current_setting('test.app_receipt')::uuid
+    ),
+    '团款',
+    'the application keeps the original line name after the line is gone'
+  );
+
+
 
 
 SELECT

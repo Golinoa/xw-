@@ -127,7 +127,7 @@
 
 **变异验证:** 把服务层的 `requested_amount` 改成 `requested_amount_typo` 后，第 5 条立刻变红（HTTP 500），证明这套用例确实守住了「参数名写错只会在线上炸」这个原始风险点。
 
-**遗留:** PostgREST 返回 404（RPC 不存在，例如迁移没应用）时，服务层仍落到 500「服务暂时不可用」，不指向具体原因。属于错误可诊断性问题，未在本轮处理。
+**已补（2026-11-19）:** `RestMissingResourceError` + errorHandler 日志/`details.dependency`，404 与 PGRST202/205 不再笼统落 500。见 journal `2026-11-19-g1-g3-final-gaps.md` §G3。
 
 ### A3 原始评估（保留以便追溯）
 
@@ -175,7 +175,7 @@
 pgTAP **37 文件**、单测 **65 文件 / 863 用例**、类型检查 api+web、eslint+CSS token、HTTP 集成 **24 文件 / 402 用例**。
 详见 `.harness/journal/2026-11-16-a5-supplier-behavior-tests.md`。
 
-**未做:** 供应商编辑/停用（属主数据任务）；前端删除入口（本轮只做后端与契约）。
+**已补（2026-11-19）:** `PATCH /api/suppliers/:id` + 列表页编辑/启停/删除入口。见 journal §G1。
 
 **规模:** S
 
@@ -202,7 +202,7 @@ pgTAP **37 文件**、单测 **65 文件 / 863 用例**、类型检查 api+web�
 
 **验证记录:** `db:local:verify` 全绿（30 个测试文件），新增 `finance_application_history.sql` **19 条断言**：应收、应付各走一遍「驳回 → 额度释放 → 经 `update_order_with_items` 删行 → 行没了、申请还在、引用为空、`order_id` 不变」，并断言两条驳回轨迹都还在。脱钩后的明细名称由 API 兜底为「（明细已删除）」，前端无需改动。详见 `.harness/journal/2026-11-15-b1-application-history.md`。
 
-**遗留:** 未做明细名称快照（脱钩后只知道是哪一单，不知道原叫「团款」）；本机缺 vitest，`pnpm test` 未跑，本次无 TS 改动，`tsc --noEmit` 已过。
+**已补（2026-11-19）:** `finance_applications.line_name` + BEFORE INSERT 快照触发器；脱钩后仍显示原名。见 journal §G2。
 
 **规模:** M
 

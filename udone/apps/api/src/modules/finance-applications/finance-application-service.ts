@@ -32,6 +32,7 @@ const APPLICATION_COLUMNS = [
   'order_id',
   'receivable_id',
   'payable_id',
+  'line_name',
   'amount',
   'method',
   'occurred_on',
@@ -58,6 +59,7 @@ type ApplicationRow = {
   order_id: string;
   receivable_id: string | null;
   payable_id: string | null;
+  line_name: string | null;
   amount: number;
   method: PaymentMethod;
   occurred_on: string;
@@ -306,7 +308,9 @@ export function createSupabaseFinanceApplicationRepository(
       orderNumber: order?.order_number ?? '—',
       customerName: order ? (decoration.customers.get(order.customer_id) ?? '（客户已删除）') : '—',
       lineId,
-      lineName: decoration.lines.get(lineId) ?? '（明细已删除）',
+      // 优先用申请自己快照的名称：明细被删（脱钩）之后，行表里查不到原名，
+      // 而财务事后核账必须看得出这笔是什么费用。
+      lineName: row.line_name ?? decoration.lines.get(lineId) ?? '（明细已删除）',
       amount: row.amount,
       method: row.method,
       occurredOn: row.occurred_on,
