@@ -20,14 +20,6 @@ import { clientKey } from '../../../middleware/rate-limit';
 import { clearRefreshCookie, readRefreshToken, writeRefreshCookie } from './cookie';
 import { createGoTrueUpstream, type OpsAuthUpstream } from './upstream';
 
-/** 从 Authorization: Bearer 里取访问令牌；没有就返回 null（登出允许匿名调用）。 */
-function readAccessToken(context: Context<ApiEnvironment>): string | null {
-  const header = context.req.header('authorization');
-  if (!header) return null;
-  const match = /^Bearer\s+(.+)$/i.exec(header.trim());
-  return match?.[1] ?? null;
-}
-
 /**
  * 写一条访问审计。
  *
