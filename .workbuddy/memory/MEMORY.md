@@ -32,10 +32,20 @@
 清单在 `udone/Docs/superpowers/plans/2026-10-29-business-completion-backlog.md`，
 每单元记录在 `udone/.harness/journal/`。
 
-**状态（2026-11-19）：P2 七项（C6–C12）全部交付，计划内 21 项完成 20，只剩 D2。**
-- **D2**：`ci.yml` 的 `e2e_gate` 已写好；本地全量 E2E **16 通过 1 跳过**；
-  `main` 已推到 `4086015`。复选框**故意未勾**——卡片要求「看到流水线真实跑过」，
-  而本机读不到 Gitee Go（私有仓库，匿名 API 404，无 token）。
+**状态（2026-11-19 夜）：21 项交付 20，只剩 D2 一格未勾（纯平台动作）。**
+- **D2**：配置已写好且经 CI 视角预检（`main` 到 `646f28e`）。卡点不再是代码：
+  Gitee Go 里**还没有流水线对象**，需用户在网页端「新建流水线 → 粘根目录 `.workflow/ci.yml`」；
+  本机拿不到流水线 API（缓存凭据是 9 位账号密码，OpenAPI 拒绝密码认证，401）。
+
+### 🔴 `format:check` 在本机恒红，别当门禁信号（2026-11-19）
+`core.autocrlf=true` + `.prettierrc.json` 的 `endOfLine:"lf"` ⇒ 工作区全 CRLF ⇒ **207 文件
+恒报不合规**，前几轮都当环境噪音跳过。**按 CI 检出内容（LF）复验才发现 4 个文件真不合规**，
+而 `quality_gate` 第一行就是 `pnpm format:check`。
+复验方法（唯一可信，照抄）：
+`git -c core.autocrlf=false -c core.eol=lf archive HEAD --format=tar -o "C:/.../head.tar"`
+→ 解包 → 在解包目录的 `udone` 用 `udone/node_modules/prettier/bin/prettier.cjs` 跑同一组 globs。
+坑：`git archive` 会吃 autocrlf（不关就还是 CRLF）、git 与 node 都要 Windows 路径
+（`C:/`、`D:/`，`/c/...` 与 `/d/...` 会被拼坏）；先确认导出文件 CR 计数为 0 再谈结论。
 
 ### 前端两条硬经验（2026-11-19）
 - 🔴 **`<a-table>` 的 `title` 是渲染函数，不能传字符串**。传字符串 → 挂载时

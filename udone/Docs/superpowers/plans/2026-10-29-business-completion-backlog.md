@@ -481,6 +481,32 @@ ant-design-vue 的渲染函数型 `title`，`/reports` 挂载即抛 `TypeError`�
 若该镜像不允许 `apt`，`--with-deps` 会明确失败 —— **不要在失败时删掉这行让用例假装通过**，
 正确做法是在镜像里预装 Chromium 依赖。
 
+**CI 视角预检（2026-11-19 23:5x，提交 `646f28e`）** —— 观察不到结果，那就先把
+「已知会红的点」清干净。结论：清掉了一个真会让流水线**第一步**就红的缺陷。
+
+- `format:check` 在本机恒报 207 个文件红，那是 `core.autocrlf=true`
+  （工作区全 CRLF）撞上 `.prettierrc.json` 的 `endOfLine: "lf"`，一直被当噪音跳过。
+  **按 CI 检出内容（LF）复验**才暴露出 4 个文件真不合规：`ops/auth/routes.ts`（多余空行）、
+  `CustomerRecycleBinView.vue`、`order-finance-flow.spec.ts`、`order-list-states.spec.ts`（行宽）。
+  已修（15+/18−，纯格式），修后同一复验 **0 不合规**。⇒ `quality_gate` 第一行不再必红。
+- 复验方法（本机唯一可信的办法，下次照抄）：
+  `git -c core.autocrlf=false -c core.eol=lf archive HEAD --format=tar -o "C:/.../head.tar"`
+  → 解包 → 在解包目录的 `udone` 里用 `udone/node_modules/prettier/bin/prettier.cjs`
+  跑与 `package.json` 同一组 globs。**先确认导出文件的 CR 计数为 0**，否则测的不是 CI 的东西。
+- `pnpm install --frozen-lockfile` 不会因锁文件过期炸：4 个 importer 与各 package.json 逐项一致。
+- E2E 不会挂住：`CI=1` 全量 **24 通过 1 跳过 / 25.6s / 退出码 0**。
+  上一轮「跑完不退出」只在复用外部 dev server（`reuseExistingServer`）时出现，不是流水线风险。
+
+**仍卡在哪、需要什么（逐条可执行）:**
+1. Gitee Go 里这条仓库**还没有流水线对象**（`.workflow/*.yml` 只是描述，不会自行注册）。
+   需要用户在 `gitee.com/rainy_morningh/ERP` →「流水线」→ 新建（空模板 → 代码视图）
+   → 粘贴根目录 `.workflow/ci.yml` → 保存。
+2. 保存后核对三项：`name=udone-ci`、触发器 `main` / `feat/` 前缀、`quality` 阶段两个 step
+   （`quality_gate` + `e2e_gate`）。
+3. 随便推一次（或手动运行），确认 `e2e_gate` 绿。**这一格要看到真实结果才勾。**
+4. 本机无法代办：缓存的 git 凭据是 9 位账号密码，Gitee OpenAPI 已不接受密码认证
+   （实测 `Authorization: token` → 401），所以拿不到流水线 API。
+
 **规模:** S（依赖 A1）
 
 ---
