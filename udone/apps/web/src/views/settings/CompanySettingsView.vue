@@ -2,8 +2,11 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { message } from 'ant-design-vue';
 import {
+  APPROVAL_STEP_PERMISSIONS,
   PERMISSIONS,
   authorizationForRole,
+  type ApprovalFlow,
+  type ApprovalStepPermission,
   type CompanySettings,
   type CompanySettingsData,
   type Permission,
@@ -112,96 +115,243 @@ function removeDictionaryItem(index: number) {
   form.businessDictionary = (form.businessDictionary ?? []).filter((_, i) => i !== index);
 }
 
-onMounted(load);
+/**
+ * 审批流（R-APPROVAL-01）。
+ *
+ * 单独一块而不是塞进「公司配置」表单：它没有版本号语义，走的是
+ * `set_approval_flow` 覆盖写，跟配置的乐观锁不是一回事，混在一起会让
+ * 「保存」按钮的含义变模糊。
+ */
+const flow = reactive<ApprovalFlow>({
+  steps: [{ step: 1, permission: 'finance.approve' }],
+  allowSelfApproval: false,
+  allowWithdraw: true,
+});
+const flowLoading = ref(true);
+const flowSaving = ref(false);
+const flowError = ref('');
+
+const APPROVAL_PERMISSION_LABELS: Record<ApprovalStepPermission, string> = {
+  'finance.approve': '财务审批',
+  'settings.manage': '管理员终审',
+  'finance.write': '财务经办',
+};
+
+async function loadFlow() {
+  flowLoading.value = true;
+  flowError.value = '';
+  try {
+    const current = await auth.api.call('getApprovalFlow');
+    flow.steps = current.steps.map((step) => ({ ...step }));
+    flow.allowSelfApproval = current.allowSelfApproval;
+    flow.allowWithdraw = current.allowWithdraw;
+  } catch (cause) {
+    flowError.value = cause instanceof ApiClientError ? cause.message : '审批流加载失败，请重试';
+  } finally {
+    flowLoading.value = false;
+  }
+}
+
+/** 级次必须从 1 连续编号，所以增删之后统一重排，而不是让用户自己填数字。 */
+function renumber() {
+  flow.steps = flow.steps.map((step, index) => ({ ...step, step: index + 1 }));
+}
+
+function addFlowStep() {
+  if (flow.steps.length >= 3) return;
+  flow.steps = [...flow.steps, { step: flow.steps.length + 1, permission: 'settings.manage' }];
+  renumber();
+}
+
+function removeFlowStep(index: number) {
+  if (flow.steps.length <= 1) return;
+  flow.steps = flow.steps.filter((_, position) => position !== index);
+  renumber();
+}
+
+async function saveFlow() {
+  flowSaving.value = true;
+  flowError.value = '';
+  try {
+    const saved = await auth.api.call('updateApprovalFlow', {
+      body: {
+        steps: flow.steps.map((step) => ({ ...step })),
+        allowSelfApproval: flow.allowSelfApproval,
+        allowWithdraw: flow.allowWithdraw,
+      },
+    });
+    flow.steps = saved.steps.map((step) => ({ ...step }));
+    flow.allowSelfApproval = saved.allowSelfApproval;
+    flow.allowWithdraw = saved.allowWithdraw;
+    message.success('审批流已保存');
+  } catch (cause) {
+    flowError.value = cause instanceof ApiClientError ? cause.message : '审批流保存失败，请重试';
+  } finally {
+    flowSaving.value = false;
+  }
+}
+
+onMounted(async () => {
+  await Promise.all([load(), loadFlow()]);
+});
 </script>
 
 <template>
-  <a-card title="公司配置" class="settings-card">
-    <p class="version-note">当前版本 {{ version }} · 保存后版本自动递增</p>
-    <div v-if="errorText" class="error-note">{{ errorText }}</div>
-    <a-form v-if="!loading" layout="vertical" class="settings-form">
-      <a-form-item label="公司名称">
-        <a-input v-model:value="form.companyName" :disabled="!canManage" maxlength="80" />
-      </a-form-item>
-      <a-form-item label="联系电话">
-        <a-input v-model:value="form.contactPhone" :disabled="!canManage" maxlength="20" />
-      </a-form-item>
-      <a-form-item label="公司地址">
-        <a-input v-model:value="form.address" :disabled="!canManage" maxlength="200" />
-      </a-form-item>
-      <a-form-item label="主题">
-        <a-select v-model:value="form.theme" :disabled="!canManage">
-          <a-select-option value="light">浅色</a-select-option>
-          <a-select-option value="dark">深色</a-select-option>
-          <a-select-option value="system">跟随系统</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item label="字号">
-        <a-select v-model:value="form.fontSize" :disabled="!canManage">
-          <a-select-option value="small">小</a-select-option>
-          <a-select-option value="medium">中</a-select-option>
-          <a-select-option value="large">大</a-select-option>
-        </a-select>
-      </a-form-item>
+  <div class="settings-page">
+    <a-card title="公司配置" class="settings-card">
+      <p class="version-note">当前版本 {{ version }} · 保存后版本自动递增</p>
+      <div v-if="errorText" class="error-note">{{ errorText }}</div>
+      <a-form v-if="!loading" layout="vertical" class="settings-form">
+        <a-form-item label="公司名称">
+          <a-input v-model:value="form.companyName" :disabled="!canManage" maxlength="80" />
+        </a-form-item>
+        <a-form-item label="联系电话">
+          <a-input v-model:value="form.contactPhone" :disabled="!canManage" maxlength="20" />
+        </a-form-item>
+        <a-form-item label="公司地址">
+          <a-input v-model:value="form.address" :disabled="!canManage" maxlength="200" />
+        </a-form-item>
+        <a-form-item label="主题">
+          <a-select v-model:value="form.theme" :disabled="!canManage">
+            <a-select-option value="light">浅色</a-select-option>
+            <a-select-option value="dark">深色</a-select-option>
+            <a-select-option value="system">跟随系统</a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item label="字号">
+          <a-select v-model:value="form.fontSize" :disabled="!canManage">
+            <a-select-option value="small">小</a-select-option>
+            <a-select-option value="medium">中</a-select-option>
+            <a-select-option value="large">大</a-select-option>
+          </a-select>
+        </a-form-item>
 
-      <h3>业务字典</h3>
-      <div v-for="(item, index) in form.businessDictionary" :key="index" class="dictionary-row">
-        <a-input v-model:value="item.key" placeholder="键" :disabled="!canManage" />
-        <a-input v-model:value="item.label" placeholder="显示名" :disabled="!canManage" />
-        <a-button v-if="canManage" danger @click="removeDictionaryItem(index)">删除</a-button>
-      </div>
-      <a-button v-if="canManage" @click="addDictionaryItem">新增字典项</a-button>
+        <h3>业务字典</h3>
+        <div v-for="(item, index) in form.businessDictionary" :key="index" class="dictionary-row">
+          <a-input v-model:value="item.key" placeholder="键" :disabled="!canManage" />
+          <a-input v-model:value="item.label" placeholder="显示名" :disabled="!canManage" />
+          <a-button v-if="canManage" danger @click="removeDictionaryItem(index)">删除</a-button>
+        </div>
+        <a-button v-if="canManage" @click="addDictionaryItem">新增字典项</a-button>
 
-      <h3>审批规则</h3>
-      <a-form-item>
-        <a-checkbox v-model:checked="form.approvalRules!.selfApproval" :disabled="!canManage">
-          允许审批人审批自己提交的申请
-        </a-checkbox>
-      </a-form-item>
-      <a-form-item label="审批级数">
-        <a-select v-model:value="form.approvalRules!.minApprovalSteps" :disabled="!canManage">
-          <a-select-option :value="1">一级</a-select-option>
-          <a-select-option :value="2">二级</a-select-option>
-          <a-select-option :value="3">三级</a-select-option>
-        </a-select>
-      </a-form-item>
+        <h3>审批规则</h3>
+        <a-form-item>
+          <a-checkbox v-model:checked="form.approvalRules!.selfApproval" :disabled="!canManage">
+            允许审批人审批自己提交的申请
+          </a-checkbox>
+        </a-form-item>
+        <a-form-item label="审批级数">
+          <a-select v-model:value="form.approvalRules!.minApprovalSteps" :disabled="!canManage">
+            <a-select-option :value="1">一级</a-select-option>
+            <a-select-option :value="2">二级</a-select-option>
+            <a-select-option :value="3">三级</a-select-option>
+          </a-select>
+        </a-form-item>
 
-      <h3>订单规则</h3>
-      <a-form-item label="默认订单类型">
-        <a-select v-model:value="form.orderRules!.defaultOrderType" :disabled="!canManage">
-          <a-select-option value="active">正式</a-select-option>
-          <a-select-option value="booking">预订</a-select-option>
-        </a-select>
-      </a-form-item>
-      <a-form-item>
-        <a-checkbox v-model:checked="form.orderRules!.requireDeposit" :disabled="!canManage">
-          下单必须收定金
-        </a-checkbox>
-      </a-form-item>
+        <h3>订单规则</h3>
+        <a-form-item label="默认订单类型">
+          <a-select v-model:value="form.orderRules!.defaultOrderType" :disabled="!canManage">
+            <a-select-option value="active">正式</a-select-option>
+            <a-select-option value="booking">预订</a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item>
+          <a-checkbox v-model:checked="form.orderRules!.requireDeposit" :disabled="!canManage">
+            下单必须收定金
+          </a-checkbox>
+        </a-form-item>
 
-      <a-button v-if="canManage" type="primary" :loading="saving" @click="save()"
-        >保存配置</a-button
+        <a-button v-if="canManage" type="primary" :loading="saving" @click="save()"
+          >保存配置</a-button
+        >
+      </a-form>
+
+      <a-modal
+        v-model:open="confirmOpen"
+        title="二次确认"
+        ok-text="确认保存"
+        cancel-text="返回修改"
+        @ok="
+          confirmOpen = false;
+          save(true);
+        "
       >
-    </a-form>
+        <p>本次修改包含 {{ pendingSensitiveKey }}，会影响审批或订单规则。确认保存吗？</p>
+      </a-modal>
+    </a-card>
 
-    <a-modal
-      v-model:open="confirmOpen"
-      title="二次确认"
-      ok-text="确认保存"
-      cancel-text="返回修改"
-      @ok="
-        confirmOpen = false;
-        save(true);
-      "
-    >
-      <p>本次修改包含 {{ pendingSensitiveKey }}，会影响审批或订单规则。确认保存吗？</p>
-    </a-modal>
-  </a-card>
+    <a-card title="审批流" class="settings-card flow-card">
+      <p class="version-note">
+        收付款申请按这里配置的级次逐级审批，最后一级通过才动钱。改配置只影响之后提交的申请，
+        在途申请沿用提交时的快照。
+      </p>
+      <div v-if="flowError" class="error-note">{{ flowError }}</div>
+
+      <a-spin :spinning="flowLoading">
+        <div v-for="(step, index) in flow.steps" :key="index" class="flow-row">
+          <span class="flow-index">第 {{ index + 1 }} 级</span>
+          <a-select v-model:value="step.permission" class="flow-permission" :disabled="!canManage">
+            <a-select-option
+              v-for="permission in APPROVAL_STEP_PERMISSIONS"
+              :key="permission"
+              :value="permission"
+            >
+              {{ APPROVAL_PERMISSION_LABELS[permission] }}
+            </a-select-option>
+          </a-select>
+          <a-button v-if="canManage && flow.steps.length > 1" danger @click="removeFlowStep(index)"
+            >删除</a-button
+          >
+        </div>
+
+        <a-button v-if="canManage && flow.steps.length < 3" @click="addFlowStep">增加一级</a-button>
+
+        <a-form layout="vertical" class="settings-form flow-switches">
+          <a-form-item>
+            <a-checkbox v-model:checked="flow.allowSelfApproval" :disabled="!canManage">
+              允许审批自己提交的申请
+            </a-checkbox>
+          </a-form-item>
+          <a-form-item>
+            <a-checkbox v-model:checked="flow.allowWithdraw" :disabled="!canManage">
+              允许申请人撤回在途申请
+            </a-checkbox>
+          </a-form-item>
+        </a-form>
+
+        <a-button v-if="canManage" type="primary" :loading="flowSaving" @click="saveFlow"
+          >保存审批流</a-button
+        >
+      </a-spin>
+    </a-card>
+  </div>
 </template>
 
 <style scoped>
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
 .settings-card {
   max-width: 720px;
+}
+.flow-row {
+  display: flex;
+  gap: var(--space-8);
+  align-items: center;
+  margin-bottom: var(--space-8);
+}
+.flow-index {
+  width: 56px;
+  color: var(--color-secondary-text);
+  font-size: var(--font-size-sm);
+}
+.flow-permission {
+  width: 220px;
+}
+.flow-switches {
+  margin-top: var(--space-16);
 }
 
 .settings-form {

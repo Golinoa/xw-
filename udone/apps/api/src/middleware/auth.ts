@@ -11,6 +11,7 @@ import type { FinanceRepository } from '../modules/finance/finance-service';
 import type { FinanceApplicationRepository } from '../modules/finance-applications/finance-application-service';
 import type { SettlementRepository } from '../modules/settlements/settlement-service';
 import type { CompanySettingsRepository } from '../modules/company-settings/company-settings-service';
+import type { ApprovalFlowRepository } from '../modules/approvals/approval-service';
 import type { AuditRepository } from '../modules/audit/audit-service';
 import type { NotificationRepository } from '../modules/notifications/notification-service';
 import type { BalanceRepository } from '../modules/balances/balance-service';
@@ -39,6 +40,7 @@ export interface ApiEnvironment {
     FINANCE_APPLICATION_REPOSITORY?: FinanceApplicationRepository;
     SETTLEMENT_REPOSITORY?: SettlementRepository;
     COMPANY_SETTINGS_REPOSITORY?: CompanySettingsRepository;
+    APPROVAL_FLOW_REPOSITORY?: ApprovalFlowRepository;
     AUDIT_REPOSITORY?: AuditRepository;
     NOTIFICATION_REPOSITORY?: NotificationRepository;
     BALANCE_REPOSITORY?: BalanceRepository;

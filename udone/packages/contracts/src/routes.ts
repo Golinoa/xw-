@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { approvalFlowSchema } from './approvals';
 import { auditFacetsResponseSchema, auditListQuerySchema, auditListResponseSchema } from './audit';
 import { authContextSchema } from './auth';
 import {
@@ -505,6 +506,18 @@ export const ROUTES = {
     path: '/api/company-settings',
     request: updateCompanySettingsRequestSchema,
     response: companySettingsSchema,
+  }),
+  /** 审批流配置：读生效值（未配置时是默认两级），写只接受完整形状。 */
+  getApprovalFlow: defineRoute({
+    method: 'GET',
+    path: '/api/approvals/flow',
+    response: approvalFlowSchema,
+  }),
+  updateApprovalFlow: defineRoute({
+    method: 'PATCH',
+    path: '/api/approvals/flow',
+    request: approvalFlowSchema,
+    response: approvalFlowSchema,
   }),
   listMembers: defineRoute({
     method: 'GET',

@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import {
   z,
   accountBalanceListResponseSchema,
+  approvalFlowSchema,
   auditFacetsResponseSchema,
   auditListResponseSchema,
   companySettingsSchema,
@@ -36,6 +37,10 @@ const ORG_ID = 'f0000000-0000-4000-8000-000000000001';
 /** 仅本文件用到的窄状态；不往共享 StubState 里加字段，避免打扰既有用例。 */
 interface SurfaceState {
   settingsVersion: number;
+  flowSteps: {
+    step: number;
+    permission: 'finance.approve' | 'settings.manage' | 'finance.write';
+  }[];
   unread: number;
   readIds: string[];
   claimed: boolean;
@@ -272,6 +277,29 @@ function handlers(state: SurfaceState): StubExtraHandler[] {
     ),
 
     on(
+      (path, method) => path === '/api/approvals/flow' && method === 'GET',
+      async ({ route, stub }) =>
+        reply(route, stub, 'GET /api/approvals/flow', approvalFlowSchema, {
+          steps: state.flowSteps,
+          allowSelfApproval: false,
+          allowWithdraw: true,
+        }),
+    ),
+
+    on(
+      (path, method) => path === '/api/approvals/flow' && method === 'PATCH',
+      async ({ route, stub, body }) => {
+        const payload = body as { steps: typeof state.flowSteps };
+        state.flowSteps = payload.steps;
+        await reply(route, stub, 'PATCH /api/approvals/flow', approvalFlowSchema, {
+          steps: state.flowSteps,
+          allowSelfApproval: false,
+          allowWithdraw: true,
+        });
+      },
+    ),
+
+    on(
       (path, method) => path === '/api/leads' && method === 'GET',
       async ({ route, stub, url }) => {
         // 公海就是「无人认领」；认领之后回到「我的线索」。
@@ -304,7 +332,16 @@ function handlers(state: SurfaceState): StubExtraHandler[] {
 }
 
 function surface() {
-  const state: SurfaceState = { settingsVersion: 2, unread: 2, readIds: [], claimed: false };
+  const state: SurfaceState = {
+    settingsVersion: 2,
+    flowSteps: [
+      { step: 1, permission: 'finance.approve' },
+      { step: 2, permission: 'settings.manage' },
+    ],
+    unread: 2,
+    readIds: [],
+    claimed: false,
+  };
   return { state, extra: handlers(state) };
 }
 
@@ -433,6 +470,37 @@ test('公海线索认领带上版本号，认领后归属当前用户', async ({
   // 乐观锁：认领必须带页面看到的版本号，否则并发时会覆盖别人的改动
   expect((claim[0]!.body as { version: number }).version).toBe(1);
   expect(state.claimed).toBe(true);
+  expect(stub.violations).toEqual([]);
+  expect(stub.unhandled).toEqual([]);
+});
+
+test('审批流能加一级并保存，级次自动保持连续', async ({ page }) => {
+  const { state, extra } = surface();
+  const stub = await installApiStub(page, { user: adminUser(), handlers: extra });
+  await signIn(page, adminUser());
+  await page.getByRole('link', { name: '设置', exact: true }).click();
+
+  await expect(page.getByText('审批流', { exact: true })).toBeVisible();
+  await expect(page.getByText('第 2 级')).toBeVisible();
+
+  await page.getByRole('button', { name: buttonName('增加一级') }).click();
+  await expect(page.getByText('第 3 级')).toBeVisible();
+
+  // 删中间一级后，级次必须重排成 1、2——断号会让审批引擎找不到下一级的人
+  await page
+    .locator('.flow-row')
+    .nth(1)
+    .getByRole('button', { name: buttonName('删除') })
+    .click();
+  await page.getByRole('button', { name: buttonName('保存审批流') }).click();
+  await expect(page.getByText('审批流已保存')).toBeVisible();
+
+  const saved = stub.requestsTo('PATCH', '/api/approvals/flow');
+  expect(saved).toHaveLength(1);
+  expect((saved[0]!.body as { steps: { step: number }[] }).steps.map((item) => item.step)).toEqual([
+    1, 2,
+  ]);
+  expect(state.flowSteps).toHaveLength(2);
   expect(stub.violations).toEqual([]);
   expect(stub.unhandled).toEqual([]);
 });
