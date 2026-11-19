@@ -507,6 +507,28 @@ ant-design-vue 的渲染函数型 `title`，`/reports` 挂载即抛 `TypeError`�
 4. 本机无法代办：缓存的 git 凭据是 9 位账号密码，Gitee OpenAPI 已不接受密码认证
    （实测 `Authorization: token` → 401），所以拿不到流水线 API。
 
+**本地全序列回放（2026-11-20，HEAD `2fb4d5c`）** —— 按 `ci.yml` 的 goals 顺序逐步重跑，
+不做等价替代。结论：**两个 step 预计全绿**，剩下只是运行镜像的不确定性。
+
+| 步骤 | 结果 | 耗时 |
+|---|---|---|
+| `format:check`（LF 导出，CI 视角） | ✅ 0 不合规 | ~10s |
+| `lint`（eslint + CSS token） | ✅ | 10s |
+| `typecheck`（api + web） | ✅ | 11s |
+| `test`（vitest） | ✅ 74 文件 / 925 用例 | 13.6s |
+| `build`（web + api） | ✅ | 13s |
+| `schema:check` | ✅ 61 个迁移与清单一致 | 2s |
+| `check:deploy` | ✅ | 3s |
+| `e2e_gate`（`CI=1`，25 条） | ✅ 24 通过 1 跳过，退出码 0 | 23.2s |
+
+Node 版本差异已探：用系统 Node 24.22.1 复跑单测，**74 文件 / 925 用例同样全绿**。
+唯一仍需留意的是镜像能否 `apt` 装 Chromium 依赖（`--with-deps` 失败时要预装，不许删这行）。
+
+**顺带纠正一条被误判两轮的门禁（范围外发现，未改）:** `format:sql:check` 的红**不是**
+CRLF 噪音。换行归一化后仍有 **25 个文件**真不一致，且 `sql-formatter` 的输出更差
+（`count(*)` → `count (*)`、单行 `CHECK` 被拆成 4 行），故不做批量格式化；
+它不在 `ci.yml` 里，不影响流水线。详见 journal `2026-11-20-d2-ci-sequence-replay.md` 第 3 节。
+
 **规模:** S（依赖 A1）
 
 ---
@@ -546,6 +568,9 @@ ant-design-vue 的渲染函数型 `title`，`/reports` 挂载即抛 `TypeError`�
 
 - 独立提交，提交信息说明「为什么」而不只是「改了什么」。
 - 门禁全绿：`format:check` / `format:sql:check` / `lint`(+CSS token) / `schema:check` / `check:deploy` / `typecheck` / `test` / `build` / `db:local:verify`。
+  （2026-11-20 实测：`format:sql:check` 对存量 25 个文件恒红，且 `sql-formatter` 的输出比手写更差、
+  会重排已提交的迁移 ⇒ 该项按「新增迁移必须能被 formatter 接受、存量不动」执行，
+  判据与理由见 D2 卡片与本日 journal。`format:check` 在本机需按 LF 导出复验，工作区直接跑必红。）
 - 涉及迁移必须补 pgTAP；涉及行为规则必须做**变异验证**（改坏实现，确认断言真的变红）。
 - 任务状态只有两种：**已验证** / **未验证**。不存在「基本完成」。
 - 无法验证的部分（真实 Supabase、真实浏览器、真实流水线）必须在提交说明与 journal 中标注，不得被「全绿」掩盖。
