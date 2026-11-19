@@ -33,6 +33,7 @@ name: frontend-quality
 displayName: admin 前端质量门禁
 
 triggers:
+  trigger: auto
   push:
     branches:
       # 同 ci.yml：只用 prefix 一个类别。Gitee Go 不同匹配类别之间是【交集】，
@@ -47,7 +48,8 @@ triggers:
         - main
 
 stages:
-  - stage: quality
+  - stage:
+    name: quality
     displayName: 工具链 → 安装 → 门禁
     # 任一步失败立即结束，避免后续步骤在残缺状态上继续跑
     strategy: fast
@@ -98,7 +100,8 @@ stages:
   # 也可把它改成只在 main 上跑：给本 stage 增加触发条件前请先在 Gitee 侧验证，
   # Gitee Go 的 stage 级条件语法未在本仓库验证过，不做未经验证的假设。
   # ------------------------------------------------------------
-  - stage: e2e
+  - stage:
+    name: e2e
     displayName: e2e（Playwright · 契约桩）
     strategy: fast
     trigger: auto

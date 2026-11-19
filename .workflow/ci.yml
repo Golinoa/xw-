@@ -18,6 +18,7 @@ name: udone-ci
 displayName: udone 质量门禁
 
 triggers:
+  trigger: auto
   push:
     branches:
       # 只用 prefix 一个类别，别和 precise 混用。
@@ -37,7 +38,8 @@ triggers:
         - main
 
 stages:
-  - stage: quality
+  - stage:
+    name: quality
     displayName: 质量门禁
     # 任一 step 失败立即结束，避免后续步骤在残缺产物上继续跑。
     strategy: fast

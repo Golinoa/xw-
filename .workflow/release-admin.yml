@@ -16,13 +16,15 @@ name: release-admin
 displayName: "admin 发布（tag: admin-v*）"
 
 triggers:
+  trigger: auto
   push:
     tags:
       prefix:
         - admin-v
 
 stages:
-  - stage: release
+  - stage:
+    name: release
     displayName: 校验 → 门禁 → 构建 → 归档
     strategy: fast
     trigger: auto
