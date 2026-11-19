@@ -74,6 +74,16 @@ export interface ApiStub {
   requestsTo(method: string, pathPrefix: string): CapturedRequest[];
 }
 
+/** 新模块端点的扩展处理函数；见 `installApiStub` 的 `handlers` 选项。 */
+export type StubExtraHandler = (context: {
+  route: Route;
+  stub: ApiStub;
+  path: string;
+  method: string;
+  url: URL;
+  body: unknown;
+}) => Promise<boolean>;
+
 /** 只依赖 safeParse 的结构，不把 zod 的类型体系引进用例。 */
 interface SchemaLike<T> {
   safeParse(input: unknown): ParseResultLike<T>;
@@ -81,18 +91,23 @@ interface SchemaLike<T> {
 
 type ParseResultLike<T> =
   | { success: true; data: T }
-  | { success: false; error: { issues: readonly { path: readonly PropertyKey[]; message: string }[] } };
+  | {
+      success: false;
+      error: { issues: readonly { path: readonly PropertyKey[]; message: string }[] };
+    };
 
 const STUB_ORG_HEADER = 'x-organization-id';
 
-function describeIssues(error: { issues: readonly { path: readonly PropertyKey[]; message: string }[] }) {
+function describeIssues(error: {
+  issues: readonly { path: readonly PropertyKey[]; message: string }[];
+}) {
   return error.issues
     .map((issue) => `${issue.path.map(String).join('.') || '(root)'}: ${issue.message}`)
     .join('; ');
 }
 
 /** 出站：先解析再返回。解析失败记 violation 并回 500，让界面进错误态而不是拿到假数据。 */
-async function reply<T>(
+export async function reply<T>(
   route: Route,
   stub: ApiStub,
   label: string,
@@ -118,7 +133,7 @@ async function reply<T>(
 }
 
 /** 入站：请求体必须符合契约，否则同样是契约漂移。返回 null 表示已回 400。 */
-function parseRequest<T>(
+export function parseRequest<T>(
   stub: ApiStub,
   label: string,
   schema: SchemaLike<T>,
@@ -136,7 +151,7 @@ function errorBody(code: string, message: string) {
   return apiErrorBodySchema.parse({ code, message, requestId: 'stub-request' });
 }
 
-async function replyError(route: Route, code: string, message: string, status: number) {
+export async function replyError(route: Route, code: string, message: string, status: number) {
   await route.fulfill({
     status,
     contentType: 'application/json',
@@ -345,11 +360,16 @@ function sessionFor(user: StubUser) {
   };
 }
 
-type LineState = { id: string; name: string; amount: number; confirmedAmount: number; pendingAmount: number };
+type LineState = {
+  id: string;
+  name: string;
+  amount: number;
+  confirmedAmount: number;
+  pendingAmount: number;
+};
 
 function findLine(state: StubState, kind: 'receipt' | 'payment', lineId: string) {
-  const lines: LineState[] =
-    kind === 'receipt' ? state.order.receivables : state.order.payables;
+  const lines: LineState[] = kind === 'receipt' ? state.order.receivables : state.order.payables;
   return lines.find((line) => line.id === lineId);
 }
 
@@ -359,7 +379,16 @@ function findLine(state: StubState, kind: 'receipt' | 'payment', lineId: string)
  */
 export async function installApiStub(
   page: Page,
-  options: { state?: StubState; user?: StubUser } = {},
+  options: {
+    state?: StubState;
+    user?: StubUser;
+    /**
+     * 扩展点：给后来新增的模块补端点，而不往既有分发里塞分支。
+     * 返回 true 表示已处理（用例自己 `route.fulfill`）；返回 false 落回默认分发，
+     * 仍走「未覆盖的接口」记录，漏实现不会被悄悄放过。
+     */
+    handlers?: StubExtraHandler[];
+  } = {},
 ): Promise<ApiStub> {
   const stub: ApiStub = {
     state: options.state ?? createStubState(),
@@ -615,9 +644,12 @@ export async function installApiStub(
       return;
     }
 
+    for (const handler of options.handlers ?? []) {
+      if (await handler({ route, stub, path, method, url, body })) return;
+    }
+
     stub.unhandled.push(`${method} ${path}${url.search}`);
     await replyError(route, 'NOT_FOUND', 'stub: 未覆盖的接口', 404);
   });
-
   return stub;
 }

@@ -154,9 +154,10 @@ onMounted(load);
           <span v-if="Object.keys(report.byStatus).length === 0" class="muted">无数据</span>
         </div>
 
+        <!-- 普通标题元素。不能写成 a-table 的 title：那个 prop 是渲染函数，传字符串挂载时就抛 TypeError。 -->
+        <div class="section-title">供应商统计</div>
         <a-table
           class="supplier-table"
-          title="供应商统计"
           :data-source="suppliers"
           :columns="supplierColumns"
           :pagination="false"
@@ -265,6 +266,10 @@ onMounted(load);
 .muted {
   color: var(--color-secondary-text);
   font-size: var(--font-size-sm);
+}
+.section-title {
+  margin-bottom: var(--space-4);
+  font-weight: 600;
 }
 .supplier-table {
   margin-top: var(--space-8);
