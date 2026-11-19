@@ -39,7 +39,10 @@ test('列表请求失败时给出可读错误与重试，重试后恢复', async
   await expect(page.locator('tr.ant-table-placeholder')).toHaveCount(0);
 
   state.failOrderList = false;
-  await page.locator('.ant-alert').getByRole('button', { name: buttonName('重试') }).click();
+  await page
+    .locator('.ant-alert')
+    .getByRole('button', { name: buttonName('重试') })
+    .click();
   await expect(page.locator('.ant-table-row').filter({ hasText: 'ORD-2026-0011' })).toBeVisible();
   expect(stub.violations).toEqual([]);
 });

@@ -55,7 +55,6 @@ async function recordAccessAudit(
   }
 }
 
-
 export const opsAuthRoutes = new Hono<ApiEnvironment>();
 
 /**

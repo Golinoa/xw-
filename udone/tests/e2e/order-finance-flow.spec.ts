@@ -1,10 +1,5 @@
 import { expect, test } from '@playwright/test';
-import {
-  adminUser,
-  createStubState,
-  installApiStub,
-  operatorUser,
-} from './support/api-stub';
+import { adminUser, createStubState, installApiStub, operatorUser } from './support/api-stub';
 import { buttonName, closeDrawer, descriptionItem, goTo, signIn } from './support/session';
 
 /**
@@ -83,7 +78,10 @@ test('计调报款 → 财务一审 → 管理员终审：金额从在途转为�
 
     // 一审通过：级次推进，钱还没入账
     await applicationRow.getByRole('button', { name: buttonName('通过') }).click();
-    await adminPage.locator('.ant-modal').getByRole('button', { name: buttonName('通过') }).click();
+    await adminPage
+      .locator('.ant-modal')
+      .getByRole('button', { name: buttonName('通过') })
+      .click();
     await expect(applicationRow).toContainText('待管理员终审');
 
     await listRow.getByRole('button', { name: 'ORD-2026-0011' }).click();
@@ -93,7 +91,10 @@ test('计调报款 → 财务一审 → 管理员终审：金额从在途转为�
 
     // 终审通过：在途 3,000 转成已收，已收 4,000 → 7,000，未收 8,000 → 5,000
     await applicationRow.getByRole('button', { name: buttonName('通过') }).click();
-    await adminPage.locator('.ant-modal').getByRole('button', { name: buttonName('通过') }).click();
+    await adminPage
+      .locator('.ant-modal')
+      .getByRole('button', { name: buttonName('通过') })
+      .click();
     // 默认筛选是「待审批」：终审通过后这条就该离开待审列表
     await expect(adminPage.locator('.result-count')).toContainText('共 0 条申请');
 

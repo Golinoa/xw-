@@ -116,9 +116,7 @@ async function restore(record: CustomerRecycleBinItem) {
     await load();
   } catch (cause) {
     // 404 = 这条已经不在回收站里（别人刚恢复或彻底删掉），刷新让他看到真实状态。
-    message.error(
-      cause instanceof ApiClientError ? cause.message : '恢复失败，请稍后重试',
-    );
+    message.error(cause instanceof ApiClientError ? cause.message : '恢复失败，请稍后重试');
     await load();
   } finally {
     restoringId.value = null;
@@ -238,11 +236,7 @@ const showTotal = (count: number) => `共 ${count} 位已删除客户`;
                 cancel-text="取消"
                 @confirm="restore(record)"
               >
-                <a-button
-                  type="link"
-                  size="small"
-                  :loading="restoringId === record.id"
-                >
+                <a-button type="link" size="small" :loading="restoringId === record.id">
                   恢复
                 </a-button>
               </a-popconfirm>
