@@ -53,6 +53,8 @@ export interface StubState {
   /** 返回空列表：空态与失败态必须长得不一样。 */
   emptyOrderList: boolean;
   customers: { id: string; name: string; createdAt: string; updatedAt: string }[];
+  /** 游客名单：为空表示「这单还没录人」。导出用例需要非空数据才能验。 */
+  rosterItems: unknown[];
 }
 
 export interface CapturedRequest {
@@ -267,6 +269,7 @@ export function createStubState(overrides: Partial<StubState> = {}): StubState {
     customers: [
       { id: 'customer-1', name: '晨光旅行社', createdAt: SEEDED_AT, updatedAt: SEEDED_AT },
     ],
+    rosterItems: [],
     ...overrides,
   };
 }
@@ -570,7 +573,7 @@ export async function installApiStub(
         // 名单不在本卡范围：给一份空名单，避免订单详情里出现一次假的加载失败。
         await reply(route, stub, 'GET /api/orders/:id/tourists', touristRosterResponseSchema, {
           roster: {
-            items: [],
+            items: stub.state.rosterItems,
             total: 0,
             adultCount: 0,
             childCount: 0,

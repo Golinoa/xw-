@@ -2,6 +2,7 @@
 import { onMounted, reactive, ref } from 'vue';
 import { message } from 'ant-design-vue';
 import { DEFAULT_PAGE_SIZE, LEAD_STAGES, type Lead, type LeadStage } from '@erp/contracts';
+import type { LeadFunnelResponse } from '@erp/contracts';
 import { ApiClientError } from '../../lib/api-client';
 import { formatDateTime, formatMoney } from '../../lib/format';
 import { useAuthStore } from '../../stores/auth';
@@ -58,6 +59,44 @@ const columns = [
   { title: '创建时间', key: 'createdAt', dataIndex: 'createdAt' },
   { title: '操作', key: 'action', width: 200 },
 ];
+
+/**
+ * 阶段统计。
+ *
+ * 口径是「区间内新建的线索 + 当前所处阶段」，不是历史到达率——
+ * `lead_events` 只存跟进正文，没有结构化的阶段迁移记录，硬解析文本做漏斗就是猜。
+ */
+const funnel = ref<LeadFunnelResponse | null>(null);
+
+function monthRange() {
+  const now = new Date();
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return {
+    from: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-01`,
+    to: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`,
+  };
+}
+
+async function loadFunnel() {
+  try {
+    funnel.value = await auth.api.call('getLeadFunnel', { body: monthRange() });
+  } catch {
+    // 统计失败不该挡住线索列表：卡片留空，列表照常用。
+    funnel.value = null;
+  }
+}
+
+async function convertToOrder(lead: Lead) {
+  try {
+    const result = await auth.api.call('convertLeadToOrder', {
+      body: { leadId: lead.id, version: lead.version },
+    });
+    message.success(`已转预订单，金额待补（订单 ${result.orderId.slice(0, 8)}）`);
+    await Promise.all([load(), loadFunnel()]);
+  } catch (cause) {
+    errorText.value = cause instanceof ApiClientError ? cause.message : '转订单失败，请重试';
+  }
+}
 
 async function load() {
   loading.value = true;
@@ -146,7 +185,10 @@ function changePage(page: number) {
   void load();
 }
 
-onMounted(load);
+onMounted(() => {
+  void load();
+  void loadFunnel();
+});
 </script>
 
 <template>
@@ -156,6 +198,22 @@ onMounted(load);
       天自动回公海。转客户是幂等的，重复操作不会建第二个客户。
     </p>
     <div v-if="errorText" class="error-note">{{ errorText }}</div>
+
+    <div v-if="funnel" class="funnel">
+      <span class="funnel-title">本月线索</span>
+      <span class="funnel-item"
+        >共 <b>{{ funnel.total }}</b> 条</span
+      >
+      <span class="funnel-item"
+        >转客户 <b>{{ funnel.convertedCustomers }}</b></span
+      >
+      <span class="funnel-item"
+        >转订单 <b>{{ funnel.convertedOrders }}</b></span
+      >
+      <span v-for="(count, stage) in funnel.stages" :key="stage" class="funnel-chip"
+        >{{ STAGE_LABELS[stage as LeadStage] ?? stage }} · {{ count }}</span
+      >
+    </div>
 
     <div class="toolbar">
       <a-radio-group
@@ -223,6 +281,13 @@ onMounted(load);
               @click="action('convertLead', record)"
             >
               转客户
+            </a-button>
+            <a-button
+              v-if="record.stage === 'won' && !record.convertedOrderId"
+              type="link"
+              @click="convertToOrder(record)"
+            >
+              转订单
             </a-button>
           </a-space>
         </template>
@@ -325,6 +390,29 @@ onMounted(load);
   margin-bottom: var(--space-16);
   color: var(--color-error-text);
   font-size: var(--font-size-sm);
+}
+.funnel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  align-items: center;
+  margin-bottom: var(--space-12);
+  padding: var(--space-8) var(--space-12);
+  background: var(--color-surface-muted);
+  border-radius: 6px;
+}
+.funnel-title {
+  color: var(--color-secondary-text);
+  font-size: var(--font-size-sm);
+}
+.funnel-item {
+  font-size: var(--font-size-sm);
+}
+.funnel-chip {
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--font-size-sm);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 999px;
 }
 .toolbar {
   display: flex;

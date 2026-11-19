@@ -1,10 +1,17 @@
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { type CreateTourRouteRequest, type TourRoute } from '@erp/contracts';
 import { ApiClientError } from '../../lib/api-client';
 import { useAuthStore } from '../../stores/auth';
 
-const props = defineProps<{ open: boolean }>();
+/**
+ * `route` 有值就是编辑，没值就是新建。
+ *
+ * 编辑走 `updateRoute`（空值发 null 表示清空），新建走 `createRoute`
+ * （空值省略）。两者语义不同，不能合并成一次「把表单原样发过去」。
+ */
+const props = defineProps<{ open: boolean; route?: TourRoute | null }>();
+const isEdit = computed(() => Boolean(props.route));
 
 const emit = defineEmits<{
   'update:open': [value: boolean];
@@ -30,13 +37,14 @@ watch(
   (open) => {
     if (!open) return;
     formError.value = '';
-    form.name = '';
-    form.routeType = '';
-    form.region = '';
-    form.departureCity = '';
-    form.days = null;
-    form.isSelfGroup = false;
-    form.remark = '';
+    const current = props.route;
+    form.name = current?.name ?? '';
+    form.routeType = current?.routeType ?? '';
+    form.region = current?.region ?? '';
+    form.departureCity = current?.departureCity ?? '';
+    form.days = current?.days ?? null;
+    form.isSelfGroup = current?.isSelfGroup ?? false;
+    form.remark = current?.remark ?? '';
   },
 );
 
@@ -59,6 +67,24 @@ async function submit() {
 
   saving.value = true;
   try {
+    if (props.route) {
+      const result = await auth.api.call('updateRoute', {
+        params: { routeId: props.route.id },
+        body: {
+          name,
+          routeType: form.routeType.trim() || null,
+          region: form.region.trim() || null,
+          departureCity: form.departureCity.trim() || null,
+          days: form.days ?? null,
+          isSelfGroup: form.isSelfGroup,
+          remark: form.remark.trim() || null,
+        },
+      });
+      emit('saved', result.route);
+      emit('update:open', false);
+      return;
+    }
+
     const body: CreateTourRouteRequest = {
       name,
       ...(form.routeType.trim() ? { routeType: form.routeType.trim() } : {}),
@@ -87,11 +113,11 @@ function close() {
 <template>
   <a-modal
     :open="open"
-    title="新建线路"
+    :title="isEdit ? '编辑线路' : '新建线路'"
     :confirm-loading="saving"
     :mask-closable="!saving"
     :closable="!saving"
-    ok-text="保存并选中"
+    :ok-text="isEdit ? '保存' : '保存并选中'"
     cancel-text="取消"
     width="620px"
     @ok="submit"
@@ -122,7 +148,13 @@ function close() {
           <a-input v-model:value="form.departureCity" :maxlength="50" placeholder="如：杭州" />
         </a-form-item>
         <a-form-item label="天数">
-          <a-input-number v-model:value="form.days" class="number-input" :min="1" :max="365" :precision="0" />
+          <a-input-number
+            v-model:value="form.days"
+            class="number-input"
+            :min="1"
+            :max="365"
+            :precision="0"
+          />
         </a-form-item>
         <a-form-item label="自组团">
           <a-checkbox v-model:checked="form.isSelfGroup">本公司独立成团</a-checkbox>

@@ -4,6 +4,10 @@ import { auditFacetsResponseSchema, auditListQuerySchema, auditListResponseSchem
 import { authContextSchema } from './auth';
 import {
   convertLeadResponseSchema,
+  convertLeadToOrderRequestSchema,
+  convertLeadToOrderResponseSchema,
+  leadFunnelQuerySchema,
+  leadFunnelResponseSchema,
   createLeadRequestSchema,
   createLeadResponseSchema,
   followUpLeadRequestSchema,
@@ -432,6 +436,18 @@ export const ROUTES = {
     path: '/api/leads/assign',
     request: leadActionRequestSchema,
     response: z.object({ success: z.boolean() }),
+  }),
+  convertLeadToOrder: defineRoute({
+    method: 'POST',
+    path: '/api/leads/convert-order',
+    request: convertLeadToOrderRequestSchema,
+    response: convertLeadToOrderResponseSchema,
+  }),
+  getLeadFunnel: defineRoute({
+    method: 'GET',
+    path: '/api/leads/funnel',
+    request: leadFunnelQuerySchema,
+    response: leadFunnelResponseSchema,
   }),
   convertLead: defineRoute({
     method: 'POST',

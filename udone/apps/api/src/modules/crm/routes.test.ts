@@ -53,6 +53,15 @@ function repositoryStub(overrides: Partial<LeadRepository> = {}): LeadRepository
     claim: vi.fn().mockResolvedValue(null),
     assign: vi.fn().mockResolvedValue(null),
     convert: vi.fn().mockResolvedValue({ customerId: 'cust-1' }),
+    convertToOrder: vi.fn().mockResolvedValue({ orderId: 'order-9' }),
+    funnel: vi.fn().mockResolvedValue({
+      from: '2026-11-01',
+      to: '2026-11-30',
+      total: 2,
+      stages: { won: 1, new: 1 },
+      convertedCustomers: 1,
+      convertedOrders: 1,
+    }),
     ...overrides,
   };
 }
@@ -163,5 +172,54 @@ describe('lead routes', () => {
     );
     expect(response.status).toBe(400);
     expect(create).toHaveBeenCalled();
+  });
+});
+
+describe('线索转订单与阶段统计', () => {
+  it('按区间返回阶段统计', async () => {
+    const repository = repositoryStub();
+    const { testApp, env } = setup(repository);
+    const response = await testApp.request(
+      '/api/leads/funnel?from=2026-11-01&to=2026-11-30',
+      { headers },
+      env,
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ total: 2, convertedOrders: 1 });
+    expect(repository.funnel).toHaveBeenCalledWith({ from: '2026-11-01', to: '2026-11-30' }, ORG);
+  });
+
+  it('把版本号原样传给转换函数', async () => {
+    const repository = repositoryStub();
+    const { testApp, env } = setup(repository);
+    const response = await testApp.request(
+      '/api/leads/convert-order',
+      {
+        method: 'POST',
+        headers: jsonHeaders,
+        body: JSON.stringify({ leadId: 'lead-1', version: 3 }),
+      },
+      env,
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ orderId: 'order-9' });
+    expect(repository.convertToOrder).toHaveBeenCalledWith({ leadId: 'lead-1', version: 3 }, ORG);
+  });
+
+  it('未成单的线索转订单返回 409', async () => {
+    const repository = repositoryStub({
+      convertToOrder: vi.fn().mockResolvedValue({ error: 'STAGE_NOT_WON' }),
+    });
+    const { testApp, env } = setup(repository);
+    const response = await testApp.request(
+      '/api/leads/convert-order',
+      {
+        method: 'POST',
+        headers: jsonHeaders,
+        body: JSON.stringify({ leadId: 'lead-1', version: 1 }),
+      },
+      env,
+    );
+    expect(response.status).toBe(409);
   });
 });

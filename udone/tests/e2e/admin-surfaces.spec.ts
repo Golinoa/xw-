@@ -6,6 +6,7 @@ import {
   auditFacetsResponseSchema,
   auditListResponseSchema,
   companySettingsSchema,
+  leadFunnelResponseSchema,
   leadListResponseSchema,
   markNotificationsReadResponseSchema,
   notificationListResponseSchema,
@@ -15,6 +16,7 @@ import {
 } from '@erp/contracts';
 import {
   adminUser,
+  createStubState,
   installApiStub,
   reply,
   replyError,
@@ -44,6 +46,8 @@ interface SurfaceState {
   unread: number;
   readIds: string[];
   claimed: boolean;
+  orderCreated: boolean;
+  leadStage: 'new' | 'won';
 }
 
 type Ctx = Parameters<StubExtraHandler>[0];
@@ -85,12 +89,13 @@ function handlers(state: SurfaceState): StubExtraHandler[] {
     adultCount: 2,
     childCount: 0,
     remark: null,
-    stage: 'new' as const,
+    stage: state.leadStage,
     ownerId,
     ownerName,
     nextFollowUpAt: null,
     lastFollowUpAt: null,
     convertedCustomerId: null,
+    convertedOrderId: state.orderCreated ? 'order-from-lead' : null,
     version: 1,
     createdAt: AT,
   });
@@ -300,6 +305,33 @@ function handlers(state: SurfaceState): StubExtraHandler[] {
     ),
 
     on(
+      (path, method) => path === '/api/leads/funnel' && method === 'GET',
+      async ({ route, stub }) =>
+        reply(route, stub, 'GET /api/leads/funnel', leadFunnelResponseSchema, {
+          from: '2026-11-01',
+          to: '2026-11-30',
+          total: 1,
+          stages: { new: 1 },
+          convertedCustomers: 0,
+          convertedOrders: state.orderCreated ? 1 : 0,
+        }),
+    ),
+
+    on(
+      (path, method) => path === '/api/leads/convert-order' && method === 'POST',
+      async ({ route, stub }) => {
+        state.orderCreated = true;
+        await reply(
+          route,
+          stub,
+          'POST /api/leads/convert-order',
+          z.object({ orderId: z.string().min(1) }),
+          { orderId: 'order-from-lead' },
+        );
+      },
+    ),
+
+    on(
       (path, method) => path === '/api/leads' && method === 'GET',
       async ({ route, stub, url }) => {
         // 公海就是「无人认领」；认领之后回到「我的线索」。
@@ -341,6 +373,8 @@ function surface() {
     unread: 2,
     readIds: [],
     claimed: false,
+    orderCreated: false,
+    leadStage: 'new',
   };
   return { state, extra: handlers(state) };
 }
@@ -503,4 +537,68 @@ test('审批流能加一级并保存，级次自动保持连续', async ({ page 
   expect(state.flowSteps).toHaveLength(2);
   expect(stub.violations).toEqual([]);
   expect(stub.unhandled).toEqual([]);
+});
+
+test('won 线索能转预订单，转完不再显示转订单按钮', async ({ page }) => {
+  const { state, extra } = surface();
+  state.leadStage = 'won';
+  const stub = await installApiStub(page, { user: adminUser(), handlers: extra });
+  await signIn(page, adminUser());
+  await page.getByRole('link', { name: '线索', exact: true }).click();
+
+  const row = page.locator('tbody tr.ant-table-row').first();
+  await expect(row).toContainText('李先生');
+  await row.getByRole('button', { name: buttonName('转订单') }).click();
+  await expect(page.getByText(/已转预订单，金额待补/)).toBeVisible();
+
+  expect(stub.requestsTo('POST', '/api/leads/convert-order')).toHaveLength(1);
+  // 转完回读：convertedOrderId 有值后按钮必须消失，否则用户会重复点
+  await expect(row.getByRole('button', { name: buttonName('转订单') })).toHaveCount(0);
+  expect(stub.violations).toEqual([]);
+  expect(stub.unhandled).toEqual([]);
+});
+
+test('订单详情能把游客名单导出成 CSV', async ({ page }) => {
+  const { extra } = surface();
+  const stub = await installApiStub(page, {
+    user: adminUser(),
+    handlers: extra,
+    state: createStubState({
+      rosterItems: [
+        {
+          id: 'tourist-1',
+          name: '王小明',
+          phone: '13900000301',
+          documentType: 'id_card',
+          documentNumber: '310101199001011234',
+          personType: 'adult',
+          age: 36,
+          gender: 'male',
+          remark: '含早',
+          createdAt: AT,
+          updatedAt: AT,
+        },
+        {
+          id: 'tourist-2',
+          name: '王小红',
+          personType: 'child',
+          gender: 'female',
+          createdAt: AT,
+          updatedAt: AT,
+        },
+      ],
+    }),
+  });
+  await signIn(page, adminUser());
+  await page.getByRole('link', { name: '订单', exact: true }).click();
+
+  await page.locator('.ant-table-row').filter({ hasText: 'ORD-2026-0011' }).first().click();
+  await expect(page.locator('.ant-drawer-open')).toHaveCount(1);
+
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: buttonName('导出名单') }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toMatch(/^游客名单_.*\.csv$/);
+  expect(stub.requestsTo('GET', '/api/orders/').length).toBeGreaterThan(0);
+  expect(stub.violations).toEqual([]);
 });

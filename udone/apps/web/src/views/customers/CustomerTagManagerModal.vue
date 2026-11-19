@@ -24,6 +24,7 @@ const creating = ref(false);
 const busyTagId = ref<string | null>(null);
 const error = ref('');
 const drafts = ref<Record<string, string>>({});
+const colorDrafts = ref<Record<string, string>>({});
 
 watch(
   () => props.open,
@@ -35,6 +36,7 @@ watch(
     creating.value = false;
     busyTagId.value = null;
     drafts.value = Object.fromEntries(props.tags.map((tag) => [tag.id, tag.name]));
+    colorDrafts.value = Object.fromEntries(props.tags.map((tag) => [tag.id, tag.color ?? '']));
   },
 );
 
@@ -98,6 +100,38 @@ async function renameTag(tag: CustomerTag) {
   }
 }
 
+/**
+ * 逐行改色。
+ *
+ * 空串表示「清掉颜色」——契约里 `color: null` 才是清空，`undefined` 是「不修改」，
+ * 所以这里必须显式发 null，否则用户清空输入框后颜色永远去不掉。
+ */
+async function commitColor(tag: CustomerTag) {
+  if (busyTagId.value === tag.id) return;
+  const draft = (colorDrafts.value[tag.id] ?? '').trim();
+  if (draft && !HEX.test(draft)) {
+    error.value = '颜色需为 #RRGGBB 格式，例如 #1b2a4a';
+    colorDrafts.value[tag.id] = tag.color ?? '';
+    return;
+  }
+  if (draft === (tag.color ?? '')) return;
+  error.value = '';
+  busyTagId.value = tag.id;
+  try {
+    await auth.api.call('updateCustomerTag', {
+      params: { tagId: tag.id },
+      body: { color: draft || null },
+    });
+    message.success('标签颜色已更新');
+    emit('changed');
+  } catch (cause) {
+    error.value = describeError(cause);
+    colorDrafts.value[tag.id] = tag.color ?? '';
+  } finally {
+    busyTagId.value = null;
+  }
+}
+
 async function deleteTag(tag: CustomerTag) {
   error.value = '';
   busyTagId.value = tag.id;
@@ -143,7 +177,12 @@ function close() {
       <li v-for="tag in tags" :key="tag.id" class="tag-row">
         <span
           class="tag-dot"
-          :style="{ background: tag.color ?? 'transparent', borderColor: tag.color ?? undefined }"
+          :style="{
+            background: HEX.test((colorDrafts[tag.id] ?? '').trim())
+              ? colorDrafts[tag.id].trim()
+              : 'transparent',
+            borderColor: tag.color ?? undefined,
+          }"
         />
         <a-input
           v-model:value="drafts[tag.id]"
@@ -152,6 +191,15 @@ function close() {
           class="rename-input"
           @press-enter="renameTag(tag)"
           @blur="renameTag(tag)"
+        />
+        <a-input
+          v-model:value="colorDrafts[tag.id]"
+          :maxlength="7"
+          size="small"
+          class="color-input"
+          placeholder="留空即无颜色"
+          @press-enter="commitColor(tag)"
+          @blur="commitColor(tag)"
         />
         <a-popconfirm
           title="删除后无法恢复，确定删除这个标签？"

@@ -73,6 +73,45 @@ const mismatch = computed(
   () => delta.value !== null && (delta.value.adult !== 0 || delta.value.child !== 0),
 );
 
+/**
+ * 导出当前名单为 CSV。
+ *
+ * 用的是页面上已经拿到的数据，不额外请求一份「导出专用」的名单——
+ * 两份数据迟早会不一致。证件号/手机号拿到的就是接口给的值：
+ * 没有敏感字段权限时接口只回掩码，导出也只能导出掩码，不绕过脱敏。
+ */
+function csvCell(value: string | number): string {
+  const text = String(value ?? '');
+  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function exportRoster() {
+  const items = roster.value?.items ?? [];
+  if (items.length === 0) {
+    message.info('名单为空，没有可导出的内容');
+    return;
+  }
+  const header = ['姓名', '类型', '年龄', '性别', '证件类型', '证件号', '手机', '备注'];
+  const rows = items.map((tourist) => [
+    tourist.name,
+    personTypeLabel(tourist.personType),
+    tourist.age ?? '',
+    genderLabel(tourist.gender),
+    tourist.documentType ? documentTypeLabel(tourist.documentType) : '',
+    tourist.documentNumber ?? tourist.documentNumberMasked ?? '',
+    tourist.phone ?? tourist.phoneMasked ?? '',
+    tourist.remark ?? '',
+  ]);
+  const lines = [header, ...rows].map((row) => row.map(csvCell).join(','));
+  const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `游客名单_${props.orderId}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 function openCreate() {
   editing.value = null;
   formOpen.value = true;
@@ -110,9 +149,12 @@ async function onSaved() {
       <h4 class="section-title">
         游客名单<span class="count">（{{ roster?.total ?? 0 }} 人）</span>
       </h4>
-      <a-space v-if="canWrite">
-        <a-button size="small" @click="importOpen = true">CSV 导入</a-button>
-        <a-button size="small" type="primary" @click="openCreate">添加游客</a-button>
+      <a-space>
+        <a-button size="small" @click="exportRoster">导出名单</a-button>
+        <template v-if="canWrite">
+          <a-button size="small" @click="importOpen = true">CSV 导入</a-button>
+          <a-button size="small" type="primary" @click="openCreate">添加游客</a-button>
+        </template>
       </a-space>
     </div>
 

@@ -274,7 +274,7 @@ pgTAP **37 文件**、单测 **65 文件 / 863 用例**、类型检查 api+web�
 核心一对是「先按 2 级提交 → 配置改为 3 级 → 该申请快照仍 2 级且真的只用 2 级终审通过」＋「改后新提交才是 3 级」，
 另覆盖两个开关各自生效。详见 `.harness/journal/2026-11-15-c1-approval-flow-config.md`。
 
-**未做:** 配置读写端点（`GET/PUT /api/v1/approvals/flow`）与设置页；契约层 `ApprovalFlow` schema 待端点定稿后一起加（避免两处定义漂移）。
+**已补（2026-11-19）:** `GET/PATCH /api/approvals/flow` + 设置页「审批流」卡片；契约 `packages/contracts/src/approvals.ts`。见 journal `2026-11-19-b1-b6-gaps.md` §B1。
 
 **规模:** L
 
@@ -297,7 +297,7 @@ pgTAP **37 文件**、单测 **65 文件 / 863 用例**、类型检查 api+web�
 单测 **60 文件 / 796 用例**（客户模块新增 7 条）；类型检查 api+web；eslint+CSS token；HTTP 集成 **21 文件 / 380 用例**。
 详见 `.harness/journal/2026-11-15-c2-customer-sources.md`。
 
-**未做:** 来源管理页（改名/排序/启停界面）；停用来源在编辑历史客户时不会出现在下拉里（仅显示名称）。
+**已补（2026-11-19）:** `/customer-sources` 列表页（改名/排序/启停/删除）。见 journal §B3。
 
 **规模:** S/M
 
@@ -325,7 +325,7 @@ pgTAP **37 文件**、单测 **65 文件 / 863 用例**、类型检查 api+web�
 **变异验证**：把 `RESTRICT` 改回 `CASCADE` 后新断言有 3 条立刻变红。
 详见 `.harness/journal/2026-11-15-c3-customer-tag-manage.md`。
 
-**未做:** 逐行改色界面（端点支持 `color: null`）；标签相关的 E2E 归 A1。
+**已补（2026-11-19）:** 标签管理弹窗每行可改色，空值发 `null` 清空。见 journal §B4。
 
 **顺手发现（不在本卡范围）:** `format:sql:check` 在本机对 66 个既有 SQL 文件报不合格，
 根因是 CRLF 与 sql-formatter 只输出 LF，不是格式走形；详见 journal 末段。
@@ -359,7 +359,7 @@ pgTAP **37 文件**、单测 **65 文件 / 863 用例**、类型检查 api+web�
 （新增 `tests/integration/routes.test.ts` 6 条，验证 `created_by` 真取到人、23505→409、DELETE 后 404）。
 详见 `.harness/journal/2026-11-15-c4-route-master.md`。
 
-**未做:** 线路管理页（列表/改名/启停/删除的界面）。端点齐了但界面只有订单表单里的「新建」，
+**已补（2026-11-19）:** `/routes` 列表页 + `RouteFormModal` 支持编辑。见 journal §B2。原记录：端点齐了但界面只有订单表单里的「新建」，
 与 C2 的来源管理页同一取舍；线路类型/地区/出发城市在公司字典（R-SETTING-01）落地前保持自由文本。
 
 **规模:** M
@@ -405,7 +405,7 @@ HTTP 集成 **24 文件 / 402 用例**（新增 `tests/integration/tourists.test
 `rpc/import_tourists` 的真实参数/返回、23505→409、覆盖模式回滚后名单不变）。
 详见 `.harness/journal/2026-11-16-c5-tourist-roster.md`。
 
-**未做:** 名单导出（归 C8 报表/导出）；游客与客户档案的关联（需求未要求，同一客户再报名是另一张单）；
+**已补（2026-11-19）:** 名单区「导出名单」CSV（用页面已加载数据，不绕过脱敏）。见 journal §B6。仍**未做**：游客与客户档案的关联（需求未要求，同一客户再报名是另一张单）；
 名单不进「编辑订单」表单——整单提交是替换语义，混进名单会让「只改金额」也重写名单；
 前端交互（表格、导入弹窗、模板下载）只有类型保证，没有真人点过。
 
@@ -496,7 +496,7 @@ ant-design-vue 的渲染函数型 `title`，`/reports` 挂载即抛 `TypeError`�
 | ~~C8~~ | R-REPORT-01 报表与统一口径 | ✅ **已验证 2026-11-19**：2 个口径函数 + 2 端点 + Web 报表页 + CSV 导出同源；pgTAP 48 文件、HTTP 30/437、Vitest 72/907 全绿；证据 `.harness/journal/2026-11-19-c8-reporting.md` | L |
 | ~~C9~~ | R-NOTIFY-01 站内通知 | ✅ **已验证 2026-11-19**：通知表 + 事务内触发器 + 3 端点 + Web 页与未读角标；pgTAP 46 文件、HTTP 28/427、Vitest 70/897 全绿；证据 `.harness/journal/2026-11-19-c9-notifications.md` | M |
 | ~~C10~~ | R-AUDIT-01 审计日志 | ✅ **已验证 2026-11-19**：IP/设备掩码摘要 + 统一 write_audit + 订单状态/金额/审批触发器 + 只读查询页；pgTAP 45 文件、HTTP 27/422、Vitest 69/892 全绿；证据 `.harness/journal/2026-11-19-c10-audit-log.md` | M |
-| ~~C11~~ | R-CRM-01/02 线索与公海 | ✅ **已验证 2026-11-19**：线索 + 事件时间线 + 公海乐观锁 + 7 天回收 + 幂等转客户，7 端点 + Web 页；pgTAP 49 文件、HTTP 31/442、Vitest 73/912 全绿；证据 `.harness/journal/2026-11-19-c11-crm-leads.md`。转订单与漏斗报表留后续 | L |
+| ~~C11~~ | R-CRM-01/02 线索与公海 | ✅ **已验证 2026-11-19**：线索 + 事件时间线 + 公海乐观锁 + 7 天回收 + 幂等转客户，7 端点 + Web 页；pgTAP 49 文件、HTTP 31/442、Vitest 73/912 全绿；证据 `.harness/journal/2026-11-19-c11-crm-leads.md`。转订单（预订单、金额待补）与阶段统计已补 2026-11-19 | L |
 | ~~C12~~ | R-SETTING-01 公司配置 | ✅ **已验证 2026-11-18**：配置表 + 版本化 RPC + 2 端点 + Web 设置页；二次确认落在服务端；pgTAP 44 文件、HTTP 集成 26 文件/418 用例、Vitest 68/888 全绿；证据 `.harness/journal/2026-11-18-c12-company-settings.md` | S |
 
 ---

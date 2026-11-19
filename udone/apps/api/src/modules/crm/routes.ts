@@ -4,8 +4,10 @@ import {
   ERROR_CODES,
   PERMISSIONS,
   ROUTES,
+  convertLeadToOrderRequestSchema,
   createLeadRequestSchema,
   followUpLeadRequestSchema,
+  leadFunnelQuerySchema,
   leadActionRequestSchema,
   leadListQuerySchema,
 } from '@erp/contracts';
@@ -55,6 +57,17 @@ leadRoutes.get(
     const query = parseQuery(context, leadListQuerySchema);
     const page = await repository(context).list(query, context.get('auth').organizationId);
     return respond(context, 'listLeads', page);
+  },
+);
+
+leadRoutes.get(
+  ROUTES.getLeadFunnel.path,
+  requireAuth(),
+  requirePermission(PERMISSIONS.ORDER_READ),
+  async (context) => {
+    const query = parseQuery(context, leadFunnelQuerySchema);
+    const summary = await repository(context).funnel(query, context.get('auth').organizationId);
+    return respond(context, 'getLeadFunnel', summary);
   },
 );
 
@@ -123,6 +136,21 @@ leadRoutes.post(
     );
     if (error) fail(error);
     return respond(context, 'assignLead', { success: true });
+  },
+);
+
+leadRoutes.post(
+  ROUTES.convertLeadToOrder.path,
+  requireAuth(),
+  requirePermission(PERMISSIONS.ORDER_WRITE),
+  async (context) => {
+    const body = await parseJson(context, convertLeadToOrderRequestSchema);
+    const result = await repository(context).convertToOrder(
+      body,
+      context.get('auth').organizationId,
+    );
+    if (result.error) fail(result.error);
+    return respond(context, 'convertLeadToOrder', { orderId: result.orderId! });
   },
 );
 

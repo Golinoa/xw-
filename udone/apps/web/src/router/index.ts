@@ -82,6 +82,16 @@ export function createAppRouter(
             component: () => import('../views/reports/ReportListView.vue'),
           },
           {
+            path: 'routes',
+            name: 'routes',
+            component: () => import('../views/routes/RouteListView.vue'),
+          },
+          {
+            path: 'customer-sources',
+            name: 'customer-sources',
+            component: () => import('../views/customer-sources/CustomerSourceListView.vue'),
+          },
+          {
             path: 'leads',
             name: 'leads',
             component: () => import('../views/crm/LeadListView.vue'),

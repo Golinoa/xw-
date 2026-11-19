@@ -31,6 +31,8 @@ export const leadSchema = z.object({
   nextFollowUpAt: z.string().nullable(),
   lastFollowUpAt: z.string().nullable(),
   convertedCustomerId: z.string().nullable(),
+  /** 已转出的订单；空表示还没开单。前端据此决定「转订单」按钮是否可点。 */
+  convertedOrderId: z.string().nullable().optional(),
   version: z.number().int().min(1),
   createdAt: z.string(),
 });
@@ -98,3 +100,38 @@ export type LeadActionRequest = z.infer<typeof leadActionRequestSchema>;
 
 export const convertLeadResponseSchema = z.object({ customerId: z.string().min(1) });
 export type ConvertLeadResponse = z.infer<typeof convertLeadResponseSchema>;
+
+/**
+ * 线索转订单。
+ *
+ * 口径（与数据库函数一致，写在这里防止前端自己发明）：
+ * - 只有 `won` 的线索能转；未成单就开单等于绕过漏斗。
+ * - 转出来的是**预订单**，金额留空——线索里只有预算区间，那是意向不是应收。
+ * - 幂等：`version` 只用来挡并发，重复调用返回同一张订单，不会建第二张。
+ */
+export const convertLeadToOrderRequestSchema = z.object({
+  leadId: z.string().min(1),
+  version: z.number().int().min(1),
+  remark: z.string().trim().max(500).optional(),
+});
+export type ConvertLeadToOrderRequest = z.infer<typeof convertLeadToOrderRequestSchema>;
+
+export const convertLeadToOrderResponseSchema = z.object({ orderId: z.string().min(1) });
+export type ConvertLeadToOrderResponse = z.infer<typeof convertLeadToOrderResponseSchema>;
+
+/** 阶段统计按「区间内新建的线索 + 当前所处阶段」，不按历史到达复算。 */
+export const leadFunnelQuerySchema = z.object({
+  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'from must be YYYY-MM-DD'),
+  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'to must be YYYY-MM-DD'),
+});
+export type LeadFunnelQuery = z.infer<typeof leadFunnelQuerySchema>;
+
+export const leadFunnelResponseSchema = z.object({
+  from: z.string(),
+  to: z.string(),
+  total: z.number().int().min(0),
+  stages: z.record(z.string(), z.number().int().min(0)),
+  convertedCustomers: z.number().int().min(0),
+  convertedOrders: z.number().int().min(0),
+});
+export type LeadFunnelResponse = z.infer<typeof leadFunnelResponseSchema>;

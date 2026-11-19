@@ -1,9 +1,15 @@
-import type { Lead, LeadDetailResponse, LeadListQuery, LeadListResponse } from '@erp/contracts';
+import type {
+  LeadFunnelResponse,
+  Lead,
+  LeadDetailResponse,
+  LeadListQuery,
+  LeadListResponse,
+} from '@erp/contracts';
 import type { ApiEnvironment } from '../../middleware/auth';
 import { createRestClient } from '../../lib/rest-client';
 
 const LEAD_COLUMNS =
-  'id,name,phone,wechat,email,source,destination,departure_city,trip_type,intent_level,expected_date,budget_min,budget_max,adult_count,child_count,remark,stage,owner_id,next_follow_up_at,last_follow_up_at,converted_customer_id,version,created_at';
+  'id,name,phone,wechat,email,source,destination,departure_city,trip_type,intent_level,expected_date,budget_min,budget_max,adult_count,child_count,remark,stage,owner_id,next_follow_up_at,last_follow_up_at,converted_customer_id,converted_order_id,version,created_at';
 
 type LeadRow = {
   id: string;
@@ -27,6 +33,7 @@ type LeadRow = {
   next_follow_up_at: string | null;
   last_follow_up_at: string | null;
   converted_customer_id: string | null;
+  converted_order_id?: string | null;
   version: number;
   created_at: string;
 };
@@ -65,6 +72,7 @@ function toLead(row: LeadRow, ownerNames: Map<string, string>): Lead {
     nextFollowUpAt: row.next_follow_up_at,
     lastFollowUpAt: row.last_follow_up_at,
     convertedCustomerId: row.converted_customer_id,
+    convertedOrderId: row.converted_order_id ?? null,
     version: row.version,
     createdAt: row.created_at,
   };
@@ -84,6 +92,11 @@ export interface LeadRepository {
     organizationId: string,
   ): Promise<string | null>;
   convert(leadId: string, organizationId: string): Promise<{ customerId?: string; error?: string }>;
+  convertToOrder(
+    input: { leadId: string; version: number; remark?: string },
+    organizationId: string,
+  ): Promise<{ orderId?: string; error?: string }>;
+  funnel(range: { from: string; to: string }, organizationId: string): Promise<LeadFunnelResponse>;
 }
 
 export function leadRepository(
@@ -228,6 +241,49 @@ export function leadRepository(
       if (row?.error_code) return { error: row.error_code };
       const id = row?.result_customer_id;
       return typeof id === 'string' ? { customerId: id } : { error: 'CONVERSION_FAILED' };
+    },
+
+    async convertToOrder(input, organizationId) {
+      const rows = await client.rest<
+        Array<{ result_order_id: string | null; error_code: string | null }>
+      >('rpc/convert_lead_to_order', {
+        method: 'POST',
+        organizationId,
+        body: {
+          requested_lead_id: input.leadId,
+          requested_version: input.version,
+          requested_remark: input.remark ?? null,
+        },
+      });
+      const row = rows[0];
+      if (row?.error_code) return { error: row.error_code };
+      // 函数返回的是 result_order_id，不是 result —— 名字不对就会永远落到失败分支。
+      return typeof row?.result_order_id === 'string'
+        ? { orderId: row.result_order_id }
+        : { error: 'CONVERSION_FAILED' };
+    },
+
+    async funnel(range, organizationId) {
+      // 返回单个 jsonb：PostgREST 给对象而不是数组。
+      const payload = await client.rest<LeadFunnelResponse | LeadFunnelResponse[]>(
+        'rpc/lead_funnel',
+        {
+          method: 'POST',
+          organizationId,
+          body: { requested_from: range.from, requested_to: range.to },
+        },
+      );
+      const summary = Array.isArray(payload) ? payload[0] : payload;
+      return (
+        summary ?? {
+          from: range.from,
+          to: range.to,
+          total: 0,
+          stages: {},
+          convertedCustomers: 0,
+          convertedOrders: 0,
+        }
+      );
     },
   };
 }
