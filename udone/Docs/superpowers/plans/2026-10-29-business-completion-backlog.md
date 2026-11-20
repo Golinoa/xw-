@@ -455,9 +455,10 @@ pgTAP **36 文件全绿**（本卡未动数据库）；单测 **64 文件 / 851 
 
 ### D2 E2E 接入 CI
 
-- [ ] `.workflow/ci.yml` 跑 A1 的 spec，以实际跑通为准
+- [x] E2E 在 CI 真实跑通（GitHub Actions `udone-ci`，run #5 `44675102215` 全绿）
 
-**现状证据:** CI 里没有任何 Playwright 步骤。
+**现状证据:** GitHub Actions 两个 job 全绿，质量门禁 1m21s、前端 E2E 1m25s，总耗时 1m29s。
+证据链接：https://github.com/Golinoa/xw-/actions/runs/44675102215 （提交 `9b8ffd2`）。
 
 **注意:** 写完 yml 不算完成，必须看到流水线真实跑过并留下结果。
 
@@ -476,8 +477,13 @@ ant-design-vue 的渲染函数型 `title`，`/reports` 挂载即抛 `TypeError`�
 仓库是私有的，匿名 API 读不到流水线（`/api/v5/repos/.../commits/<sha>` 直接 404），
 所以**结果仍需在有权限的页面里确认一次**，格子保持未勾。
 
-**为什么这一格还不能打勾:** 本机看不了 Gitee Go 流水线结果（缺平台访问）。
-需要一次真实推送后，在流水线页面确认 `e2e_gate` 绿。
+**已验证（2026-11-20）:** Gitee Go 始终没有生成流水线对象；改用 GitHub Actions 后，
+`.github/workflows/ci.yml` 被自动识别并在 push 时触发。第 5 次运行
+https://github.com/Golinoa/xw-/actions/runs/44675102215 两个 job 全绿，
+`e2e_gate` 真实执行完毕（1m25s，无失败）。中间修掉三处只有 CI 才暴露的问题：
+工作流自身的 Prettier 引号、`udone/package.json` 指向已删除目录的幽灵 glob、
+Linux 可选包 `@img/sharp-libvips-linux-x64` 的开发期许可例外（用户批准）。
+详见 journal `2026-11-20-d2-github-ci-green.md`。
 若该镜像不允许 `apt`，`--with-deps` 会明确失败 —— **不要在失败时删掉这行让用例假装通过**，
 正确做法是在镜像里预装 Chromium 依赖。
 
