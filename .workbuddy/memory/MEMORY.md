@@ -32,12 +32,20 @@
 清单在 `udone/Docs/superpowers/plans/2026-10-29-business-completion-backlog.md`，
 每单元记录在 `udone/.harness/journal/`。
 
-**状态（2026-11-20 夜）：21 项交付 20，只剩 D2 一格未勾（纯平台动作）。**
+**状态（2026-11-20 上午）：21 项交付 20，只剩 D2 一格未勾（纯平台动作）。**
 - **D2**：配置已写好，且**整条流水线的 step 序列已在本地按序回放过、全绿**
-  （`main` 到 `f7e0ab4`；单测 74/925、E2E CI=1 24 通过 1 跳过、build/schema/deploy 均过）。
-  卡点不再是代码：Gitee Go 里**还没有流水线对象**，需用户在网页端「新建流水线 → 粘根目录 `.workflow/ci.yml`」；
-  本机拿不到流水线 API（缓存凭据是 9 位账号密码，OpenAPI 拒绝密码认证，401）——**这条别再试**。
+  （单测 74/925、E2E CI=1 24 通过 1 跳过、build/schema/deploy 均过）。
+  **两条流水线并存**：Gitee Go `.workflow/ci.yml` + GitHub Actions 根 `.github/workflows/ci.yml`
+  （后者 `quality` 15 步 + `e2e` 7 步，多跑 deps:audit/licenses/secrets）。**格子不勾**只看一件事：
+  有没有真实运行记录。Gitee 卡「没有流水线对象」，GitHub 卡「仓库没有 remote」。
+  本机拿不到 Gitee 流水线 API（缓存凭据是 9 位账号密码，OpenAPI 拒绝密码认证，401）——**这条别再试**。
   剩余唯一不确定项：运行镜像能否 `apt` 装 Chromium 依赖（`--with-deps` 失败时要在镜像里预装，不许删这行）。
+
+### 🔴 GitHub 只读仓库根的 `.github/workflows/`（2026-11-20 踩过）
+`udone/.github/workflows/ci.yml` 曾长期存在、**永远执行不到**，而
+`tests/tooling/harness-config.test.ts` 断言读的正是它 ⇒「CI 覆盖了 deps:audit/licenses/secrets」
+是纸面结论，门禁一次没跑过。已删，断言改指根文件 + 反向断言「子目录不得再有副本」。
+**推论：任何「CI 配置」类断言，先确认文件路径是不是会被平台读取的那一条。**
 
 ### 🔴 `format:check` 在本机恒红，别当门禁信号（2026-11-19）
 `core.autocrlf=true` + `.prettierrc.json` 的 `endOfLine:"lf"` ⇒ 工作区全 CRLF ⇒ **207 文件

@@ -121,3 +121,19 @@
 - 新增一条核实：`2026-10-03-mvp-and-launch.md` 的 39 个 `- [ ]` 是**过期复选框**（文件头已声明
   执行态以 business-completion-backlog 为准）⇒ 计划目录下真未勾的只有 D2，无遗漏卡。
 - 已在回复中建议用户暂停本自动化。**若下轮仍是空转，不再做任何核实动作**，只回一句话。
+
+## 2026-11-20 09:4x — D2：三份 ci.yml 收敛成一份（本轮有真活，不是空转）✅ 部分
+
+- 本轮不再空转：HEAD 出现新提交 `b1ca1f7`（用户 08:35 加了 GitHub Actions 版），
+  顺着它查出一处**真缺陷**——`udone/.github/workflows/ci.yml` 永远执行不到
+  （GitHub 只读仓库根），而 `harness-config.test.ts` 的 CI 断言读的正是它，
+  于是「CI 覆盖 deps:audit/licenses/secrets/db:test」从来没被任何一次运行验证过。
+- 处理：删子目录副本；根 `.github/workflows/ci.yml` 成唯一活文件（quality 15 步 + e2e 7 步、
+  钉 SHA、只读令牌、补回 4 道门禁，均先本机实测全绿）；断言改指根文件 + 两条反向断言
+  （变异验证各 1 failed）；`format:check` glob 补 `"../.github/**"`；两份文档纠偏。
+- 顺带排掉 Linux 首跑四类风险：导入大小写 856 条 0 错、lockfile 含 linux 包、无 `.only`、pnpm 版本一致。
+- 门禁：74 文件/925 用例、lint、LF 版 prettier 全绿。提交 `6b43ab4` 已 push。
+  journal `2026-11-20-d2-single-live-workflow.md`。
+- **D2 仍未勾**：Gitee 无流水线对象、GitHub 无 remote，两条都没有真实运行记录。
+- 🔴 **下一轮**：先看有没有新的用户提交/平台动作；没有就只回一句「无新卡、D2 待平台动作」，
+  **不要再回放门禁、不要做体检、不要再重写 CI 配置**（这一层已经收敛完了）。
