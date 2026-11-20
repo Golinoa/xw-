@@ -536,6 +536,24 @@ CRLF 噪音。换行归一化后仍有 **25 个文件**真不一致，且 `sql-f
 本轮没重跑测试（2 小时前刚按 `ci.yml` 全序列回放过，期间零提交），避免把核查变成又一次门禁。
 详见 journal `2026-11-20-backlog-closure-audit.md`。
 
+**2026-11-20 09:4x：三份 `ci.yml` 收敛成一份会跑的那份**（journal `2026-11-20-d2-single-live-workflow.md`）
+
+- **真缺陷**：`udone/.github/workflows/ci.yml` **永远执行不到**（GitHub 只读仓库根），
+  而 `tests/tooling/harness-config.test.ts` 断言的正是它 ⇒「CI 已覆盖 `deps:audit` /
+  `licenses:check` / `secrets:check` / `db:test`」这一结论从来没被任何一次运行验证过。
+  已 `git rm`；断言改为指向根目录那份，并加两条反向断言（`playwright install --with-deps
+  chromium` 必须存在；子目录不得再有副本）。两条都做过变异验证（各 `1 failed | 10 passed`）。
+- 根 `.github/workflows/ci.yml` 成为唯一活文件：`quality` 15 步 + `e2e` 7 步，action 钉 SHA、
+  `permissions: contents: read`；把那 4 道门禁补回来（本机先逐条实测：`deps:audit`
+  critical 0 / high 0、`licenses:check` 349 组通过、`secrets:check` 退出 0、canary 退出 0）。
+- `format:check` 的 glob 补 `"../.github/**"`——此前只覆盖 `udone/.github` 与 `../.workflow`，
+  **真正会跑的那份配置反而不在格式门禁里**。
+- 顺带排掉「Linux 首跑才红」的四类风险：856 条相对导入 **0 处**大小写不一致；
+  lockfile v9 含 `@rollup/rollup-linux-*` / `@esbuild/linux-x64`（不会缺二进制）；
+  无 `.only`（否则 vitest `forbidOnly` 直接失败）；`pnpm -v` = 11.24.0 与 `packageManager` 一致。
+- 门禁：单测 **74 文件 / 925 用例**、lint + CSS token、改动文件按 LF 副本 prettier 全绿。
+- **格子仍不勾**：Gitee Go 无流水线对象、仓库无 GitHub remote，两条流水线都还没有真实运行记录。
+
 **本轮之后要做的只有一件事（不是我能代办的）:** 在 Gitee Go 建流水线并跑一次，
 看到 `e2e_gate` 绿后再勾这一格。若短期内不打算建，建议把 biz-backlog 的小时级自动化暂停。
 

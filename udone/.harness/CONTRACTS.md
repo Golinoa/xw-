@@ -133,7 +133,7 @@ requestId → cors → rateLimit → idempotency → 路由（含 requireAuth）
    一次性定死 `page`/`pageSize`/`sort` 契约，再回填文档，避免各页面各写一套。
 5. **托管 CI 尚未在 Gitee Go 上跑通**。`.workflow/ci.yml` 已写好并被格式门禁覆盖，
    但「配置存在」不等于「门禁生效」——必须先在 Gitee 流水线页面真跑出一次全绿，
-   再删除遗留的 `.github/workflows/ci.yml`。在拿到构建记录前，把 CI 当「未生效」看待。
+   再删除遗留的 `.github/workflows/ci.yml`。子目录那份（`udone/.github/workflows/`）已删除——GitHub 只读仓库根，它永远执行不到，却长期被单测断言着；别再在子目录建第二份。根目录那份（GitHub Actions）同样要等平台实跑过才算生效。在拿到构建记录前，把 CI 当「未生效」看待。
 6. **令牌仍在浏览器可读存储中**（`sessionStorage`）。相比 localStorage 已收窄
    XSS 窗口（关标签即失效），但彻底方案是把 Supabase Auth 代理到 Worker 并用
    httpOnly Cookie，属独立工程，未立项。

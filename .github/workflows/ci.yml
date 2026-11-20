@@ -1,17 +1,39 @@
 name: udone-ci
 
-# 与 Gitee Go 的 .workflow/ci.yml 等价，但按 GitHub Actions 语法重写。
-# GitHub 会自动发现 .github/workflows/*.yml 并在 push 时触发，
-# 不需要像 Gitee Go 那样在网页端先手动创建流水线对象。
+# ============================================================
+# 【唯一活文件】GitHub Actions 只读取【仓库根】的 .github/workflows/。
+#
+# 这里曾经并存三份：根 `.github/`（本文件）、`udone/.github/workflows/ci.yml`、
+# 以及 Gitee Go 的 `.workflow/ci.yml`。中间那份**永远不会被执行**（GitHub 不扫子目录），
+# 却一直被 tests/tooling/harness-config.test.ts 断言着 —— 守的是一份装饰品：
+# 门禁看起来覆盖了 deps:audit / licenses / secrets，实际一条都没跑过。
+# 已删除，不要再在 udone/ 下建第二份。
+#
+# 与 Gitee Go 的 `.workflow/ci.yml` 是两条**独立**流水线：Gitee 那条需要先在网页端
+# 新建流水线对象才会生效（本机无凭据，见 backlog D2）；本文件被 GitHub 自动发现，
+# 只要仓库推上去就会跑。两边各跑一遍，互不依赖。
+#
+# 刻意不纳入的门禁（不是漏了）：
+#   - `format:sql:check`：存量 25 个已提交迁移与 sql-formatter 输出不一致，
+#     而 formatter 的输出更差（`count(*)` → `count (*)`、单行 CHECK 被拆成 4 行）。
+#     批量格式化等于重排历史迁移，不划算。理由见 backlog D2 卡片。
+#   - `db:test`（pgTAP）/ `db:local:verify`：需要 Docker + Supabase CLI，
+#     本机没有这两样 ⇒ 这条路径从未被验证过，加进流水线只会得到一个没跑过的绿或一条
+#     无法复现的红。数据库行为由本地 pgTAP 与 HTTP 集成测试负责。
+# ============================================================
 on:
   push:
     branches:
       - main
-      - "feat/**"
+      - 'feat/**'
   pull_request:
     branches:
       - main
   workflow_dispatch:
+
+# 流水线只需要读代码；显式收窄，避免默认令牌带写权限。
+permissions:
+  contents: read
 
 # 同一分支连续推送时取消旧的运行，避免排队占用免费分钟数。
 concurrency:
@@ -24,77 +46,85 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: pnpm/action-setup@7088e561eb65bb68695d245aa206f005ef30921d # v4.1.0
         with:
+          # 与 udone/package.json 的 packageManager 保持一致；不一致时
+          # `--frozen-lockfile` 会因 lockfile 版本解释不同而拒绝安装。
           version: 11.24.0
-
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 24
+          node-version: '24'
           cache: pnpm
           cache-dependency-path: udone/pnpm-lock.yaml
-
       - name: 安装依赖
         working-directory: udone
         run: pnpm install --frozen-lockfile
 
-      # 与 Gitee 版同一组门禁；format:check 会连带检查 ../.workflow/ 与本文件，
-      # 所以 CI 配置本身也在这道检查里，改歪了会立刻红。
+      # 格式 → 静态 → 类型 → 用例 → 构建 → 生成物，便宜的放前面，红在哪一类一眼能看出来。
+      # format:check 会连带检查 `../.workflow/`（Gitee 配置）与本文件本身，
+      # 所以 CI 配置改歪了也会在这一步红。
       - name: 格式检查
         working-directory: udone
         run: pnpm format:check
-
       - name: ESLint 与 CSS token
         working-directory: udone
         run: pnpm lint
-
       - name: 类型检查
         working-directory: udone
         run: pnpm typecheck
-
       - name: 单元测试
         working-directory: udone
         run: pnpm test
-
       - name: 构建
         working-directory: udone
         run: pnpm build
-
       - name: 数据库 schema 清单
         working-directory: udone
         run: pnpm schema:check
-
       - name: 部署配置
         working-directory: udone
         run: pnpm check:deploy
+
+      # 下面四道都是离线或只读 registry 的确定性问题，本机实测全绿才放进来。
+      - name: 依赖漏洞（含白名单到期检查）
+        working-directory: udone
+        run: pnpm deps:audit
+      - name: 许可证策略
+        working-directory: udone
+        run: pnpm licenses:check
+      - name: 凭证扫描
+        working-directory: udone
+        run: pnpm secrets:check
+      - name: 凭证扫描自检
+        working-directory: udone
+        run: pnpm secrets:canary:check
 
   e2e:
     name: 前端 E2E（Playwright）
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: pnpm/action-setup@7088e561eb65bb68695d245aa206f005ef30921d # v4.1.0
         with:
           version: 11.24.0
-
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 24
+          node-version: '24'
           cache: pnpm
           cache-dependency-path: udone/pnpm-lock.yaml
-
       - name: 安装依赖
         working-directory: udone
         run: pnpm install --frozen-lockfile
 
+      # 单独成一个 job（而不是 quality 里的一个 step）：浏览器约 150 MB 加系统依赖，
+      # 耗时远超静态门禁，混在一起会让「红的是哪一类」难判断。
       - name: 安装 Chromium
         working-directory: udone
-        # 只装一套浏览器；--with-deps 装系统库，运行镜像不允许 apt 时会明确失败。
-        # 不要靠删掉这行让用例假装通过。
+        # 只装一套浏览器：本套用例没有跨浏览器断言。
+        # --with-deps 装系统库；GitHub 托管 runner 的 sudo 可用，这里不该失败。
+        # 真失败时要在镜像里预装依赖，不要靠删掉这行让用例假装通过。
         run: pnpm exec playwright install --with-deps chromium
 
       - name: 运行 E2E
@@ -105,8 +135,8 @@ jobs:
           timeout --signal=INT 15m pnpm e2e 2>&1 | tee e2e.log
           code=${PIPESTATUS[0]}
           # 本机复用外部 dev server 时，Playwright 跑完用例后收尾不退出（退出码 124）。
-          # CI 的 CI=true 会让它自己拉起并关掉服务，通常不走这条分支；
-          # 万一仍发生，只有「日志里看到通过汇总、且没有失败」才当作通过。
+          # CI 下 reuseExistingServer=false，正常不会走这条分支；
+          # 万一仍发生，只有「日志里有通过汇总、且没有失败」才当作通过。
           if [ "$code" -eq 124 ]; then
             echo "::warning::Playwright 收尾未退出（124），按日志判定测试结果"
             if grep -Eq '[0-9]+ passed' e2e.log && ! grep -Eq '[1-9][0-9]* failed' e2e.log; then

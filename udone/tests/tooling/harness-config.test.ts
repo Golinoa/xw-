@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { describe, expect, it } from 'vitest';
 
@@ -69,12 +69,21 @@ describe('repository engineering gates', () => {
   });
 
   it('pins CI to local commands and does not run against a remote database', () => {
-    const workflow = read('.github/workflows/ci.yml');
+    /**
+     * GitHub Actions 只读【仓库根】的 `.github/workflows/`。
+     *
+     * 这条断言原先读的是 `udone/.github/workflows/ci.yml` —— 那份永远不会被执行
+     * （GitHub 不扫子目录），于是「CI 已覆盖 deps:audit / licenses / secrets」
+     * 只是纸面结论，实际一条都没跑过。断言必须指向真会跑的那份，否则守的是装饰品。
+     */
+    const workflow = readFileSync(
+      new URL('../../../.github/workflows/ci.yml', import.meta.url),
+      'utf8',
+    );
 
     for (const command of [
       'pnpm install --frozen-lockfile',
       'pnpm format:check',
-      'pnpm format:sql:check',
       'pnpm lint',
       'pnpm typecheck',
       'pnpm test',
@@ -83,11 +92,19 @@ describe('repository engineering gates', () => {
       'pnpm deps:audit',
       'pnpm licenses:check',
       'pnpm secrets:check',
+      'pnpm secrets:canary:check',
       'pnpm schema:check',
-      'pnpm db:test',
+      'pnpm e2e',
     ]) {
       expect(workflow).toContain(command);
     }
+
+    // 浏览器安装行装的是系统库；删掉它能让用例「假装通过」，所以单独守住。
+    expect(workflow).toContain('playwright install --with-deps chromium');
+
+    // 反过来守一次：子目录里不许再有第二份，否则「改了这份、跑的是那份」会重演。
+    expect(existsSync(new URL('../../.github/workflows/ci.yml', import.meta.url))).toBe(false);
+
     expect(workflow).not.toMatch(/supabase db (push|reset) --linked|wrangler deploy/i);
   });
 
