@@ -13,6 +13,16 @@
   ],
   "approvedExceptions": [
     {
+      "name": "@img/sharp-libvips-linux-x64",
+      "version": "1.3.4",
+      "license": "LGPL-3.0-or-later",
+      "scope": "Development-only. Linux x64 optional native package reached through Sharp image tooling; not imported by application code.",
+      "decision": "Approved only for this exact development-tool package, version, and scope under explicit user delegation (2026-11-20).",
+      "approver": "Project owner (explicit user delegation)",
+      "decisionDate": "2026-11-20",
+      "obligations": "Do not bundle or redistribute this optional package without a separate license review; preserve required LGPL notices if it is ever distributed."
+    },
+    {
       "name": "@azu/style-format",
       "version": "1.0.1",
       "license": "WTFPL",
