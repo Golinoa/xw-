@@ -1,0 +1,126 @@
+name: udone-ci
+
+# 与 Gitee Go 的 .workflow/ci.yml 等价，但按 GitHub Actions 语法重写。
+# GitHub 会自动发现 .github/workflows/*.yml 并在 push 时触发，
+# 不需要像 Gitee Go 那样在网页端先手动创建流水线对象。
+on:
+  push:
+    branches:
+      - main
+      - "feat/**"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+# 同一分支连续推送时取消旧的运行，避免排队占用免费分钟数。
+concurrency:
+  group: udone-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: 质量门禁
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.24.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: udone/pnpm-lock.yaml
+
+      - name: 安装依赖
+        working-directory: udone
+        run: pnpm install --frozen-lockfile
+
+      # 与 Gitee 版同一组门禁；format:check 会连带检查 ../.workflow/ 与本文件，
+      # 所以 CI 配置本身也在这道检查里，改歪了会立刻红。
+      - name: 格式检查
+        working-directory: udone
+        run: pnpm format:check
+
+      - name: ESLint 与 CSS token
+        working-directory: udone
+        run: pnpm lint
+
+      - name: 类型检查
+        working-directory: udone
+        run: pnpm typecheck
+
+      - name: 单元测试
+        working-directory: udone
+        run: pnpm test
+
+      - name: 构建
+        working-directory: udone
+        run: pnpm build
+
+      - name: 数据库 schema 清单
+        working-directory: udone
+        run: pnpm schema:check
+
+      - name: 部署配置
+        working-directory: udone
+        run: pnpm check:deploy
+
+  e2e:
+    name: 前端 E2E（Playwright）
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.24.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: udone/pnpm-lock.yaml
+
+      - name: 安装依赖
+        working-directory: udone
+        run: pnpm install --frozen-lockfile
+
+      - name: 安装 Chromium
+        working-directory: udone
+        # 只装一套浏览器；--with-deps 装系统库，运行镜像不允许 apt 时会明确失败。
+        # 不要靠删掉这行让用例假装通过。
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: 运行 E2E
+        working-directory: udone
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout --signal=INT 15m pnpm e2e 2>&1 | tee e2e.log
+          code=${PIPESTATUS[0]}
+          # 本机复用外部 dev server 时，Playwright 跑完用例后收尾不退出（退出码 124）。
+          # CI 的 CI=true 会让它自己拉起并关掉服务，通常不走这条分支；
+          # 万一仍发生，只有「日志里看到通过汇总、且没有失败」才当作通过。
+          if [ "$code" -eq 124 ]; then
+            echo "::warning::Playwright 收尾未退出（124），按日志判定测试结果"
+            if grep -Eq '[0-9]+ passed' e2e.log && ! grep -Eq '[1-9][0-9]* failed' e2e.log; then
+              echo "用例已全部通过，忽略收尾挂起"
+              exit 0
+            fi
+            exit 1
+          fi
+          exit "$code"
+
+      - name: 上传失败现场
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: udone/test-results/
+          retention-days: 7
