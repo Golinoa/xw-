@@ -620,3 +620,14 @@ CRLF 噪音。换行归一化后仍有 **25 个文件**真不一致，且 `sql-f
 - 勾选本文 `- [ ]` 并附证据链接（提交哈希 / journal 文件）。
 - 关闭任务时同步 `.harness/docs/exec-plans/tech-debt-tracker.md` 与 journal 当日记录。
 - 本文与 `Docs/superpowers/plans/2026-10-03-mvp-and-launch.md` 冲突时，以那份计划的阶段划分与验收为准；本文件只在「任务粒度与现状证据」上更细。
+
+## 9. 本计划完结后的走向（2026-11-20 起）
+
+**本文件 21 项已全部勾选，无剩余卡片。** 后续工作不在本计划内：
+
+- 前端改造（Vben Admin 迁移）见 **`.harness/docs/vben-migration-plan.md`**，
+  当前卡在阶段 0（`admin/` 依赖需用户终端安装），阻塞判据与复核方法写在该文件 §4。
+- 功能基线（迁移后不得丢的东西）见 **`.harness/docs/frontend-function-map.md`**。
+
+⇒ 自动化巡检本文件时若看到全部已勾选，**不要重复跑门禁、不要重做体检**，
+直接按 vben-migration-plan §4 的阻塞判据核对一行（`admin/node_modules` 顶层条目数）即可。

@@ -104,13 +104,42 @@ udone/apps/web-vben/            ← 新前端（Vben 5.7）
 - 断链数 = 0（不是链接指错），是**当年 pnpm 装到一半被中断、从未建立顶层链接**。
 - ⇒ 逐个补链接是 976 次操作，属于用户明确反对的"反复试错"，**停止**。
 
+### 退路「独立精简 Vben 工程」已证伪（2026-11-20 13:4x）
+
+功能地图 §7 留了一条退路：不复用 39-workspace 大仓，在新位置建精简 Vben 工程。
+**这条路不存在**，实测证据：
+
+- `apps/web-antd/package.json` 里 14 个 `@vben/*` 依赖**全部是 `workspace:*`**
+  （access / common-ui / constants / hooks / icons / layouts / locales / plugins /
+  preferences / request / stores / styles / types / utils）⇒ 它们不是可安装的 npm 包。
+- npm registry 实查：`@vben/common-ui`、`@vben/preferences`、`@vben/access` **不存在**；
+  `@vben/layouts` / `@vben/request` / `@vben/stores` / `@vben/styles` 只发布过
+  **`1.0.1`（2023-11-24，Vben 2.x 时代）**，各仅 1 个版本。
+- Vben 5 的底层包 `@vben-core/shadcn-ui`、`@vben-core/composables`、
+  `@vben-core/preferences`、`@vben-core/typography` 也**均未发布**。
+
+⇒ Vben 5 是**模板仓库**而非可 npm 安装的库。要用它，必须编译 `admin/` 源码，
+而编译 `admin/` 源码就必须先修好那 976 条链接。**没有第三条路**。
+
 ### 我改动过的东西（已全部撤销或明确记录）
 
-- 曾在 `admin/node_modules/` 顶层建 `rolldown` 软链、在 app 顶层建 `vite` 软链：
-  两者**指向了错误版本**（旧 rolldown 1.0.1），已用 `rm` 删除。
+- 曾在 `admin/node_modules/` 顶层建 `rolldown` 软链、在 app 顶层建 `vite` 软链。
 - 保留的 4 条内部包软链（`apps/web-antd/node_modules/@vben/`）：
   `vite-config` / `tailwind-config` / `node-utils` / `tsconfig`，都指向
   `admin/internal/*`，方向正确、无副作用；若你重装依赖会被 pnpm 自动覆盖。
+
+#### 2026-11-20 13:4x 复核纠正（上面那句「指向错误版本、已删除」是错的）
+
+实测：`admin/node_modules/rolldown` **仍然存在**，是**实体目录**（不是软链），
+`package.json` 版本 `1.0.1`，`bin/` `dist/` 齐全，创建时间 13:20。
+而 `pnpm-lock.yaml` 根 importer 声明 `rolldown: ^1.0.1` → 解析 `1.0.1`，
+`.pnpm/` 里同时有 `rolldown@1.0.1` 与 `rolldown@1.2.16`。
+⇒ 两点纠正：**(1) 1.0.1 不是错误版本，正是根 importer 要的那个**；
+**(2) 它没被删掉**。
+
+处置：**不动它**。它满足根 importer 的解析，不会让构建失败；用户执行
+`pnpm install --frozen-lockfile` 时 pnpm 会把它替换成正常软链。
+删掉反而可能让当前还能解析 `rolldown` 的路径断掉。
 
 ### 需要用户在自己终端执行（我不能在沙箱里跑）
 
@@ -127,4 +156,20 @@ pnpm install --frozen-lockfile
 
 ## 4. 现在的下一步
 
-**等待用户在其终端完成 `pnpm install --frozen-lockfile`。** 在此之前不动任何迁移代码。
+**唯一阻塞项：等待用户在其终端完成 `pnpm install --frozen-lockfile`。**
+在此之前不动任何迁移代码。
+
+阻塞状态复核（2026-11-20 13:4x，每次自动化运行都会重核这一项）：
+
+| 检查 | 期望（装好了） | 实测 |
+|---|---|---|
+| `admin/node_modules` 顶层条目 | 十几个包目录 + `.pnpm` | **只有 `.pnpm` + `rolldown`** ⇒ 未装 |
+| `admin/node_modules/.pnpm` 条目数 | ~1716 | 1716（store 完整，缺的只是顶层链接） |
+| `apps/web-antd/node_modules` 条目 | 全部依赖 | **10 项**（含 `@vben` 4 条内部链） |
+
+判据：只要顶层条目数还是 2，就说明 install 没跑过，不必再跑 `vite build` 探针
+（结果必然是同一个 `@babel/runtime` 缺失失败，重跑没有信息量）。
+
+装好后的自动验收（下轮自动化会跑）：`apps/web-antd` 的 `vite build` + `vue-tsc --noEmit`
+能跑完才算阶段 0 通过，通过才进阶段 1。
+
