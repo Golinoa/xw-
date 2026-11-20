@@ -32,14 +32,29 @@
 清单在 `udone/Docs/superpowers/plans/2026-10-29-business-completion-backlog.md`，
 每单元记录在 `udone/.harness/journal/`。
 
-**状态（2026-11-20 上午）：21 项交付 20，只剩 D2 一格未勾（纯平台动作）。**
-- **D2**：配置已写好，且**整条流水线的 step 序列已在本地按序回放过、全绿**
-  （单测 74/925、E2E CI=1 24 通过 1 跳过、build/schema/deploy 均过）。
-  **两条流水线并存**：Gitee Go `.workflow/ci.yml` + GitHub Actions 根 `.github/workflows/ci.yml`
-  （后者 `quality` 15 步 + `e2e` 7 步，多跑 deps:audit/licenses/secrets）。**格子不勾**只看一件事：
-  有没有真实运行记录。Gitee 卡「没有流水线对象」，GitHub 卡「仓库没有 remote」。
-  本机拿不到 Gitee 流水线 API（缓存凭据是 9 位账号密码，OpenAPI 拒绝密码认证，401）——**这条别再试**。
-  剩余唯一不确定项：运行镜像能否 `apt` 装 Chromium 依赖（`--with-deps` 失败时要在镜像里预装，不许删这行）。
+**状态（2026-11-20 13:4x 更新）：业务 backlog 21/21 全部完成，D2 已真实全绿。**
+- **D2 已勾**：GitHub Actions `run #44675102215`（提交 `9b8ffd2`）**Success 1m29s**，
+  质量门禁 15 步 + Playwright E2E 7 步全过。真仓 `https://github.com/Golinoa/xw-`（public）。
+  从 #1 红到 #5 绿修掉三个真缺陷：workflow 自身格式、`package.json` 里指向已不存在的
+  `.github/**` glob（Prettier 不匹配路径直接报错）、Linux 可选包 LGPL 许可证例外。
+  Gitee Go 侧仍未跑过（`.workflow/*.yml` 不会自注册，需网页端建流水线对象）——**别再试 API**。
+- **下一步方向已变**：不再是业务卡片，而是**前端迁移到 Vben Admin**
+  （用户拍板"计划 2"）。文档：`udone/.harness/docs/vben-migration-plan.md`（5 阶段）、
+  `udone/.harness/docs/frontend-function-map.md`（17 页面 / 69 端点 / 14 弹窗，迁移不得丢）。
+
+### 🔴 Vben 迁移阶段 0 卡在 `admin/` 依赖（2026-11-20）
+`admin/` 是 Vben 5.7.0，`.pnpm` store 1.2G 完整，但 **约 976 个包没有顶层软链**
+（当年 pnpm 装到一半被中断）⇒ 构建卡在 `@babel/runtime` 未链接。
+**只能由用户在自己终端跑 `cd D:\Coding\ERP\admin && pnpm install --frozen-lockfile`。**
+阻塞判据：`ls admin/node_modules` 若仍只有 `.pnpm` + `rolldown`（2 项）就是没装。
+
+- 🔴 **「独立精简 Vben 工程」这条退路不存在**（已实查证伪）：`apps/web-antd` 的 14 个
+  `@vben/*` 全是 `workspace:*`；npm 上 `@vben/{common-ui,preferences,access}` **未发布**，
+  `layouts|request|stores|styles` 只有 2023 年的 `1.0.1`（Vben 2.x）；`@vben-core/*` 全未发布。
+  ⇒ Vben 5 是**模板仓库不是 npm 库**，必须编译 `admin/` 源码，绕不开那 976 条链接。
+- **`admin/node_modules/rolldown` 不要删**：它是实体目录、版本 `1.0.1`，
+  而 `pnpm-lock.yaml` 根 importer 要的正是 `^1.0.1`。早期文档说它"指向错误版本、已删除"是误判。
+
 
 ### 🔴 GitHub 只读仓库根的 `.github/workflows/`（2026-11-20 踩过）
 `udone/.github/workflows/ci.yml` 曾长期存在、**永远执行不到**，而
