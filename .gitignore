@@ -25,3 +25,6 @@ udone/_tmp_*
 # SDD 临时工作副本（内含独立 .git 与 node_modules，不入库）
 /.superpowers/
 admin/.superpowers/
+
+# Vben 迁移用本地干净副本（源码副本 + 1.2G node_modules，不入库）
+/admin-clean/
