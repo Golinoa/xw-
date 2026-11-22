@@ -1,7 +1,7 @@
 # udone 前端迁移到 Vben Admin — 全量迁移计划
 
-状态：**阶段 0 已通过，进入阶段 1**。基线：`frontend-function-map.md`（17 页面 / 69 端点 / 14 弹窗）。
-用户选择：计划 2（Vben Admin）。生成：2026-11-20，阶段 0 通过：2026-11-21。
+状态：**阶段 0、阶段 1-A/1-B 已完成，下一批为阶段 3.1**。基线：`frontend-function-map.md`（17 页面 / 69 端点 / 14 弹窗）。
+用户选择：计划 2（Vben Admin）。生成：2026-11-20；阶段 0 通过：2026-11-21；E2E 基座：2026-11-22。
 
 > **阶段 0 已通过（2026-11-21）**：干净副本 `D:\Coding\ERP\admin-clean` 用 hoisted 模式
 > 装好依赖（`build ✓ 14.58s` + `typecheck ✓ 0 错误`）。可复现步骤见 `vben-local-setup.md`。
@@ -84,9 +84,27 @@ udone/apps/web-vben/            ← 新前端（Vben 5.7）
 Playwright 实测登录页渲染 + 未登录访问 `/trade/orders` 正确回跳
 `/auth/login?redirect=/trade/orders`。
 
-**未做（下一批）**：`@erp/contracts` 的 zod 4 与 Vben 自带的 zod 3 并存问题尚未在
-`pnpm install` 场景下验证（当前靠 contracts 自己的 `node_modules/zod` 解析）；
-E2E 用例尚未迁移到新工程。
+**未做（下一批）**：~~`@erp/contracts` 的 zod 4 与 Vben 自带的 zod 3 并存问题尚未在
+`pnpm install` 场景下验证~~（已在批次 B 期间用 `optimizeDeps.exclude: ['zod']` 解决，
+仅 dev 需要）；~~E2E 用例尚未迁移到新工程~~（见批次 B）。
+
+#### 阶段 1 批次 B：E2E 基座重建（2026-11-22 完成）
+
+原来的 `e2e/` 全是 ops 后台时代留下的（依赖已删除的 `src/api/ops/__stub__` 与
+`VITE_OPS_MOCK`），`pnpm test:e2e` 必然跑不起来。已全部删除并重建：
+
+- `playwright.config.ts` 单实例，端口 `E2E_PORT`（默认 5330），webServer 直调 vite bin
+  （不走 pnpm，避开本机 `_tmp_*` 卡死），凭据由 `webServer.env` 压成夹具；
+- `e2e/support/session.ts`：Supabase 令牌 + `/api/me` 成员夹具（**先过契约 schema**）；
+- `e2e/auth.e2e.ts` 5 条：未登录拦截并记住目标 / 登录回原页 / 无目标落工作台 /
+  刷新恢复会话 / 登出清会话。
+
+**改掉的一个认知错误**：登录回跳**由守卫负责**（`guard.ts` 里动态路由生成后
+`router.resolve(from.query.redirect)`），`authLogin` 推哪里都不影响落点。
+曾误以为 `authLogin` 丢了 redirect 并加了重复函数，变异实验证伪后已删除。
+⇒ 以后要改「登录后去哪」，只改守卫那一处。
+
+门禁：`vue-tsc` 0 错（探针验证）、`vite build` 4.43s、`playwright test` 5 passed。
 
 ### 阶段 2：布局与主题
 - 侧边栏 + 页签 + 面包屑替代手写顶部导航；15 个路由按业务域分组。
@@ -189,20 +207,30 @@ pnpm install --frozen-lockfile
 
 ## 4. 现在的下一步
 
-**唯一阻塞项：等待用户在其终端完成 `pnpm install --frozen-lockfile`。**
-在此之前不动任何迁移代码。
+**阶段 0（依赖）与阶段 1 批次 A/B（骨架、认证、E2E 基座）已完成，当前在阶段 3 入口。**
 
-阻塞状态复核（2026-11-20 13:4x，每次自动化运行都会重核这一项）：
+工作副本：`D:\Coding\ERP\admin-clean`（自带独立 git 仓库，根仓库 `.gitignore` 仍排除它）。
+装依赖与验证命令逐条见 `vben-local-setup.md`，照抄即可。
 
-| 检查 | 期望（装好了） | 实测 |
+| 批次 | 状态 | 记录 |
 |---|---|---|
-| `admin/node_modules` 顶层条目 | 十几个包目录 + `.pnpm` | **只有 `.pnpm` + `rolldown`** ⇒ 未装 |
-| `admin/node_modules/.pnpm` 条目数 | ~1716 | 1716（store 完整，缺的只是顶层链接） |
-| `apps/web-antd/node_modules` 条目 | 全部依赖 | **10 项**（含 `@vben` 4 条内部链） |
+| 阶段 0 依赖探针 | ✅ 2026-11-21 | `2026-11-20-vben-stage0-blocker-recheck.md` |
+| 阶段 1-A 骨架+认证 | ✅ 2026-11-21 | plan 上文 + `admin-clean` 提交 `a7cc898` |
+| 阶段 1-B E2E 基座 | ✅ 2026-11-22 | `2026-11-22-vben-phase1-batch-b-e2e.md` |
+| 阶段 3.1 登录/工作台/通知/审计 | ⬜ 下一批 | — |
 
-判据：只要顶层条目数还是 2，就说明 install 没跑过，不必再跑 `vite build` 探针
-（结果必然是同一个 `@babel/runtime` 缺失失败，重跑没有信息量）。
+自动化巡检时**只看上表第一行未打勾的批次**，不要重跑已完成的阶段 0 探针，也不要重复回放
+`udone` 的 CI 全序列——那两件事已有记录，重复跑只烧时间。
 
-装好后的自动验收（下轮自动化会跑）：`apps/web-antd` 的 `vite build` + `vue-tsc --noEmit`
-能跑完才算阶段 0 通过，通过才进阶段 1。
+本机跑 E2E 的两个必知项：
+
+```bash
+# 1) 本机 @playwright/test 期望的 chromium 没装，用本机 Chrome
+PLAYWRIGHT_CHANNEL=chrome node node_modules/@playwright/test/cli.js test
+# 2) 端口占用时覆盖：E2E_PORT=5331
+```
+
+阶段 3.1 开工前先读 `.harness/docs/frontend-function-map.md` 里对应的 4 个页面，
+按「接口 → 视图 → 弹窗」逐条对照，不得丢功能。
+
 

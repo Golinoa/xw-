@@ -625,9 +625,10 @@ CRLF 噪音。换行归一化后仍有 **25 个文件**真不一致，且 `sql-f
 
 **本文件 21 项已全部勾选，无剩余卡片。** 后续工作不在本计划内：
 
-- 前端改造（Vben Admin 迁移）见 **`.harness/docs/vben-migration-plan.md`**，
-  当前卡在阶段 0（`admin/` 依赖需用户终端安装），阻塞判据与复核方法写在该文件 §4。
+- 前端改造（Vben Admin 迁移）见 **`.harness/docs/vben-migration-plan.md`**。
+  进度：阶段 0（依赖探针）、阶段 1-A（骨架+认证）、阶段 1-B（E2E 基座）均已完成，
+  **下一批是阶段 3.1（登录/工作台/通知/审计）**，批次表在该文件 §4。
 - 功能基线（迁移后不得丢的东西）见 **`.harness/docs/frontend-function-map.md`**。
 
 ⇒ 自动化巡检本文件时若看到全部已勾选，**不要重复跑门禁、不要重做体检**，
-直接按 vben-migration-plan §4 的阻塞判据核对一行（`admin/node_modules` 顶层条目数）即可。
+直接按 vben-migration-plan §4 的批次表取第一行未打勾的批次即可。
