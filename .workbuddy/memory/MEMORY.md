@@ -56,8 +56,10 @@
 - 🔴 **typecheck 的「零输出」要用探针证明**（写个 `const x: number='s'` 看是否报 TS2322）。
 - 🔴 已修 Vben 上游缺陷：守卫 `redirect` 双重编码（`%252F`）→ 写入不 encode、读取不 decode。
 - 🔴 已修安全缺陷：access store 曾把 accessToken 持久化到 localStorage，已从 persist.pick 移除。
-- **备份**在 `.workbuddy/backups/`（改造前基线 + 批次 A 完成态，两个 tar）。
-- ⚠️ **`admin-clean` 无版本控制**（被根 `.gitignore` 排除）。下一批开工前应先独立 git init。
+- **备份**在 `.workbuddy/backups/`（改造前基线 + 批次 A 完成态，两个 tar，不入库）。
+- ✅ **`admin-clean` 已独立 git init**（2026-11-22，基线 `db9726e`，1142 文件）；
+  根 `.gitignore` 的 `/admin-clean/` 保持不变，两边工作树都干净。
+  测试资产现状：新工程 **0 个测试文件**，`udone/apps/web/src` 有 6 个可移植测试。
 
 ### 🔴 GitHub 只读仓库根的 `.github/workflows/`（2026-11-20 踩过）
 `udone/.github/workflows/ci.yml` 曾长期存在、**永远执行不到**，而
