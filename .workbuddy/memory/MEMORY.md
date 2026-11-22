@@ -54,6 +54,12 @@
 - 🔴 **每次 build 前必须 `rm -rf dist/js dist/css dist/jse dist/_app.config.js dist/index.html`**：
   否则 vite 的 emptyOutDir 被 safe-delete 拦，表现为「零输出 + exit 1 + 连 echo 都不跑」。
 - 🔴 **typecheck 的「零输出」要用探针证明**（写个 `const x: number='s'` 看是否报 TS2322）。
+- 🔴 **Vite 配置只能有一份**：Vite 8 加载 `vite.config.ts` 而非 `.mts`，改错文件会导致
+  build 正常但 dev 报 `@erp/contracts` 无法解析。已于 11-22 合并并删除 `.mts`。
+- 🔴 **dev 必须 `optimizeDeps.exclude: ['zod']`**：否则预构建把 zod 4 解析成 Vben 的 zod 3，
+  报 `z.email is not a function`（build 无此问题）。
+- 🔴 **Vite dev 在本会话里前台能起、后台常不监听**；给用户看页面用
+  `dist` + `python -m http.server`，别在后台反复重启 vite。
 - 🔴 已修 Vben 上游缺陷：守卫 `redirect` 双重编码（`%252F`）→ 写入不 encode、读取不 decode。
 - 🔴 已修安全缺陷：access store 曾把 accessToken 持久化到 localStorage，已从 persist.pick 移除。
 - **备份**在 `.workbuddy/backups/`（改造前基线 + 批次 A 完成态，两个 tar，不入库）。
