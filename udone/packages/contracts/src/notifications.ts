@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { queryBooleanSchema } from './http';
 import { listQuerySchema, pagedResponseSchema } from './pagination';
 
 /**
@@ -33,7 +34,7 @@ export const notificationSchema = z.object({
 export type Notification = z.infer<typeof notificationSchema>;
 
 export const notificationListQuerySchema = listQuerySchema(NOTIFICATION_SORT_FIELDS).extend({
-  unreadOnly: z.coerce.boolean().default(false),
+  unreadOnly: queryBooleanSchema.default(false),
 });
 export type NotificationListQuery = z.infer<typeof notificationListQuerySchema>;
 

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { queryBooleanSchema } from './http';
 import { listQuerySchema, pagedResponseSchema } from './pagination';
 
 /** CRM 线索与公海（R-CRM-01/02）。阶段转换与认领的版本号必须原样回传，服务端做乐观锁。 */
@@ -41,7 +42,7 @@ export type Lead = z.infer<typeof leadSchema>;
 export const leadListQuerySchema = listQuerySchema(LEAD_SORT_FIELDS).extend({
   stage: leadStageSchema.optional(),
   ownerId: z.string().optional(),
-  inPool: z.coerce.boolean().default(false),
+  inPool: queryBooleanSchema.default(false),
 });
 export type LeadListQuery = z.infer<typeof leadListQuerySchema>;
 

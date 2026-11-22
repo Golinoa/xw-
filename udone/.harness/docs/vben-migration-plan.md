@@ -1,7 +1,7 @@
 # udone 前端迁移到 Vben Admin — 全量迁移计划
 
-状态：**阶段 0、阶段 1-A/1-B、阶段 3.1 已完成，下一批为阶段 3.2**。基线：`frontend-function-map.md`（17 页面 / 69 端点 / 14 弹窗）。
-用户选择：计划 2（Vben Admin）。生成：2026-11-20；阶段 0 通过：2026-11-21；E2E 基座：2026-11-22；3.1 完成：2026-11-22。
+状态：**阶段 0、阶段 1-A/1-B、阶段 3.1、3.2 已完成，下一批为阶段 3.3（客户/回收站/来源/线路/供应商）**。基线：`frontend-function-map.md`（17 页面 / 69 端点 / 14 弹窗）。
+用户选择：计划 2（Vben Admin）。生成：2026-11-20；阶段 0 通过：2026-11-21；E2E 基座：2026-11-22；3.1 完成：2026-11-22；3.2 完成：2026-11-22。
 
 > **阶段 0 已通过（2026-11-21）**：干净副本 `D:\Coding\ERP\admin-clean` 用 hoisted 模式
 > 装好依赖（`build ✓ 14.58s` + `typecheck ✓ 0 错误`）。可复现步骤见 `vben-local-setup.md`。
@@ -218,7 +218,8 @@ pnpm install --frozen-lockfile
 | 阶段 1-A 骨架+认证 | ✅ 2026-11-21 | plan 上文 + `admin-clean` 提交 `a7cc898` |
 | 阶段 1-B E2E 基座 | ✅ 2026-11-22 | `2026-11-22-vben-phase1-batch-b-e2e.md` |
 | 阶段 3.1 登录/工作台/通知/审计 | ✅ 2026-11-22 | `2026-11-22-vben-phase31-auth-workbench-notify-audit.md` |
-| 阶段 3.2 公司配置/资金/报表 | ⬜ 下一批 | — |
+| 阶段 3.2 公司配置/资金/报表 | ✅ 2026-11-22 | `2026-11-22-vben-phase32-settings-balances-reports.md` |
+| 阶段 3.3 客户/回收站/来源/线路/供应商 | ⬜ 下一批 | — |
 
 #### 阶段 3.1 完成内容（2026-11-22）
 
@@ -238,6 +239,30 @@ pnpm install --frozen-lockfile
 顶栏补了公司切换与未读角标（旧 `AppLayout` 的功能，否则多组织账号看不到别家公司）。
 详见该批次 journal。
 
+#### 阶段 3.2 完成内容（2026-11-22）
+
+三页迁完（`/config/company`、`/finance/balances`、`/operations/reports`），端点 key 一个没改。
+`lib/format.ts` 补上 `formatMoney` / `formatRatio`（金额一律服务端算，页面只格式化）。
+
+顺手修掉两个**既有**真缺陷，都已加闸：
+
+1. **查询串布尔值 `'false'` 被解析成 `true`**：`reportQuerySchema.includeCancelled`、
+   `notificationListQuerySchema.unreadOnly`、`leadListQuerySchema.inPool` 都用了
+   `z.coerce.boolean()`（`Boolean('false') === true`）⇒「取消勾选含已取消照样算进报表」、
+   「关掉只看未读还是只剩未读」。已在 `contracts/src/http.ts` 提 `queryBooleanSchema`，
+   三处替换 + 三条 `=false` 回归用例（变异验证红）。
+   **以后写查询串布尔值一律用它，别用 `z.coerce.boolean()`。**
+2. **「二次确认」分支永远不触发**：`api-client` 会把服务端 `message` 换成错误码对应文案，
+   旧页面靠 `message.includes('confirmation')` 判断 ⇒ 恒假，改审批规则怎么都存不进去。
+   已让 `ApiClientError` 携带 `details`（第 5 个字段），页面按 `details.field === 'confirmed'` 判断。
+   **判断「同一错误码的不同原因」只能用 `details`，不能用文案。**
+
+门禁：`vue-tsc` 0（探针验证）/ `vite build` 5.33s / `playwright` **16 passed** /
+udone 侧 `typecheck` + `lint` + vitest **74 文件 928 用例** + HTTP 集成 **34 文件 455 用例**。
+
+阶段 3.3 开工前先读功能地图 4–7 行（客户、回收站、来源、线路、供应商）与 8 个弹窗清单；
+这一批会出现批量打标、回收站恢复、CSV 导入类交互，**别把「列表勾选」这类跨行状态做丢**。
+
 自动化巡检时**只看上表第一行未打勾的批次**，不要重跑已完成的阶段 0 探针，也不要重复回放
 `udone` 的 CI 全序列——那两件事已有记录，重复跑只烧时间。
 
@@ -249,8 +274,6 @@ PLAYWRIGHT_CHANNEL=chrome node node_modules/@playwright/test/cli.js test
 # 2) 端口占用时覆盖：E2E_PORT=5331
 ```
 
-阶段 3.2 开工前先读 `.harness/docs/frontend-function-map.md` 里公司配置 / 资金 / 报表三页，
-按「接口 → 视图 → 弹窗」逐条对照，不得丢功能。同时补回 `lib/format.ts` 的
-`formatMoney` / `formatRatio`（金额页要用）。
+（3.2 已完成，`formatMoney` / `formatRatio` 已在 `lib/format.ts`。）
 
 

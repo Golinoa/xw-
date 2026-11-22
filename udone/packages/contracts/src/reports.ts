@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { queryBooleanSchema } from './http';
 
 /**
  * 租户报表（R-REPORT-01）。
@@ -10,7 +11,7 @@ import { z } from 'zod';
 export const reportQuerySchema = z.object({
   from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'from must be YYYY-MM-DD'),
   to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'to must be YYYY-MM-DD'),
-  includeCancelled: z.coerce.boolean().default(false),
+  includeCancelled: queryBooleanSchema.default(false),
 });
 export type ReportQuery = z.infer<typeof reportQuerySchema>;
 

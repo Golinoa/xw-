@@ -75,6 +75,16 @@ describe('notification routes', () => {
     expect(list).toHaveBeenCalledWith(expect.objectContaining({ unreadOnly: true }), ORG, USER);
   });
 
+  // 同 reports：查询串里的 'false' 是字符串，`z.coerce.boolean()` 会把它变成 true，
+  // 结果是「关掉『只看未读』，列表还是只剩未读」。
+  it('reads unreadOnly=false as false', async () => {
+    const list = vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 15 });
+    const { testApp, env } = setup(repositoryStub({ list }));
+    const response = await testApp.request('/api/notifications?unreadOnly=false', { headers }, env);
+    expect(response.status).toBe(200);
+    expect(list).toHaveBeenCalledWith(expect.objectContaining({ unreadOnly: false }), ORG, USER);
+  });
+
   it('returns the unread count', async () => {
     const { testApp, env } = setup(repositoryStub());
     const response = await testApp.request('/api/notifications/unread-count', { headers }, env);

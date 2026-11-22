@@ -82,6 +82,20 @@ describe('report routes', () => {
     expect(tenant).toHaveBeenCalledWith(expect.objectContaining({ includeCancelled: true }), ORG);
   });
 
+  // 查询串里的布尔值是字符串：`z.coerce.boolean()` 会把 'false' 变成 true，
+  // 表现是「取消勾选『含已取消』，已取消订单照样算进报表」。这条用例就是那道闸。
+  it('reads includeCancelled=false as false, not as a truthy string', async () => {
+    const tenant = vi.fn().mockResolvedValue(report);
+    const { testApp, env } = setup(repositoryStub({ tenant }));
+    const response = await testApp.request(
+      '/api/reports/tenant?from=2026-11-01&to=2026-11-30&includeCancelled=false',
+      { headers },
+      env,
+    );
+    expect(response.status).toBe(200);
+    expect(tenant).toHaveBeenCalledWith(expect.objectContaining({ includeCancelled: false }), ORG);
+  });
+
   it('rejects an invalid date format', async () => {
     const tenant = vi.fn();
     const { testApp, env } = setup(repositoryStub({ tenant }));

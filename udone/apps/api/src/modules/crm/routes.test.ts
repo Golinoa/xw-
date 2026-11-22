@@ -91,6 +91,15 @@ describe('lead routes', () => {
     expect(list).toHaveBeenCalledWith(expect.objectContaining({ inPool: true }), ORG);
   });
 
+  // 同 reports：'false' 必须解析成 false，否则「只看公海」的复选框会反过来。
+  it('reads inPool=false as false', async () => {
+    const list = vi.fn().mockResolvedValue({ items: [lead], total: 1, page: 1, pageSize: 15 });
+    const { testApp, env } = setup(repositoryStub({ list }));
+    const response = await testApp.request('/api/leads?inPool=false', { headers }, env);
+    expect(response.status).toBe(200);
+    expect(list).toHaveBeenCalledWith(expect.objectContaining({ inPool: false }), ORG);
+  });
+
   it('creates a lead', async () => {
     const create = vi.fn().mockResolvedValue({ leadId: 'lead-2' });
     const { testApp, env } = setup(repositoryStub({ create }));
