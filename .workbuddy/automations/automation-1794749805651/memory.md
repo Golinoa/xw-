@@ -209,3 +209,23 @@
   journal `2026-11-22-vben-phase1-batch-b-e2e.md`。
 - 🔴 **下一轮**：直接开 **阶段 3.1（登录/工作台/通知/审计）**，先读 `frontend-function-map.md`
   对应 4 页；不要重跑阶段 0 探针、不要回放 udone CI 全序列。
+
+## 2026-11-22 19:4x — Vben 阶段 3.1：登录/工作台/通知/审计 ✅
+
+- **先纠正提示词口径**（第 N 次）：业务 backlog 15 条 `- [x]`、`grep "^- \[ \]"` 为 0，
+  2026-11-20 就已 21/21 完成。真实主线是 **Vben 迁移**（`.harness/docs/vben-migration-plan.md`）。
+  本轮做阶段 3.1。
+- 单元：四页迁移（工作台含成员与邀请 / 通知 / 审计 / 登录+忘记密码+设新密码）
+  + 顶栏公司切换与未读角标 + 3 个新 E2E spec（7 条用例）+ 认证 store 三处修正。
+- **修掉批次 A 的两处回归**：无成员记录不再当登录失败（否则邀请永远接受不了）；
+  守卫补回「已登录 + invitationId 可进登录页」。密码恢复改成先判 `type=recovery`
+  再 `getSession()`。
+- CAPTCHA 没降级：用「Vben 表单 component 接组件实例」注入，Cloudflare 测试 key 实测通过。
+- 门禁：`vue-tsc` 0（探针验证）/ `vite build` 4.23s / `playwright` **12 passed** /
+  新文件 eslint 0 / oxlint 与改动前同数。udone 侧未动代码，故未跑 pgTAP / vitest / http。
+- 提交：`admin-clean` `20dcd18`（无 remote）；`udone` `92d6b11` 已推 Gitee + GitHub。
+- 🔴 **下一轮**：直接开 **阶段 3.2（公司配置+审批流 / 资金 / 报表，约 916 行）**。
+  先读功能地图对应 3 页 + `CompanySettingsView.vue` / `BalanceListView.vue` / `ReportListView.vue`；
+  补 `lib/format.ts` 的 `formatMoney` / `formatRatio`。不要重跑阶段 0 探针、不要回放 udone CI。
+- 结构性遗留（已报用户）：`admin-clean` 不在任何远端仓库，也不在 GitHub Actions 覆盖范围，
+  新前端目前只有本机工作树 + tar 备份。

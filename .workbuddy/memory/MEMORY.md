@@ -65,7 +65,7 @@
 - **备份**在 `.workbuddy/backups/`（改造前基线 + 批次 A 完成态，两个 tar，不入库）。
 - ✅ **`admin-clean` 已独立 git init**（2026-11-22，基线 `db9726e`，1142 文件）；
   根 `.gitignore` 的 `/admin-clean/` 保持不变，两边工作树都干净。
-  测试资产现状：新工程单测仍 **0 个**，但已有 **5 条 E2E**（见下）。
+  测试资产现状：新工程单测仍 **0 个**，E2E 已 **12 条**（阶段 3.1 后，`admin-clean`）。
 
 ### 阶段 1 批次 B：E2E 基座已完成（2026-11-22，`ac02f43`）
 
@@ -85,6 +85,30 @@
   届时补 `X-Organization-Id` 注入断言）。
 - 已知遗留：`oxlint` 8 条既有错误（`lib/api-client.ts` 7 条非空断言 +
   `store/auth.ts` 冗余 return）、`oxfmt` 二进制本机跑不起来。
+
+### 阶段 3.1：登录/工作台/通知/审计 已完成（2026-11-22，`20dcd18`）
+
+工作台（含成员与邀请）、通知、审计、登录+忘记密码+设新密码四块迁完；
+端点 key 一个未改。**下一批是阶段 3.2（公司配置+审批流 / 资金 / 报表，约 916 行）**，
+开工先补 `lib/format.ts` 的 `formatMoney` / `formatRatio`。
+
+🔴 三条不能再踩的坑：
+
+1. **「`/api/me` 无成员记录」绝不能当登录失败清会话**。批次 A 这么做了，
+   结果 `acceptInvitation` 拿不到 token ⇒ **邀请流程彻底走不通**。
+   正确口径（旧前端一致）：保留会话 + `sessionState='no_membership'`
+   + 工作台明示「尚未加入公司」。
+2. **守卫必须放行「已登录 + `invitationId` 进登录页」**（旧前端有这条例外）。
+3. **`type=recovery` 必须在 `getSession()` 之前判断**：晚一步令牌落进 store，
+   守卫直接放人进业务页、跳过设新密码。恢复态只让 Supabase 客户端内部持会话。
+
+其他经验：
+- Vben 表单 `component` 接受**组件实例**，所以 CAPTCHA 可以当普通表单字段注入
+  （`fieldName:'captchaToken'`），不用改上游登录组件。
+- Playwright glob `**/api/x*` **不匹配多一层路径**（`*` 不吃 `/`）⇒ 用 `**/api/x**`，
+  否则 PATCH 之类的子路径会漏到真网络（现象：vite 代理 ECONNREFUSED + 重试 4 次）。
+- antd `Card` 的 `title` 不是 heading 角色，`getByRole('heading')` 找不到。
+- 顶栏壳层功能（公司切换、未读角标）挂在 `BasicLayout` 的 `#header-right-1` 插槽。
 
 ### 🔴 GitHub 只读仓库根的 `.github/workflows/`（2026-11-20 踩过）
 `udone/.github/workflows/ci.yml` 曾长期存在、**永远执行不到**，而
