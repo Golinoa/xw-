@@ -43,7 +43,19 @@ env -u NODE_OPTIONS -u CODEBUDDY_SAFE_DELETE_BULK_GUARD -u CODEBUDDY_SAFE_DELETE
 ```
 
 ### 3. 验证（全部通过）
+
+🔴 **构建前必须先清空 dist 内容**。vite 的 `emptyOutDir` 在本机被 safe-delete 拦截时，
+表现为「进程静默退出、零输出、exit 1」—— 看起来像构建崩了，其实是删不干净。
+`rm -rf dist` 也删不掉目录本身（只清空内容），保留空目录即可正常构建。
+
+🔴 **typecheck 的「零输出」要用探针证明不是空跑**：写一个 `src/__tsc_probe.ts`
+（`export const x: number = 's'`），能报 TS2322 才说明检查真的生效。
+
 ```bash
+# 必做：清空产物内容（保留空 dist 目录）
+cd D:/Coding/ERP/admin-clean/apps/web-antd
+rm -rf dist/js dist/css dist/jse dist/_app.config.js dist/index.html
+
 # build
 cd D:/Coding/ERP/admin-clean/apps/web-antd
 env -u NODE_OPTIONS -u CODEBUDDY_SAFE_DELETE_BULK_GUARD -u CODEBUDDY_SAFE_DELETE_SANDBOX \

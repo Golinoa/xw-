@@ -59,6 +59,35 @@ udone/apps/web-vben/            ← 新前端（Vben 5.7）
   保留请求/响应双向 zod 校验。
 - 门禁：新工程 `typecheck` + `build`；E2E 桩路径 `/api/`、`/auth/v1/` 不变。
 
+#### 阶段 1 进度（2026-11-21 批次 A 已完成）
+
+**目录口径修正**：不在 `udone/apps/web-vben` 新建工程，直接在干净副本
+`D:\Coding\ERP\admin-clean` 上改造。理由：Vben 5 的 39 个 workspace 全部是
+`workspace:*` 内部依赖，抽到 `udone/` 下要么整仓搬迁、要么复制 39 个包，
+两种都比「在副本上改」贵得多。**代价**：`admin-clean` 被 `.gitignore` 排除，
+源码暂无版本控制（有 tar 快照，见 `.workbuddy/backups/`）。
+
+已完成：
+1. **清空 ops 业务资产**：10 个路由模块、`views/ops`、`views/demos`、`api/`（含
+   ops 的 auth/refresh/error 适配层）、`constants/permissions.ts`、全部 ops 单测。
+2. **接 ERP 认证**：`store/auth.ts` 重写为 Supabase 会话 + 组织成员 + `X-Organization-Id`
+   注入；登录字段由「账号」改为「邮箱」；无组织归属时按 `no_membership` 失败处理。
+3. **API 内核**：`lib/api-client.ts` 从 `udone/apps/web` 原样移植（保留 zod 双向校验、
+   幂等键、401 单飞重试、5xx 指数退避）；`@erp/contracts` 走 vite alias 直连
+   `udone/packages/contracts/src`，**不复制、不发布**。
+4. **路由骨架**：`workbench` + `trade/customer/finance/operations/config` 五域占位，
+   `defaultHomePath` 改为 `/workbench`；文案命名空间 `ops-shell` → `shell`。
+5. **修掉上游守卫缺陷**：`redirect` 参数被 `encodeURIComponent` + vue-router 各编码一次
+   → 双重编码（`%252F`），登录后跳转目标损坏。已改为写入不编码、读取不解码。
+
+门禁：`vue-tsc --noEmit` 0 错误（用错误探针验证检查确实生效）、`vite build` 6.45s、
+Playwright 实测登录页渲染 + 未登录访问 `/trade/orders` 正确回跳
+`/auth/login?redirect=/trade/orders`。
+
+**未做（下一批）**：`@erp/contracts` 的 zod 4 与 Vben 自带的 zod 3 并存问题尚未在
+`pnpm install` 场景下验证（当前靠 contracts 自己的 `node_modules/zod` 解析）；
+E2E 用例尚未迁移到新工程。
+
 ### 阶段 2：布局与主题
 - 侧边栏 + 页签 + 面包屑替代手写顶部导航；15 个路由按业务域分组。
 - 设计令牌从 `tokens.ts` 迁到 Vben `preferences.ts`（品牌蓝 #0093FF 等）。

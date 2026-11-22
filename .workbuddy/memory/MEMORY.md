@@ -42,19 +42,22 @@
   （用户拍板"计划 2"）。文档：`udone/.harness/docs/vben-migration-plan.md`（5 阶段）、
   `udone/.harness/docs/frontend-function-map.md`（17 页面 / 69 端点 / 14 弹窗，迁移不得丢）。
 
-### 🔴 Vben 迁移阶段 0 卡在 `admin/` 依赖（2026-11-20）
-`admin/` 是 Vben 5.7.0，`.pnpm` store 1.2G 完整，但 **约 976 个包没有顶层软链**
-（当年 pnpm 装到一半被中断）⇒ 构建卡在 `@babel/runtime` 未链接。
-**只能由用户在自己终端跑 `cd D:\Coding\ERP\admin && pnpm install --frozen-lockfile`。**
-阻塞判据：`ls admin/node_modules` 若仍只有 `.pnpm` + `rolldown`（2 项）就是没装。
+### Vben 迁移：阶段 0 已过，阶段 1 批次 A 已完成（2026-11-21）
 
-- 🔴 **「独立精简 Vben 工程」这条退路不存在**（已实查证伪）：`apps/web-antd` 的 14 个
-  `@vben/*` 全是 `workspace:*`；npm 上 `@vben/{common-ui,preferences,access}` **未发布**，
-  `layouts|request|stores|styles` 只有 2023 年的 `1.0.1`（Vben 2.x）；`@vben-core/*` 全未发布。
-  ⇒ Vben 5 是**模板仓库不是 npm 库**，必须编译 `admin/` 源码，绕不开那 976 条链接。
-- **`admin/node_modules/rolldown` 不要删**：它是实体目录、版本 `1.0.1`，
-  而 `pnpm-lock.yaml` 根 importer 要的正是 `^1.0.1`。早期文档说它"指向错误版本、已删除"是误判。
+**工作副本是 `D:\Coding\ERP\admin-clean`**（不是计划文档里写的 `udone/apps/web-vben`）：
+从 `admin/` robocopy 出干净副本，用 **hoisted 模式**装依赖才绕过本机链接阶段挂死。
+安装与验证命令逐条记在 `udone/.harness/docs/vben-local-setup.md`，**照抄即可**。
 
+- 现状：ops 业务资产已清空、Supabase 认证已接、`@erp/contracts` 走 vite alias 直连
+  `udone/packages/contracts/src`、五域占位路由（workbench/trade/customer/finance/
+  operations/config）已建，`typecheck` 与 `build --mode production` 均通过。
+- 🔴 **每次 build 前必须 `rm -rf dist/js dist/css dist/jse dist/_app.config.js dist/index.html`**：
+  否则 vite 的 emptyOutDir 被 safe-delete 拦，表现为「零输出 + exit 1 + 连 echo 都不跑」。
+- 🔴 **typecheck 的「零输出」要用探针证明**（写个 `const x: number='s'` 看是否报 TS2322）。
+- 🔴 已修 Vben 上游缺陷：守卫 `redirect` 双重编码（`%252F`）→ 写入不 encode、读取不 decode。
+- 🔴 已修安全缺陷：access store 曾把 accessToken 持久化到 localStorage，已从 persist.pick 移除。
+- **备份**在 `.workbuddy/backups/`（改造前基线 + 批次 A 完成态，两个 tar）。
+- ⚠️ **`admin-clean` 无版本控制**（被根 `.gitignore` 排除）。下一批开工前应先独立 git init。
 
 ### 🔴 GitHub 只读仓库根的 `.github/workflows/`（2026-11-20 踩过）
 `udone/.github/workflows/ci.yml` 曾长期存在、**永远执行不到**，而
