@@ -192,3 +192,20 @@
 - 未跑门禁、未改代码、未新增文档。
 - 🔴 **下一轮**：仍只看这一行判据。条目数 = 2 就直接回「阻塞未变，等 install」，
   不要跑任何命令。已第 4 次建议暂停本自动化（2h 一次无产出）。
+
+## 2026-11-22 17:4x — Vben 阶段 1 批次 B：E2E 基座重建 ✅
+
+- **先纠正提示词口径**：业务 backlog 15 条 `- [x]`、无 `- [ ]`，2026-11-20 就已 21/21 完成；
+  真实主线是 **Vben 迁移**（`.harness/docs/vben-migration-plan.md`）。本轮做了阶段 1 批次 B。
+- 单元：删掉 ops 时代的死 e2e（`e2e/{http,stub,support/auth.ts}` + `.env.e2e`，依赖批次 A
+  已删的契约桩 ⇒ `pnpm test:e2e` 必红）；重建 `playwright.config.ts`（单实例、端口 5330、
+  webServer 直调 vite bin）+ `e2e/support/session.ts` + `e2e/auth.e2e.ts` 5 条用例。
+- **认知纠正（重要）**：登录回跳由守卫 `redirectPath` 负责，不是 `authLogin`。我误判加了
+  `resolvePostLoginPath()`，变异实验（落点改 /finance/receipts 仍落 /customer/list）证伪后删除。
+- 门禁：`vue-tsc` 0 错（探针报 TS2322 验证） / `vite build` 4.43s / `playwright test`
+  **5 passed 21.6s**（`PLAYWRIGHT_CHANNEL=chrome`）。变异：`handleLogout` 空操作 → 红。
+- 未做：组织头注入（留 3.1）、`logout(true)` 分支、oxlint 8 条既有错误、oxfmt 跑不起来。
+- 提交：`admin-clean` `ac02f43`（无 remote，本地）；`udone` `55bc247` 已推 Gitee + GitHub。
+  journal `2026-11-22-vben-phase1-batch-b-e2e.md`。
+- 🔴 **下一轮**：直接开 **阶段 3.1（登录/工作台/通知/审计）**，先读 `frontend-function-map.md`
+  对应 4 页；不要重跑阶段 0 探针、不要回放 udone CI 全序列。

@@ -65,7 +65,26 @@
 - **备份**在 `.workbuddy/backups/`（改造前基线 + 批次 A 完成态，两个 tar，不入库）。
 - ✅ **`admin-clean` 已独立 git init**（2026-11-22，基线 `db9726e`，1142 文件）；
   根 `.gitignore` 的 `/admin-clean/` 保持不变，两边工作树都干净。
-  测试资产现状：新工程 **0 个测试文件**，`udone/apps/web/src` 有 6 个可移植测试。
+  测试资产现状：新工程单测仍 **0 个**，但已有 **5 条 E2E**（见下）。
+
+### 阶段 1 批次 B：E2E 基座已完成（2026-11-22，`ac02f43`）
+
+- 旧 `e2e/` 全是 ops 死件（依赖批次 A 已删的 `src/api/ops/__stub__` + `VITE_OPS_MOCK`），
+  `pnpm test:e2e` 本来必红。已删并重建：单实例 config（端口 `E2E_PORT`，默认 5330，
+  webServer 直调 `node ../../node_modules/vite/bin/vite.js`，**不走 pnpm**）+
+  `e2e/support/session.ts`（Supabase 令牌 / `/api/me` 夹具，先过 contracts schema）+
+  `e2e/auth.e2e.ts` 5 条。
+- 🔴 **登录回跳的真源是路由守卫**（`guard.ts` 里的 `router.resolve(from.query.redirect)`），
+  `authLogin` 推哪里都不影响落点。我曾误判并加了 `resolvePostLoginPath()`，变异实验证伪后已删。
+  **要改「登录后去哪」，只改守卫那一处。**
+- 🔴 E2E 选择器三个坑：提交按钮可访问名是 **`login`**（上游写死 `aria-label`）；
+  登出确认按钮是 **`确 认`**（antd 汉字间插空格，用正则）；`Alt+Q` 打开登出确认框。
+- 本机跑法：`PLAYWRIGHT_CHANNEL=chrome node node_modules/@playwright/test/cli.js test`
+  （`@playwright/test@1.64.1` 期望的 chromium 没装）。
+- **下一批：阶段 3.1 登录/工作台/通知/审计**（工作台是第一个发业务请求的页面，
+  届时补 `X-Organization-Id` 注入断言）。
+- 已知遗留：`oxlint` 8 条既有错误（`lib/api-client.ts` 7 条非空断言 +
+  `store/auth.ts` 冗余 return）、`oxfmt` 二进制本机跑不起来。
 
 ### 🔴 GitHub 只读仓库根的 `.github/workflows/`（2026-11-20 踩过）
 `udone/.github/workflows/ci.yml` 曾长期存在、**永远执行不到**，而
