@@ -1,7 +1,7 @@
 # udone 前端迁移到 Vben Admin — 全量迁移计划
 
-状态：**阶段 0、阶段 1-A/1-B 已完成，下一批为阶段 3.1**。基线：`frontend-function-map.md`（17 页面 / 69 端点 / 14 弹窗）。
-用户选择：计划 2（Vben Admin）。生成：2026-11-20；阶段 0 通过：2026-11-21；E2E 基座：2026-11-22。
+状态：**阶段 0、阶段 1-A/1-B、阶段 3.1 已完成，下一批为阶段 3.2**。基线：`frontend-function-map.md`（17 页面 / 69 端点 / 14 弹窗）。
+用户选择：计划 2（Vben Admin）。生成：2026-11-20；阶段 0 通过：2026-11-21；E2E 基座：2026-11-22；3.1 完成：2026-11-22。
 
 > **阶段 0 已通过（2026-11-21）**：干净副本 `D:\Coding\ERP\admin-clean` 用 hoisted 模式
 > 装好依赖（`build ✓ 14.58s` + `typecheck ✓ 0 错误`）。可复现步骤见 `vben-local-setup.md`。
@@ -217,7 +217,26 @@ pnpm install --frozen-lockfile
 | 阶段 0 依赖探针 | ✅ 2026-11-21 | `2026-11-20-vben-stage0-blocker-recheck.md` |
 | 阶段 1-A 骨架+认证 | ✅ 2026-11-21 | plan 上文 + `admin-clean` 提交 `a7cc898` |
 | 阶段 1-B E2E 基座 | ✅ 2026-11-22 | `2026-11-22-vben-phase1-batch-b-e2e.md` |
-| 阶段 3.1 登录/工作台/通知/审计 | ⬜ 下一批 | — |
+| 阶段 3.1 登录/工作台/通知/审计 | ✅ 2026-11-22 | `2026-11-22-vben-phase31-auth-workbench-notify-audit.md` |
+| 阶段 3.2 公司配置/资金/报表 | ⬜ 下一批 | — |
+
+#### 阶段 3.1 完成内容（2026-11-22）
+
+4 页迁完，端点一个没改：工作台（`me` + 未读角标）、通知（`listNotifications` /
+`markNotificationsRead`）、审计（`listAuditEvents` / `listAuditFacets`）、
+登录+忘记密码+设新密码（Supabase Auth + `acceptInvitation`）。
+
+三处必须记住的判断：
+
+1. **无成员记录不再算登录失败**——批次 A 把它当 `FORBIDDEN` 清会话，直接堵死邀请流程
+   （`acceptInvitation` 需要 token）。已按旧前端口径改回「保留会话 + 工作台提示」。
+2. **守卫要放行「已登录 + `invitationId`」**，旧前端有这条例外，迁移漏了。
+3. **`type=recovery` 必须在 `getSession()` 之前判断**，否则令牌落进 store，守卫直接放人进业务页，
+   跳过设置新密码。恢复态只在 Supabase 客户端内部持有会话。
+
+另外：CAPTCHA 用「Vben 表单字段（`component` 接受组件实例）」注入成功并实测；
+顶栏补了公司切换与未读角标（旧 `AppLayout` 的功能，否则多组织账号看不到别家公司）。
+详见该批次 journal。
 
 自动化巡检时**只看上表第一行未打勾的批次**，不要重跑已完成的阶段 0 探针，也不要重复回放
 `udone` 的 CI 全序列——那两件事已有记录，重复跑只烧时间。
@@ -230,7 +249,8 @@ PLAYWRIGHT_CHANNEL=chrome node node_modules/@playwright/test/cli.js test
 # 2) 端口占用时覆盖：E2E_PORT=5331
 ```
 
-阶段 3.1 开工前先读 `.harness/docs/frontend-function-map.md` 里对应的 4 个页面，
-按「接口 → 视图 → 弹窗」逐条对照，不得丢功能。
+阶段 3.2 开工前先读 `.harness/docs/frontend-function-map.md` 里公司配置 / 资金 / 报表三页，
+按「接口 → 视图 → 弹窗」逐条对照，不得丢功能。同时补回 `lib/format.ts` 的
+`formatMoney` / `formatRatio`（金额页要用）。
 
 

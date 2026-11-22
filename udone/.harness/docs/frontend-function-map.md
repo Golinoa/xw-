@@ -133,3 +133,21 @@
 - settlements: cancelSettlement, confirmSettlement, createSettlement, getSettlement,
   listSettlementCandidates, listSettlements
 - suppliers: createSupplier, deleteSupplier, listSuppliers, updateSupplier
+
+## 8. 迁移状态（Vben 侧）
+
+| 路由 | 旧页面 | 新位置 | 状态 |
+|---|---|---|---|
+| `/login`、`/auth/forget-password` | `LoginView.vue` | `views/_core/authentication/*` | ✅ 2026-11-22（含 CAPTCHA / 邀请 / 设新密码） |
+| `/` → `/workbench` | `HomeView.vue` | `views/workbench/index.vue` | ✅ 2026-11-22（含成员与邀请） |
+| `/notifications` → `/operations/notifications` | `NotificationListView.vue` | `views/operations/notifications/index.vue` | ✅ 2026-11-22 |
+| `/audit-events` → `/operations/audit` | `AuditListView.vue` | `views/operations/audit/index.vue` | ✅ 2026-11-22 |
+| `/company-settings` → `/config/company` | `CompanySettingsView.vue` | — | ⬜ 阶段 3.2 |
+| `/balances` → `/finance/balances` | `BalanceListView.vue` | — | ⬜ 阶段 3.2 |
+| `/reports` → `/operations/reports` | `ReportListView.vue` | — | ⬜ 阶段 3.2 |
+| 客户 / 回收站 / 来源 / 线路 / 供应商 | 5 页 + 6 弹窗 | — | ⬜ 阶段 3.3 |
+| 订单 / 游客名单 / 导入 | 5 页 + 5 弹窗 | — | ⬜ 阶段 3.4 |
+| 收付款 / 审批申请 / 结算 / 线索 | 4 页 + 2 弹窗 | — | ⬜ 阶段 3.5 |
+
+顶栏已补回旧 `AppLayout` 的两项壳层功能：公司切换（`header-widgets.vue`）与未读角标。
+成员面板仍按 `userId` 更新（原样迁移），改成列表点选需要产品口径，未自决。
