@@ -229,3 +229,40 @@
   补 `lib/format.ts` 的 `formatMoney` / `formatRatio`。不要重跑阶段 0 探针、不要回放 udone CI。
 - 结构性遗留（已报用户）：`admin-clean` 不在任何远端仓库，也不在 GitHub Actions 覆盖范围，
   新前端目前只有本机工作树 + tar 备份。
+
+## 2026-11-22 22:2x — Vben 阶段 3.2：公司配置/资金/报表 ✅（本批有真活）
+
+- 三页迁完（`/config/company`、`/finance/balances`、`/operations/reports`），端点 key 一个没改；
+  补 `formatMoney`/`formatRatio`，语言包 zh/en 各加三个命名空间；新增 2 个 E2E spec / 4 条用例。
+- **修掉两个既有真缺陷**（重要，已成规则）：
+  1. 查询串布尔值 `z.coerce.boolean()` 把 `'false'` 解析成 `true`（报表「含已取消」/通知「只看未读」/
+     线索 `inPool` 三处静默反向）。新增 `contracts/src/http.ts` 的 `queryBooleanSchema`，三处替换 +
+     三条 `=false` 回归用例（变异改回 coerce 时 1 failed）。
+  2. 「二次确认」判断 `message.includes('confirmation')` 恒假（api-client 会把 message 换成错误码文案）
+     ⇒ 改审批规则永远存不进去。改为 `ApiClientError` 携带 `details`，按 `details.field==='confirmed'` 判。
+- 门禁：`vue-tsc` 0（探针 TS2322）/ `vite build` 5.33s / `playwright` **16 passed** /
+  udone `typecheck` + `lint` / vitest **74 文件 928 用例** / HTTP 集成 **34 文件 455 用例**
+  （首次 PostgREST 超时重跑即过）；pgTAP 未跑（无 DB 改动）。
+- 提交：`admin-clean` `1fcef7e`（无 remote，本地）；根仓 `e4f2e29`+`4f6dcd3`+`0de6e24` 已推 Gitee + GitHub。
+  journal `2026-11-22-vben-phase32-settings-balances-reports.md`。顺手把 MEMORY.md 13.8k→7.7k 索引化。
+- 🔴 **下一轮**：直接开 **阶段 3.3（客户/回收站/来源/线路/供应商，5 页 + 6 弹窗）**。
+  先读功能地图 4–7 行 + 8 个弹窗清单；批量打标、回收站恢复、CSV 导入这类跨行状态别做丢。
+  不要重跑阶段 0 探针、不要回放 udone CI 全序列。
+
+## 2026-11-24 01:4x — Vben 阶段 3.3a：来源/线路/供应商 ✅
+
+- 提示词里的业务 backlog 早已 21/21 完成；真实主线仍是 **Vben 迁移**。本轮做阶段 3.3
+  的前半（字典页三张），客户列表/回收站拆给 3.3b（下轮）。
+- 单元：`admin-clean` 新增 `/trade/suppliers`、`/trade/routes`（各带弹窗）、`/customer/sources`，
+  路由从占位改真实组件，语言包 zh/en 加三个命名空间；E2E 新增 `trade-master-data.e2e.ts` 5 条。
+- **修掉既有真缺陷**：来源页不带 `includeInactive=1` ⇒ 停用即失踪、无法恢复。
+  契约新增 `customerSourceListQuerySchema`（`.default({})` 兼容旧前端）+ 3 条契约单测 + E2E 断言。
+- 门禁：`vue-tsc` 0 / `vite build` 12.15s / `playwright` **21 passed**（含新增 5）/
+  eslint 0 / udone `typecheck`+`lint` / vitest **75 文件 931 用例**。无 DB/服务端改动 ⇒ 未跑 pgTAP 与 http。
+- 提交：`admin-clean` `f6b2208`（无 remote）；根仓本轮提交并 push。
+  journal `2026-11-24-vben-phase33a-master-data.md`。
+- 三条新踩的 E2E 坑（已写 journal §4）：antd 两字按钮插空格；`getByRole('option')` 命中
+  a11y 镜像列表（要 `.ant-select-dropdown` + 文案）；`**/api/x?**` 与 `**/api/x` 拆开会漏到真网络。
+- 🔴 **下一轮**：直接开 **阶段 3.3b（客户列表 667 行 + 回收站 326 行 + 4 个弹窗）**。
+  先读功能地图第 4–5 行；批量打标/勾选跨行状态别丢；列表只用 `*Masked`，原值走详情权限。
+  不要重跑阶段 0 探针、不要回放 udone CI 全序列。

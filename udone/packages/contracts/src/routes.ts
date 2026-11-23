@@ -47,6 +47,7 @@ import {
   customerResponseSchema,
   customerRestoredResponseSchema,
   customerSourceDeletedResponseSchema,
+  customerSourceListQuerySchema,
   customerSourceListResponseSchema,
   customerSourceParamsSchema,
   customerSourceResponseSchema,
@@ -648,6 +649,8 @@ export const ROUTES = {
   listCustomerSources: defineRoute({
     method: 'GET',
     path: '/api/customer-sources',
+    // 管理页要 `includeInactive=1` 才看得到停用项，否则停用即失踪。
+    request: customerSourceListQuerySchema,
     response: customerSourceListResponseSchema,
   }),
   createCustomerSource: defineRoute({

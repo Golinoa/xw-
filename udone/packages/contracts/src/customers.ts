@@ -156,6 +156,18 @@ export const customerSourceListResponseSchema = z.object({
   sources: z.array(customerSourceSchema),
 });
 
+/**
+ * 来源列表查询。**默认只回启用项**（服务端 `includeInactive !== '1'` 时追加
+ * `is_active=is.true`），所以「客户来源管理页」必须显式传 `includeInactive=1`：
+ * 否则在页面上点一次「停用」，这一行就从列表里消失，再也恢复不了。
+ *
+ * 用 `.default({})` 而不是必填对象：客户表单只要启用项，调用方不传参数是正常用法，
+ * 不能让「不传」变成契约违例（旧前端就是这么调的）。
+ */
+export const customerSourceListQuerySchema = z
+  .object({ includeInactive: z.enum(['0', '1']).optional() })
+  .default({});
+
 export const customerSourceParamsSchema = z.object({
   sourceId: z.string().min(1).max(64),
 });
