@@ -5,11 +5,15 @@ on:
     branches: [main]
     paths:
       - "admin-clean/**"
+      # 契约包是新前端的编译输入（typecheck 与 build 都直接吃它的源码），
+      # 契约一改就可能让新前端的类型或桩失效，所以它也在触发范围内。
+      - "udone/packages/contracts/**"
       - ".github/workflows/web-antd-build.yml"
   pull_request:
     branches: [main]
     paths:
       - "admin-clean/**"
+      - "udone/packages/contracts/**"
       - ".github/workflows/web-antd-build.yml"
   workflow_dispatch:
 
@@ -86,3 +90,74 @@ jobs:
           path: admin-clean/apps/web-antd/dist
           retention-days: 14
           if-no-files-found: error
+
+  # 单独成一个 job：浏览器约 150 MB + 系统库，耗时远超静态门禁，混在一起会看不清红在哪一类。
+  #
+  # 这一格是阶段 4 的最后一块：本机（Windows）Playwright 跑完用例后卡在 worker teardown，
+  # 永远拿不到 `N passed` 汇总，所以「E2E 全绿」一直没有任何环境能出具。Linux runner
+  # 没有这个进程句柄问题（udone 侧同结构的 e2e job 已连续绿）。
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.20.0
+          cache: pnpm
+          cache-dependency-path: admin-clean/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: admin-clean
+        run: pnpm install --frozen-lockfile
+
+      # 用例的桩要先过 `@erp/contracts` 的 schema（`e2e/support/session.ts`），
+      # 而契约包要 zod 4 —— 缺它就是「Cannot find module 'zod'」，页面根本起不来。
+      - name: Install contracts dependencies
+        working-directory: udone
+        run: npx --yes pnpm@11.24.0 install --frozen-lockfile
+
+      - name: Install Chromium
+        working-directory: admin-clean/apps/web-antd
+        # 只装一套浏览器：本套用例没有跨浏览器断言。
+        # --with-deps 装系统库；托管 runner 的 sudo 可用，真失败要在镜像里补依赖，不要靠删掉这行。
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run E2E
+        working-directory: admin-clean/apps/web-antd
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout --signal=INT 20m pnpm test:e2e 2>&1 | tee e2e.log
+          code=${PIPESTATUS[0]}
+          # 本机会在收尾阶段挂起（124）；CI 下 reuseExistingServer=false 正常不走这条。
+          # 万一仍发生，只有「日志里有通过汇总且没有失败」才当通过 —— 不要靠吞掉非零退出码。
+          if [ "$code" -eq 124 ]; then
+            echo "::warning::Playwright 收尾未退出（124），按日志判定测试结果"
+            if grep -Eq '[0-9]+ passed' e2e.log && ! grep -Eq '[1-9][0-9]* failed' e2e.log; then
+              echo "用例已全部通过，忽略收尾挂起"
+              exit 0
+            fi
+            exit 1
+          fi
+          exit "$code"
+
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-antd-playwright-results
+          path: |
+            admin-clean/apps/web-antd/test-results
+            admin-clean/apps/web-antd/playwright-report
+          retention-days: 7
