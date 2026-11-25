@@ -1,7 +1,7 @@
 # udone 前端迁移到 Vben Admin — 全量迁移计划
 
-状态：**阶段 0、1-A/1-B、3.1–3.5 页面迁移全部完成（2026-11-24），阶段 4 收尾进行中：新后台 CI 门禁已真实跑绿（2026-11-25），仅剩 E2E 一次补验与上线切换决策**。基线：`frontend-function-map.md`（17 页面 / 69 端点 / 14 弹窗）。
-用户选择：计划 2（Vben Admin）。生成：2026-11-20；阶段 0 通过：2026-11-21；E2E 基座：2026-11-22；3.1/3.2 完成：2026-11-22；3.3a/3.3b/3.4/3.5 完成：2026-11-24；新后台门禁首绿：2026-11-25。
+状态：**阶段 0、1-A/1-B、3.1–3.5 页面迁移全部完成（2026-11-24），阶段 4 收尾完成（2026-11-26）：新后台 CI 门禁与 E2E 全量 36 条均已在 GitHub Actions 跑绿，仅剩「默认路由切新工程」的上线决策**。基线：`frontend-function-map.md`（17 页面 / 69 端点 / 14 弹窗）。
+用户选择：计划 2（Vben Admin）。生成：2026-11-20；阶段 0 通过：2026-11-21；E2E 基座：2026-11-22；3.1/3.2 完成：2026-11-22；3.3a/3.3b/3.4/3.5 完成：2026-11-24；新后台门禁首绿 + E2E 全绿：2026-11-25/26。
 
 > **阶段 0 已通过（2026-11-21）**：干净副本 `D:\Coding\ERP\admin-clean` 用 hoisted 模式
 > 装好依赖（`build ✓ 14.58s` + `typecheck ✓ 0 错误`）。可复现步骤见 `vben-local-setup.md`。
@@ -141,7 +141,7 @@ Playwright 实测登录页渲染 + 未登录访问 `/trade/orders` 正确回跳
 | 新后台门禁 job | ✅ | `.github/workflows/web-antd-build.yml` 的 `build` job，run `45648397556` **11 步全绿**（typecheck / lint / build / 产物校验 / artifact） |
 | 门禁能绿的前提 | ✅ | 必须先装 `udone` 依赖：新前端直接编译契约源码（`udone/packages/contracts/src`），其 zod 4 在本仓顶层不存在。缺这步 ⇒ 45 条 TS2307 + 91 条下游错（run `45647550437`） |
 | E2E job | ✅ 已加 | 独立 `e2e` job，run `45648858936` 实测 **35 passed / 1 failed（3.8m）** |
-| E2E 全绿 | ⏳ | 唯一失败用例已按 antd 源码规则修复（`6ae05b8`），但 GitHub 当时处于 Partial System Outage（Actions 与 Git Operations 均 partial_outage、dispatch 500），**该提交尚无运行记录，待补验** |
+| E2E 全绿 | ✅ 2026-11-26 00:1x | run **45651616866**（`ab7a558`）：build job 1m21s、e2e job 3m50s，日志末行 **`36 passed (2.9m)`**，无 failed/flaky |
 | 默认路由切新工程 | ⬜ | 上线决策，等用户拍板 |
 
 **注意：本机 `vue-tsc` 绿不等于 CI 绿。** 新前端跨 workspace 编译 `udone` 的契约源码，
@@ -247,7 +247,8 @@ pnpm install --frozen-lockfile
    workflow 迁到根 `.github/workflows/web-antd-build.yml` 并用 `working-directory` 指过去。
 3. 本机 Playwright 卡 teardown（无 passed 汇总）—— 已确认是**本机**问题：同一份用例在
    Linux runner 上 3.8 分钟跑完并打印汇总。E2E 因此改为 CI job（`f8273e7`）。
-4. 仅剩：`6ae05b8` 的运行记录待补（GitHub 平台故障期间推送），以及「默认路由切新工程」的上线决策。
+4. 仅剩：**「默认路由切新工程 / 旧 `apps/web` 留一版回退」的上线决策**（要用户拍板时间点）。
+   `6ae05b8` 的补验已于 run `45651616866` 完成（36 passed）。
 
 #### 阶段 3.1 完成内容（2026-11-22）
 

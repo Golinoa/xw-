@@ -32,9 +32,9 @@
 不再是「独立 git、无 remote」的状态。装/验证命令照抄 `udone/.harness/docs/vben-local-setup.md`。
 
 进度：阶段 0 ✅ → 1A ✅ → 1B E2E 基座 ✅ → 3.1–3.5 全部 17 页迁完 ✅（2026-11-24）
-→ **阶段 4 收尾进行中（2026-11-25）**：新后台 CI `build` job 首绿（run 45648397556，11 步）、
-E2E 已进 CI 并实测 35 passed/1 failed、唯一失败已修（`6ae05b8`，待补验）。
-只剩「默认路由切新工程」需要用户拍板上线时间。
+→ **阶段 4 收尾已做完（2026-11-26）**：新后台 `build` job 绿（run 45651616866，11 步 1m21s）、
+E2E job 绿（36 passed / 2.9m，job 3m50s）。**唯一剩下的「默认路由切新工程」是上线决策，等用户拍板**，
+没有技术工作可做。
 
 ### 🔴 构建/检查的坑
 - **每次 build 前 `rm -rf dist/js dist/css dist/jse dist/_app.config.js dist/index.html`**：

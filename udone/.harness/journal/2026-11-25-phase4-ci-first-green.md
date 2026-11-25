@@ -89,24 +89,33 @@
 
 ## 4. 没做什么及原因
 
-1. **`6ae05b8` 没有运行记录**。GitHub 此刻正在故障：`www.githubstatus.com` 报
-   `major / Partial System Outage`，`Actions = partial_outage`、`Git Operations = partial_outage`；
-   该提交 10 分钟没生成任何 run，用 `workflow_dispatch` 手动触发两个 workflow 都返回 **500**。
-   ⇒ **这不是代码问题，等平台恢复后必须补一次验证**（下一轮第一件事）。
+1. ~~`6ae05b8` 没有运行记录~~ —— **已补验，见 §6**。
 2. **阶段 4 的「默认路由切到新工程 / 旧 apps/web 回退」没做**：那是上线决策（什么时候切流量），
    要用户点头，本轮不动。
 3. **`admin-clean` 内嵌上游 `.harness/` 40 篇历史文档仍在**（合入时带入），属清理项，非本批范围。
 4. **`scripts/` 下 16 个一次性预览/自检脚本仍未提交**：上一批已定「有意不入库」，本轮不改。
 
-## 5. 下一轮第一件事
+## 5. 当时卡住的地方（原始记录）
 
-```bash
-# 1) 等 GitHub 恢复（status.json 的 indicator 回 none/minor）
-# 2) 确认 6ae05b8 是否有 run；没有就 dispatch：
-#    POST /repos/Golinoa/xw-/actions/workflows/430531785/dispatches  {"ref":"main"}
-# 3) 期望：build job 11 步绿 + e2e job 36 passed / 0 failed
-# 4) 绿了就把 vben-migration-plan.md 阶段 4 的 E2E 一条勾掉，写进 journal
-```
+`6ae05b8` 推上去 10 分钟没有任何 run，`workflow_dispatch` 对两个 workflow 都返回 **500**。
+查 `www.githubstatus.com`：`major / Partial System Outage`，`Actions = partial_outage`、
+`Git Operations = partial_outage` ⇒ 平台故障，不是权限也不是代码。没有改任何东西，等。
 
-如果 E2E 仍红，先下 artifact（`web-antd-playwright-results`）看 `error-context.md` 的
-ARIA 快照，不要照着推测改选择器。
+## 6. 补验（2026-11-26 00:1x）：E2E 全量 36 条在 CI 跑绿
+
+平台恢复后 `workflow_dispatch` 返回 **204**（已受理），run **45651616866**（`ab7a558`，含 E2E 修复）：
+
+| job | 结论 | 耗时 |
+|---|---|---|
+| Typecheck, lint and build | **success**（11 步） | 1m21s |
+| E2E (Playwright) | **success**（8 步，`Run E2E` 过；失败现场上传步骤 skipped = 无失败） | 3m50s |
+
+E2E 日志末行：**`36 passed (2.9m)`**，无 failed / flaky，无 retry 记录。
+
+⇒ 阶段 4 的「E2E 全量在新工程跑绿」拿到真实证据；之前「本机 teardown 死结让 E2E 永远没有
+passed 汇总」的结论正式作废——那是本机 Windows 进程句柄问题，不是用例或工程问题。
+
+## 7. 下一轮第一件事
+
+只剩上线决策（默认路由切新工程 / 旧 `apps/web` 留一版回退）。**没有技术工作可做**，
+没有用户点头就不要动。可选清理项：删 `admin-clean/` 里合入带进来的上游 `.harness/` 历史文档。
