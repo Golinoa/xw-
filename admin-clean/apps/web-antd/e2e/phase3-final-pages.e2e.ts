@@ -44,9 +44,7 @@ test('订单页渲染列表，状态迁移必带原因', async ({ page }) => {
   await page.route('**/api/orders**', (route) =>
     fulfillJson(route, { items: [order], page: 1, pageSize: 15, total: 1 }),
   );
-  await page.route('**/api/customers**', (route) =>
-    fulfillJson(route, { items: [], total: 0 }),
-  );
+  await page.route('**/api/customers**', (route) => fulfillJson(route, { items: [], total: 0 }));
   await enter(page);
   await page.goto('/trade/orders');
   await expect(page.getByText('OD-20261124-001')).toBeVisible();
@@ -244,12 +242,20 @@ test('订单锁团必须先填原因，填了才带进请求体', async ({ page 
     if (/\/api\/orders\/[^/]+$/.test(path)) return fulfillJson(route, { order });
     return fulfillJson(route, { items: [order], page: 1, pageSize: 15, total: 1 });
   });
-  await page.route('**/api/orders/order-1/finance**', (route) =>
-    fulfillJson(route, {}),
-  );
+  await page.route('**/api/orders/order-1/finance**', (route) => fulfillJson(route, {}));
   await page.route('**/api/customers**', (route) => fulfillJson(route, { items: [], total: 0 }));
   await page.route('**/api/orders/order-1/tourists**', (route) =>
-    fulfillJson(route, { roster: { adultCount: 0, childCount: 0, declaredAdultCount: 2, declaredChildCount: 0, items: [], personCount: 0, total: 0 } }),
+    fulfillJson(route, {
+      roster: {
+        adultCount: 0,
+        childCount: 0,
+        declaredAdultCount: 2,
+        declaredChildCount: 0,
+        items: [],
+        personCount: 0,
+        total: 0,
+      },
+    }),
   );
   await page.route('**/api/orders/order-1/transition**', async (route) => {
     requests.push(JSON.parse(route.request().postData() ?? '{}') as Record<string, unknown>);
@@ -262,12 +268,18 @@ test('订单锁团必须先填原因，填了才带进请求体', async ({ page 
   await page.getByRole('button', { name: /OD-/ }).first().click();
   // 锁团是 requiresReason 动作：空原因提交必须被前端拦住，且不能发出请求。
   await page.getByRole('button', { name: /锁\s*团/ }).click();
-  await page.getByRole('button', { name: /锁\s*团/ }).last().click();
+  await page
+    .getByRole('button', { name: /锁\s*团/ })
+    .last()
+    .click();
   await expect(page.getByText('请填写操作原因')).toBeVisible();
   expect(requests).toHaveLength(0);
 
   await page.getByPlaceholder('请说明本次操作原因，会记录在订单上').fill('确认出团后锁价');
-  await page.getByRole('button', { name: /锁\s*团/ }).last().click();
+  await page
+    .getByRole('button', { name: /锁\s*团/ })
+    .last()
+    .click();
   await expect.poll(() => requests.length).toBe(1);
   expect(requests[0]).toMatchObject({ action: 'lock', reason: '确认出团后锁价', version: 3 });
 });
@@ -338,14 +350,25 @@ test('结算作废：已确认批次不填原因时前端拦住', async ({ page 
   await page.goto('/auth/login');
   await signIn(page);
   await page.goto('/finance/settlements');
-  await page.getByRole('button', { name: '作废' }).first().click();
+  await page
+    .getByRole('button', { name: /作\s*废/ })
+    .first()
+    .click();
   // 作废弹窗的确定按钮文案也是「作废」，用 modal 内的那个。
-  await page.locator('.ant-modal-wrap:visible').getByRole('button', { name: '作废' }).click();
+  // 必须用正则：antd 只给非 link/text 的两字中文按钮插空格，弹窗确认键的实际可访问名是「作 废」，
+  // 而行内那个是 type="link"，名字仍是「作废」——同一句文案在两种按钮上是两个不同的名字。
+  await page
+    .locator('.ant-modal-wrap:visible')
+    .getByRole('button', { name: /作\s*废/ })
+    .click();
   await expect(page.getByText('已确认批次作废必须填写原因')).toBeVisible();
   expect(requests).toHaveLength(0);
 
   await page.getByPlaceholder('请写作废原因').fill('重复结算，冲销');
-  await page.locator('.ant-modal-wrap:visible').getByRole('button', { name: '作废' }).click();
+  await page
+    .locator('.ant-modal-wrap:visible')
+    .getByRole('button', { name: /作\s*废/ })
+    .click();
   await expect.poll(() => requests.length).toBe(1);
   expect(requests[0]).toEqual({ reason: '重复结算，冲销' });
 });
