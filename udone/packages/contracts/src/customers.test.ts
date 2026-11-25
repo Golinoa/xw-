@@ -24,7 +24,9 @@ describe('customerSourceListQuerySchema', () => {
 
   it('rejects values the API would silently read as false', () => {
     // 服务端判断的是 `=== '1'`，`true` / `yes` 会被当成 false —— 这种歧义必须在契约里挡住。
-    expect(customerSourceListQuerySchema.safeParse({ includeInactive: 'true' }).success).toBe(false);
+    expect(customerSourceListQuerySchema.safeParse({ includeInactive: 'true' }).success).toBe(
+      false,
+    );
     expect(customerSourceListQuerySchema.safeParse({ includeInactive: 'yes' }).success).toBe(false);
     expect(customerSourceListQuerySchema.safeParse({ includeInactive: true }).success).toBe(false);
   });
