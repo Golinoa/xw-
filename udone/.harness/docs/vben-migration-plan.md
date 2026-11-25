@@ -130,8 +130,28 @@ Playwright 实测登录页渲染 + 未登录访问 `/trade/orders` 正确回跳
 ### 阶段 4：收尾切换
 - 默认路由指向新工程，旧 `apps/web` 保留一个版本作为回退。（**未做，需上线决策**）
 - CI 增加新工程的门禁 job（GitHub Actions）。（**已完成 2026-11-25，见下**）
-- E2E 全量在新工程跑绿。（**35/1 → 已修，等待平台恢复后补验**）
+- E2E 全量在新工程跑绿。（**已完成，run `45651616866` 36 passed**）
 - 更新 `.harness/docs/frontend-function-map.md` 的迁移状态列。（**已完成**）
+
+**切换清单（2026-11-26 实测，共 4 处改动；不是估算，每条都有证据）**
+
+1. `udone/wrangler.toml` 的 `[assets] directory`：`apps/web/dist` → `../admin-clean/apps/web-antd/dist`。
+   跨出 `udone/` 的相对路径**可用**：`wrangler deploy --dry-run` 实测
+   `Read 253 files from the assets directory D:\Coding\ERP\admin-clean\apps\web-antd\dist`，
+   Total Upload 1623.06 KiB / gzip 266.99 KiB。（dry-run 打印结果后进程不退出，与 E2E 同类，属本机现象。）
+2. `udone/scripts/check-deploy-config.ts` 的 `WRANGLER_REQUIREMENTS` 里**硬编码**了
+   `directory = "apps/web/dist"`。只改 toml 不改这行 ⇒ `pnpm check:deploy`（`udone-ci` 第 8 步）
+   立刻红，报 `missing directory = "apps/web/dist"`。
+3. 构建期变量：新前端 `apps/web-antd/src/lib/supabase.ts` 只读 `import.meta.env.VITE_SUPABASE_URL` /
+   `VITE_SUPABASE_PUBLISHABLE_KEY`，而这两个值只存在于被 gitignore 的 `.env.local` 里。
+   仓库 Actions secrets 实测 **0 个**（`GET /repos/Golinoa/xw-/actions/secrets` → `total_count: 0`）
+   ⇒ **CI 上传的 `web-antd-dist` artifact 不能直接部署**，它在登录页会报「登录服务尚未配置」。
+   这不是迁移引入的缺陷：旧 `apps/web` 是同一套做法（`apps/web/.env.local`，同样未提交），
+   **既有发布方式的前提就是「构建机上放好 `.env.local`」**。切换时要沿用它，别拿 CI artifact 上线。
+4. 回退：`apps/web` 源码一行未改，回退 = 把 1、2 两处改回原值并重新构建，无需还原代码。
+
+不需要动的东西：`run_worker_first = ["/api/*"]` 与 `not_found_handling = "single-page-application"`
+对两个前端都成立（新前端 `.env.production` 的 `VITE_GLOB_API_URL=/api`，路由用浏览器 history）。
 
 **阶段 4 的真实进展（2026-11-25，全部来自 GitHub Actions 运行记录）：**
 
@@ -142,7 +162,7 @@ Playwright 实测登录页渲染 + 未登录访问 `/trade/orders` 正确回跳
 | 门禁能绿的前提 | ✅ | 必须先装 `udone` 依赖：新前端直接编译契约源码（`udone/packages/contracts/src`），其 zod 4 在本仓顶层不存在。缺这步 ⇒ 45 条 TS2307 + 91 条下游错（run `45647550437`） |
 | E2E job | ✅ 已加 | 独立 `e2e` job，run `45648858936` 实测 **35 passed / 1 failed（3.8m）** |
 | E2E 全绿 | ✅ 2026-11-26 00:1x | run **45651616866**（`ab7a558`）：build job 1m21s、e2e job 3m50s，日志末行 **`36 passed (2.9m)`**，无 failed/flaky |
-| 默认路由切新工程 | ⬜ | 上线决策，等用户拍板 |
+| 默认路由切新工程 | ⬜ | 只差上线决策；**改动清单已实测完毕**，见上「切换清单」4 条 |
 
 **注意：本机 `vue-tsc` 绿不等于 CI 绿。** 新前端跨 workspace 编译 `udone` 的契约源码，
 依赖解析链取决于「谁装了依赖」：本机装了 udone（有 zod 4），CI 只装 admin-clean 时则全空。
@@ -249,6 +269,7 @@ pnpm install --frozen-lockfile
    Linux runner 上 3.8 分钟跑完并打印汇总。E2E 因此改为 CI job（`f8273e7`）。
 4. 仅剩：**「默认路由切新工程 / 旧 `apps/web` 留一版回退」的上线决策**（要用户拍板时间点）。
    `6ae05b8` 的补验已于 run `45651616866` 完成（36 passed）。
+   **技术侧已无未知项**：切换的 4 处改动与 3 条证据在 §「切换清单」里，用户点头即可执行。
 
 #### 阶段 3.1 完成内容（2026-11-22）
 
