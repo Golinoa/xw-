@@ -1,7 +1,7 @@
 # udone 前端迁移到 Vben Admin — 全量迁移计划
 
-状态：**阶段 0、阶段 1-A/1-B、3.1、3.2、3.3a 已完成，下一批为阶段 3.3b（客户列表 / 回收站）**。基线：`frontend-function-map.md`（17 页面 / 69 端点 / 14 弹窗）。
-用户选择：计划 2（Vben Admin）。生成：2026-11-20；阶段 0 通过：2026-11-21；E2E 基座：2026-11-22；3.1 完成：2026-11-22；3.2 完成：2026-11-22。
+状态：**阶段 0、1-A/1-B、3.1–3.5 页面迁移全部完成（2026-11-24），阶段 4 收尾进行中：新后台 CI 门禁已真实跑绿（2026-11-25），仅剩 E2E 一次补验与上线切换决策**。基线：`frontend-function-map.md`（17 页面 / 69 端点 / 14 弹窗）。
+用户选择：计划 2（Vben Admin）。生成：2026-11-20；阶段 0 通过：2026-11-21；E2E 基座：2026-11-22；3.1/3.2 完成：2026-11-22；3.3a/3.3b/3.4/3.5 完成：2026-11-24；新后台门禁首绿：2026-11-25。
 
 > **阶段 0 已通过（2026-11-21）**：干净副本 `D:\Coding\ERP\admin-clean` 用 hoisted 模式
 > 装好依赖（`build ✓ 14.58s` + `typecheck ✓ 0 错误`）。可复现步骤见 `vben-local-setup.md`。
@@ -128,10 +128,25 @@ Playwright 实测登录页渲染 + 未登录访问 `/trade/orders` 正确回跳
 - 契约测试/HTTP 集成/pgTAP **不变**（后端没动）
 
 ### 阶段 4：收尾切换
-- 默认路由指向新工程，旧 `apps/web` 保留一个版本作为回退。
-- CI 增加新工程的门禁 job（GitHub Actions）。
-- E2E 全量 25 条在新工程跑绿。
-- 更新 `.harness/docs/frontend-function-map.md` 的迁移状态列。
+- 默认路由指向新工程，旧 `apps/web` 保留一个版本作为回退。（**未做，需上线决策**）
+- CI 增加新工程的门禁 job（GitHub Actions）。（**已完成 2026-11-25，见下**）
+- E2E 全量在新工程跑绿。（**35/1 → 已修，等待平台恢复后补验**）
+- 更新 `.harness/docs/frontend-function-map.md` 的迁移状态列。（**已完成**）
+
+**阶段 4 的真实进展（2026-11-25，全部来自 GitHub Actions 运行记录）：**
+
+| 项 | 状态 | 证据 |
+|---|---|---|
+| 新后台源码入库 | ✅ | `d69c191`（1177 文件）合入主仓 `admin-clean/`，`github`/`origin` 双远端已推送 |
+| 新后台门禁 job | ✅ | `.github/workflows/web-antd-build.yml` 的 `build` job，run `45648397556` **11 步全绿**（typecheck / lint / build / 产物校验 / artifact） |
+| 门禁能绿的前提 | ✅ | 必须先装 `udone` 依赖：新前端直接编译契约源码（`udone/packages/contracts/src`），其 zod 4 在本仓顶层不存在。缺这步 ⇒ 45 条 TS2307 + 91 条下游错（run `45647550437`） |
+| E2E job | ✅ 已加 | 独立 `e2e` job，run `45648858936` 实测 **35 passed / 1 failed（3.8m）** |
+| E2E 全绿 | ⏳ | 唯一失败用例已按 antd 源码规则修复（`6ae05b8`），但 GitHub 当时处于 Partial System Outage（Actions 与 Git Operations 均 partial_outage、dispatch 500），**该提交尚无运行记录，待补验** |
+| 默认路由切新工程 | ⬜ | 上线决策，等用户拍板 |
+
+**注意：本机 `vue-tsc` 绿不等于 CI 绿。** 新前端跨 workspace 编译 `udone` 的契约源码，
+依赖解析链取决于「谁装了依赖」：本机装了 udone（有 zod 4），CI 只装 admin-clean 时则全空。
+判断这类改动必须在 CI 上跑，别拿本机 0 错当证据。
 
 ## 3. 关键风险与对策
 
@@ -208,9 +223,9 @@ pnpm install --frozen-lockfile
 
 ## 4. 现在的下一步
 
-**阶段 0（依赖）与阶段 1 批次 A/B（骨架、认证、E2E 基座）已完成，当前在阶段 3 入口。**
+**阶段 0、1-A/1-B、3.1–3.5 页面迁移全部完成，当前在阶段 4 收尾（提交 / CI / E2E 汇总）。**
 
-工作副本：`D:\Coding\ERP\admin-clean`（自带独立 git 仓库，根仓库 `.gitignore` 仍排除它）。
+工作副本：`D:\Coding\ERP\admin-clean`（自带独立 git 仓库，无 remote，根仓库 `.gitignore` 仍排除它）。
 装依赖与验证命令逐条见 `vben-local-setup.md`，照抄即可。
 
 | 批次 | 状态 | 记录 |
@@ -221,7 +236,18 @@ pnpm install --frozen-lockfile
 | 阶段 3.1 登录/工作台/通知/审计 | ✅ 2026-11-22 | `2026-11-22-vben-phase31-auth-workbench-notify-audit.md` |
 | 阶段 3.2 公司配置/资金/报表 | ✅ 2026-11-22 | `2026-11-22-vben-phase32-settings-balances-reports.md` |
 | 阶段 3.3a 来源/线路/供应商 | ✅ 2026-11-24 | `2026-11-24-vben-phase33a-master-data.md` |
-| 阶段 3.3b 客户/回收站 | ⬜ 下一批 | — |
+| 阶段 3.3b 客户/回收站 | ✅ 2026-11-24 | `2026-11-24-vben-phase33b-customers-recycle.md` |
+| 阶段 3.4 订单/游客名单/导入 | ✅ 2026-11-24 | `2026-11-24.md`「收尾：6 页一次性全迁」 |
+| 阶段 3.5 收付款/申请/结算/线索 | ✅ 2026-11-24 | 同上（与 3.4 合批迁移） |
+
+**阶段 4 剩余项（2026-11-25 更新，前两条已作废）：**
+1. ~~`admin-clean` 未提交~~ —— 已由 `d69c191` 合入主仓并推送双远端。
+2. ~~缺 GitHub remote，需用户建独立仓库~~ —— **这条当时判断错了**：根仓本来就有 `github`
+   （`Golinoa/xw-`）与 `origin`（Gitee）。实际做法是把 `admin-clean/` 源码合入主仓目录，
+   workflow 迁到根 `.github/workflows/web-antd-build.yml` 并用 `working-directory` 指过去。
+3. 本机 Playwright 卡 teardown（无 passed 汇总）—— 已确认是**本机**问题：同一份用例在
+   Linux runner 上 3.8 分钟跑完并打印汇总。E2E 因此改为 CI job（`f8273e7`）。
+4. 仅剩：`6ae05b8` 的运行记录待补（GitHub 平台故障期间推送），以及「默认路由切新工程」的上线决策。
 
 #### 阶段 3.1 完成内容（2026-11-22）
 
@@ -278,13 +304,33 @@ udone 侧 `typecheck` + `lint` + vitest **74 文件 928 用例** + HTTP 集成 *
 2. 供应商/线路的表格与表单加了 `id` + `html-for`，让 `getByLabel` 能定位——旧页面的
    label 与控件没有任何关联。
 
-阶段 3.3b 开工前先读功能地图第 4–5 行（客户列表 667 行、回收站 326 行）与 4 个弹窗
-（`CustomerFormModal` / `CustomerDetailDrawer` / `CustomerTagManagerModal` /
-`CustomerBatchTagModal`）；**别把「列表勾选批量打标」这类跨行状态做丢**，
-敏感字段只在详情按 `customer.sensitive.read` 给原值，列表一律用 `*Masked`。
+#### 阶段 3.3b 完成内容（2026-11-24）
 
-自动化巡检时**只看上表第一行未打勾的批次**，不要重跑已完成的阶段 0 探针，也不要重复回放
-`udone` 的 CI 全序列——那两件事已有记录，重复跑只烧时间。
+客户列表 + 回收站 + 4 个弹窗迁完（`/customer/list`、`/customer/recycle`），端点 key 一个没改。
+三条判据全部保留：列表只渲染 `*Masked`、详情按 `customer.sensitive.read` 给原值、
+读不到原值时编辑请求体**连键都不发**（否则等于抹掉数据）。
+
+顺手修掉一个**既有**真缺陷与两处回归风险：
+1. 旧详情抽屉写着「当前版本暂不支持自助恢复」——B2 之后删除就是软删除、回收站能还原，
+   这句话会让用户不敢删。已改成如实描述。
+2. 搜索框没有 `maxlength`，关键字的契约上限是 100 ⇒ 打 101 个字会让**整条请求被契约拒掉**，
+   页面显示「加载失败」。已加 `maxlength` + 提交前 `slice(0,100)`。
+3. 客户挂着的来源被停用后，来源下拉里没有它，编辑表单直接把原始 UUID 显示出来。
+   已改成连停用项一起取、标注「（已停用）」并 disabled。
+
+另外把列表状态继续放在 URL 上（可分享/可刷新还原），并给该路由加
+`meta.fullPathKey: false`：Vben 页签默认按 `fullPath` 去重，不加这个 meta 每翻一页就多一个页签。
+
+**范围外但必须修**：整 app `eslint` 当时是红的（27 条，全部来自 3.1–3.3a 的文件，
+因为前几批只 lint 新增文件没发现）。已全部 autofix，`eslint apps/web-antd` 现为 0 问题；
+`oxlint` 从 8 条降到 7 条（剩余全是 `lib/api-client.ts` 的既有非空断言）。
+**以后每批收尾都跑 `eslint apps/web-antd`（整 app），不要只 lint 新增文件。**
+
+阶段 3.4/3.5 已完成，保留两条判据备查：订单存的是线路/客户**名称快照**，不是关联查询；
+`e2e/auth.e2e.ts` 的回跳落点已从 `/trade/orders` 换到 `/customer/list`。
+
+**所有批次已打勾**：自动化巡检不要重跑阶段 0 探针或 `udone` 的 CI 全序列——
+那两件事已有记录，重复跑只烧时间。剩余收尾项见上文「阶段 4 剩余项」。
 
 本机跑 E2E 的两个必知项：
 

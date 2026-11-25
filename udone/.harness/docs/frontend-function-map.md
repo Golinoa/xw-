@@ -145,9 +145,9 @@
 | `/company-settings` → `/config/company` | `CompanySettingsView.vue` | `views/config/company/index.vue` | ✅ 2026-11-22（含审批流与二次确认） |
 | `/balances` → `/finance/balances` | `BalanceListView.vue` | `views/finance/balances/index.vue` | ✅ 2026-11-22（建账户 + 调余额） |
 | `/reports` → `/operations/reports` | `ReportListView.vue` | `views/operations/reports/index.vue` | ✅ 2026-11-22（含 CSV 导出） |
-| 客户 / 回收站 / 来源 / 线路 / 供应商 | 5 页 + 6 弹窗 | — | ⬜ 阶段 3.3 |
-| 订单 / 游客名单 / 导入 | 5 页 + 5 弹窗 | — | ⬜ 阶段 3.4 |
-| 收付款 / 审批申请 / 结算 / 线索 | 4 页 + 2 弹窗 | — | ⬜ 阶段 3.5 |
+| 客户 / 回收站 / 来源 / 线路 / 供应商 | 5 页 + 6 弹窗 | `views/customer/{list,recycle,sources}` + `views/trade/{suppliers,routes}` | ✅ 2026-11-24（阶段 3.3a/3.3b） |
+| 订单 / 游客名单 / 导入 | 5 页 + 5 弹窗 | `views/trade/{order,tourists}` | ✅ 2026-11-24（阶段 3.4） |
+| 收付款 / 审批申请 / 结算 / 线索 | 4 页 + 2 弹窗 | `views/finance/{receipts,applications,settlements}` + `views/crm/leads` | ✅ 2026-11-24（阶段 3.5） |
 
 顶栏已补回旧 `AppLayout` 的两项壳层功能：公司切换（`header-widgets.vue`）与未读角标。
 成员面板仍按 `userId` 更新（原样迁移），改成列表点选需要产品口径，未自决。

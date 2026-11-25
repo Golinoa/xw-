@@ -28,12 +28,13 @@
 现在做**迁移**，计划见 `udone/.harness/docs/vben-migration-plan.md`，功能基线见
 `udone/.harness/docs/frontend-function-map.md`（17 页面 / 69 端点 / 14 弹窗，不得丢）。
 
-**工作副本 `D:\Coding\ERP\admin-clean`**（不是计划里写的 `udone/apps/web-vben`）：
-从 `admin/` robocopy 的干净副本，hoisted 模式装依赖。装/验证命令照抄
-`udone/.harness/docs/vben-local-setup.md`。已独立 `git init`（根 `.gitignore` 仍排除它）。
+**工作副本 `D:\Coding\ERP\admin-clean`**：已合入主仓（`d69c191`，1177 文件，双远端已推），
+不再是「独立 git、无 remote」的状态。装/验证命令照抄 `udone/.harness/docs/vben-local-setup.md`。
 
-进度：阶段 0 ✅ → 1A 骨架+认证 ✅ → 1B E2E 基座 ✅ → 3.1 登录/工作台/通知/审计 ✅ → **3.2 公司配置/资金/报表 ✅**
-→ 下一批 **3.3 客户/回收站/来源/线路/供应商**（5 页 + 6 弹窗）。
+进度：阶段 0 ✅ → 1A ✅ → 1B E2E 基座 ✅ → 3.1–3.5 全部 17 页迁完 ✅（2026-11-24）
+→ **阶段 4 收尾进行中（2026-11-25）**：新后台 CI `build` job 首绿（run 45648397556，11 步）、
+E2E 已进 CI 并实测 35 passed/1 failed、唯一失败已修（`6ae05b8`，待补验）。
+只剩「默认路由切新工程」需要用户拍板上线时间。
 
 ### 🔴 构建/检查的坑
 - **每次 build 前 `rm -rf dist/js dist/css dist/jse dist/_app.config.js dist/index.html`**：
@@ -45,8 +46,16 @@
 - **Vite dev 前台能起、后台常不监听**；给人看页面用 `dist` + `python -m http.server`。
 - 本机 E2E：`PLAYWRIGHT_CHANNEL=chrome node node_modules/@playwright/test/cli.js test`
   （自带 chromium 没装）；端口冲突用 `E2E_PORT`。
-- 已知遗留：`oxlint` 8 条既有错误（`lib/api-client.ts` 7 条非空断言 + `store/auth.ts` 冗余 return）、
-  `oxfmt` 二进制本机跑不起来。
+- **lint 必须整 app 跑**：`vsh lint` = 根目录 `eslint .`。只 lint 新增文件会让红门一直传下去
+  （3.3b 才发现前几批积了 27 条）。收尾固定跑 `./node_modules/.bin/eslint apps/web-antd`。
+  且**必须从仓库根跑**：在 `apps/web-antd` 里跑相对路径会让 `tsconfigRootDir` 落到
+  `tsconfig.node.json`，把 `.ts` 报成 `Parsing error`（假错误）。
+- **`eslint --fix` 会连 `package.json` 一起改**（`pnpm/json-enforce-catalog` 把裸版本号改成
+  `catalog:` 并往 `pnpm-workspace.yaml` 加行）；`unicorn/prefer-includes` 的 autofix 会打断
+  类型守卫（元组字面量类型 ⇒ TS2345，要写 `(CONST as readonly string[]).includes(x)`）。
+- 已知遗留：`oxlint` **7** 条存量错误（全是 `lib/api-client.ts` 非空断言，3.3b 后 8→7）、
+  `oxfmt` 二进制本机跑不起来；`apps/web-antd/package.json` 与 `pnpm-lock.yaml` 不同步
+  （lockfile 里没有 `@supabase/supabase-js`），动它要重装依赖 ⇒ 不碰。
 
 ### 🔴 已修的 Vben 上游缺陷（别改回去）
 - 守卫 `redirect` 双重编码（`%252F`）→ 写入不 encode、读取不 decode。
@@ -79,6 +88,14 @@
 - antd `Card` 的 `title` 不是 heading 角色；`<a-table>`（旧前端）的 `title` 是渲染函数，
   传字符串会整页白屏。
 - 顶栏壳层（公司切换、未读角标）挂在 `BasicLayout` 的 `#header-right-1` 插槽。
+- **块注释里禁止出现 `**/`**：写「`**/api/customers**` 这种 glob」会让 `*/` 提前结束注释，
+  报错是 `Parsing error: Expression expected` 且指向注释行。写说明时避开这段字符。
+- **桩按 `pathname` 分派，一个 handler 管一族路径**：`/api/customers` 的 glob 会把
+  `batch-tags`、`recycle-bin`、`/:id` 全吃掉，分散注册的命中顺序不可控；
+  `/:id` 正则也匹配不到 `/:id/restore`（子路径要单独一条）。
+- **拿「仍是占位页」的路由当登录回跳落点**（`e2e/auth.e2e.ts` 现在用 `/trade/orders`）：
+  该路由一被真实化，`待实现` 断言必红。订单页 3.4 迁移时要再换一次。
+- 页面会连带请求别的资源（如客户表单拉来源）⇒ 不桩就漏到真网络，现象是「页面正常但下拉空」。
 
 ## 3. 门禁与格式化的坑
 
@@ -90,6 +107,28 @@
   （`count(*)` → `count (*)`），会重排 25 个已提交迁移。**存量不动，新增迁移必须能被它接受。**
 - **GitHub 只读仓库根的 `.github/workflows/`**：`udone/.github/workflows/` 里的副本永远不执行，
   而断言却读它 ⇒「CI 覆盖了 X」是纸面结论。已删，断言改指根文件 + 反向断言。
+
+### 🔴 CI 取证已经打通（2026-11-25 起，别再说是纸面结论）
+
+`gh` 未登录，但 **`git credential fill`（host=github.com）拿到的 PAT 能读 Actions API**：
+列 runs / jobs / steps、拉原始日志、下 artifact（token 用对，cwd 要在 git 仓库内）。
+读日志：`curl -sSL --ssl-no-revoke -H "Authorization: Bearer $TOKEN"`，
+`-o` 目标不要写 `/tmp`（本机没有），用 `$LOCALAPPDATA/Temp/`。
+日志每行带时间戳前缀，先 `sed 's/^[0-9T:.Z-]*Z //'` 再 grep。
+`workflow_dispatch` 返回 **500 通常不是权限问题，是 GitHub 平台故障** —— 先查
+`https://www.githubstatus.com/api/v2/status.json`（`Actions` 组件状态），别改代码。
+
+- **本机 `format:check` 恒红不是「真红」的判据**：真红只能看 CI（`quality_gate` 第一步就是它，
+  红了后面 10 步全 skipped）。11-23 那次真红只有 `packages/contracts/src/customers.test.ts` 一行超 100 列。
+- **新前端 `admin-clean` 编译 udone 的契约源码** ⇒ **类型/构建必须在装过 udone 依赖的环境里跑**：
+  `udone/packages/contracts` 依赖 zod 4.6.6，admin-clean 顶层只有 Vben 的 zod 3.25.76。
+  workflow 里少了 `cd udone && npx --yes pnpm@11.24.0 install --frozen-lockfile` 就是
+  45 条 `Cannot find module 'zod'` + 91 条下游错。**本机 vue-tsc 绿 ≠ CI 绿。**
+- **antd-vue 两字中文按钮只在「非 link/text」时插空格**（`button.js` 的 `isUnBorderedButtonType`）：
+  行内 `type="link"` 的可访问名仍是「作废」，弹窗确认键（默认+danger）是「作 废」。
+  E2E 一律写 `/作\s*废/` 这类正则，别写死字符串。
+- **本机 Playwright teardown 死结有定论了**：同一份用例在 Linux runner 3.8 分钟跑完并打印汇总
+  （35 passed/1 failed）⇒ 卡住是 Windows 进程句柄问题，不是用例内容。E2E 已验证跑在 CI 里。
 
 ## 4. 旧项目背景（只读参考，不再是主线）
 
