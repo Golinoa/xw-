@@ -1,0 +1,100 @@
+{
+  "allowedLicenses": [
+    "0BSD",
+    "Apache-2.0",
+    "(Apache-2.0 AND BSD-3-Clause)",
+    "BSD-2-Clause",
+    "(BSD-2-Clause OR MIT OR Apache-2.0)",
+    "BSD-3-Clause",
+    "BlueOak-1.0.0",
+    "CC0-1.0",
+    "ISC",
+    "MIT",
+    "MIT-0",
+    "(MIT AND Zlib)",
+    "MIT OR Apache-2.0",
+    "(MIT OR CC0-1.0)"
+  ],
+  "exceptions": {
+    "@azu/style-format@1.0.1": {
+      "licenses": "WTFPL",
+      "reviewedOn": "2026-10-05",
+      "reason": "Secretlint formatter dependency; development-only and not included in the web bundle. Re-review if the tool or version changes."
+    },
+    "@cspell/dict-en-common-misspellings@2.1.12": {
+      "licenses": "Custom: https://github.com/streetsidesoftware/cspell",
+      "reviewedOn": "2026-10-05",
+      "reason": "CSpell dictionary data used only by development tooling; source license remains a manual review item and is not shipped in the web bundle."
+    },
+    "argparse@2.0.1": {
+      "licenses": "Python-2.0",
+      "reviewedOn": "2026-10-05",
+      "reason": "Transitive parser used only by build and repository tooling; excluded from the web bundle."
+    },
+    "binaryextensions@6.11.0": {
+      "licenses": "Artistic-2.0",
+      "reviewedOn": "2026-10-05",
+      "reason": "Transitive file-type helper used by Secretlint during development checks; excluded from the web bundle."
+    },
+    "caniuse-lite@1.0.30001814": {
+      "licenses": "CC-BY-4.0",
+      "reviewedOn": "2026-10-05",
+      "reason": "Browser compatibility data used by the build toolchain; excluded from the web bundle."
+    },
+    "commitlint-plugin-function-rules@5.0.1": {
+      "licenses": "GPL-3.0-or-later",
+      "reviewedOn": "2026-10-05",
+      "reason": "Existing commit-message tooling dependency; development-only and not included in the web bundle. Re-review before changing its use or scope."
+    },
+    "editions@6.22.0": {
+      "licenses": "Artistic-2.0",
+      "reviewedOn": "2026-10-05",
+      "reason": "Transitive file-type helper used by Secretlint during development checks; excluded from the web bundle."
+    },
+    "istextorbinary@9.5.0": {
+      "licenses": "Artistic-2.0",
+      "reviewedOn": "2026-10-05",
+      "reason": "Secretlint file detection dependency; development-only and not included in the web bundle."
+    },
+    "lightningcss@1.33.0": {
+      "licenses": "MPL-2.0",
+      "reviewedOn": "2026-10-05",
+      "reason": "Vite CSS optimizer used at build time; excluded from the web bundle. Re-review if used at runtime."
+    },
+    "lightningcss@1.32.0": {
+      "licenses": "MPL-2.0",
+      "reviewedOn": "2026-10-05",
+      "reason": "Vite CSS optimizer retained for the installed Windows platform package; build-time only and excluded from the web bundle. Re-review if used at runtime."
+    },
+    "node-forge@1.4.2": {
+      "licenses": "(BSD-3-Clause OR GPL-2.0)",
+      "reviewedOn": "2026-10-31",
+      "reason": "The upstream SPDX expression offers BSD-3-Clause as an allowed alternative; use and distribution are under that permissive option. Version moved 1.4.0 -> 1.4.2 on 2026-10-31: five high advisories are patched from 1.4.1 (dev-only path @vben/vite-config > nitropack > listhen), so the previous exact-version exception no longer matched."
+    },
+    "spawndamnit@3.0.1": {
+      "licenses": "Custom: LICENSE",
+      "reviewedOn": "2026-10-05",
+      "reason": "Changesets development tooling dependency; upstream LICENSE file retained with package installation; not included in the web bundle."
+    },
+    "spdx-exceptions@2.5.0": {
+      "licenses": "CC-BY-3.0",
+      "reviewedOn": "2026-10-05",
+      "reason": "SPDX metadata used by development tooling; excluded from the web bundle."
+    },
+    "spdx-ranges@2.1.1": {
+      "licenses": "(MIT AND CC-BY-3.0)",
+      "reviewedOn": "2026-10-05",
+      "reason": "SPDX metadata used by development tooling; excluded from the web bundle."
+    },
+    "textextensions@6.11.0": {
+      "licenses": "Artistic-2.0",
+      "reviewedOn": "2026-10-05",
+      "reason": "Transitive file-type helper used by Secretlint during development checks; excluded from the web bundle."
+    },
+    "version-range@4.15.0": {
+      "licenses": "Artistic-2.0",
+      "reviewedOn": "2026-10-05",
+      "reason": "Transitive metadata helper used by Secretlint development checks; excluded from the web bundle."
+    }
+  }
+}

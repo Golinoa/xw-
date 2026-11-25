@@ -1,0 +1,78 @@
+name: Web-antd build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'admin-clean/**'
+      - '.github/workflows/web-antd-build.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'admin-clean/**'
+      - '.github/workflows/web-antd-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-antd-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Typecheck, lint and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # admin-clean/.npmrc 设了 engine-strict=true，engines.node 锁 24.20.0，
+      # 版本必须精确匹配，否则 pnpm install 直接 ERR_PNPM_UNSUPPORTED_ENGINE。
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.20.0
+          cache: pnpm
+          cache-dependency-path: admin-clean/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: admin-clean
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: admin-clean/apps/web-antd
+        run: pnpm typecheck
+
+      # 只 lint 新后台整目录；根级 eslint . 会扫到上游 packages/docs 的存量问题。
+      - name: Lint
+        working-directory: admin-clean
+        run: pnpm exec eslint apps/web-antd
+
+      - name: Build
+        working-directory: admin-clean/apps/web-antd
+        run: pnpm build
+
+      - name: Verify build output
+        working-directory: admin-clean
+        run: |
+          test -f apps/web-antd/dist/index.html
+          test -f apps/web-antd/dist/_app.config.js
+          test -d apps/web-antd/dist/js
+          echo "Build output OK"
+
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-antd-dist
+          path: admin-clean/apps/web-antd/dist
+          retention-days: 14
+          if-no-files-found: error

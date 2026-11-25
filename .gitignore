@@ -26,9 +26,8 @@ udone/_tmp_*
 /.superpowers/
 admin/.superpowers/
 
-# Vben 迁移用本地干净副本（源码副本 + 1.2G node_modules，不入库）
-# 注意：该副本已自带独立 .git，见 admin-clean/.git
-/admin-clean/
+# Vben 新后台源码已合入主仓 admin-clean/（原独立副本的同名目录）。
+# 子目录自身的 .gitignore 排除 node_modules/dist/test-results/.turbo 等本地产物。
 
 # 本地回退快照（tar），只在单机保留，不入库
 /.workbuddy/backups/
