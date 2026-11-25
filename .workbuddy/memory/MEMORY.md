@@ -34,7 +34,12 @@
 进度：阶段 0 ✅ → 1A ✅ → 1B E2E 基座 ✅ → 3.1–3.5 全部 17 页迁完 ✅（2026-11-24）
 → **阶段 4 收尾已做完（2026-11-26）**：新后台 `build` job 绿（run 45651616866，11 步 1m21s）、
 E2E job 绿（36 passed / 2.9m，job 3m50s）。**唯一剩下的「默认路由切新工程」是上线决策，等用户拍板**，
-没有技术工作可做。
+没有技术工作可做。**切换清单已实测完毕**（`vben-migration-plan.md` §「切换清单」）：
+① `udone/wrangler.toml` `[assets] directory` → `../admin-clean/apps/web-antd/dist`（wrangler dry-run
+实测可读 253 文件，跨目录 `../` 可用）；② 必须同步改 `scripts/check-deploy-config.ts` 的
+`WRANGLER_REQUIREMENTS` 字面量断言，否则 `check:deploy` 立刻红；③ CI artifact **不能直接部署**
+（仓库 Actions secrets 实测 0 个，`VITE_SUPABASE_*` 只在 gitignore 的 `.env.local` 里 —— 旧
+`apps/web` 同样如此，是既有发布方式不是缺陷）；④ 回退 = 改回 ①② 两行。
 
 ### 🔴 构建/检查的坑
 - **每次 build 前 `rm -rf dist/js dist/css dist/jse dist/_app.config.js dist/index.html`**：

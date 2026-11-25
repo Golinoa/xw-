@@ -288,3 +288,17 @@
 - 🔴 **下一轮**：计划内已无技术工作。**只剩「默认路由切新工程 / 旧 `apps/web` 留一版回退」的上线决策，
   必须用户拍板**。若用户没表态，只回一句「阶段 4 已收尾，等上线决策」，不要去改路由、不要重跑门禁。
   可选清理项（需用户同意）：删 `admin-clean/` 里合入带入的上游 `.harness/` 约 40 篇历史文档。
+
+## 2026-11-26 01:4x — 把「等拍板」变成 4 步切换清单（纯文档）✅
+
+- 业务 backlog `grep "^- \[ \]"` = 0、迁移阶段 0–4 全完成 ⇒ 无卡可做。本轮的活不是加功能，而是
+  **把那句空决策做实**：改几个文件、会不会弄红门禁、CI 产物能不能部署。
+- 三条实证：① `wrangler deploy --dry-run` 指向 `../admin-clean/apps/web-antd/dist` 实测
+  `Read 253 files`、1623.06 KiB/gzip 266.99 ⇒ 跨目录 assets 路径可用；② `check-deploy-config.ts` 的
+  `WRANGLER_REQUIREMENTS` 硬编码 `directory = "apps/web/dist"` ⇒ 必须同步改，否则 `check:deploy` 红；
+  ③ 仓库 Actions secrets 实测 `total_count: 0`，`VITE_SUPABASE_*` 只在 gitignore 的 `.env.local`
+  ⇒ **CI artifact 不能直接部署**，但**旧 `apps/web` 同一套做法** ⇒ 是既有发布方式，不是迁移缺口。
+- 改动：`vben-migration-plan.md` 新增「切换清单」；backlog §9 纠偏（原文还写「下一批是 3.1」）；
+  journal `2026-11-26-phase4-launch-switch-checklist.md`。零运行代码改动 ⇒ 没跑任何测试套件。
+- 🔴 **下一轮**：仍然是同一件事——除非用户说「切」，否则**不要动 wrangler/门禁/路由**，
+  只回一句「技术侧已无未知项，等你拍板切换」。已连续 7 轮无产出，建议把间隔拉长到 1 天。
