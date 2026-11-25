@@ -4,13 +4,13 @@ on:
   push:
     branches: [main]
     paths:
-      - 'admin-clean/**'
-      - '.github/workflows/web-antd-build.yml'
+      - "admin-clean/**"
+      - ".github/workflows/web-antd-build.yml"
   pull_request:
     branches: [main]
     paths:
-      - 'admin-clean/**'
-      - '.github/workflows/web-antd-build.yml'
+      - "admin-clean/**"
+      - ".github/workflows/web-antd-build.yml"
   workflow_dispatch:
 
 permissions:
@@ -47,6 +47,16 @@ jobs:
       - name: Install dependencies
         working-directory: admin-clean
         run: pnpm install --frozen-lockfile
+
+      # 新前端的 typecheck 与 build 都直接消费 udone 的契约**源码**
+      # （vite alias 与 tsconfig paths 都指向 udone/packages/contracts/src/index.ts），
+      # 而该包依赖 zod 4.6.6（本仓顶层是 Vben 用的 zod 3）。
+      # 只装 admin-clean 时，zod 从 contracts 目录向上一条链都解析不到 —— 首跑实测
+      # 45 条「Cannot find module 'zod'」+ 87 条下游 implicit any，全是这一个根因。
+      # udone 用自己锁定的 pnpm 11（packageManager 字段），与上面的 10.33.4 不能混用。
+      - name: Install contracts dependencies
+        working-directory: udone
+        run: npx --yes pnpm@11.24.0 install --frozen-lockfile
 
       - name: Typecheck
         working-directory: admin-clean/apps/web-antd
